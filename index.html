@@ -375,6 +375,59 @@
       .ev .minus{ color:var(--red); font-weight:800; }
       .girl-head{ font-size:1.15rem; font-weight:800; margin:14px 0 4px; }
       .girl-head.j{ color:var(--rose-dark); } .girl-head.k{ color:var(--violet-dark); }
+      /* ---------- Daily note ---------- */
+      .note-card{ background:var(--card); border:2px solid var(--line); border-radius:var(--radius); padding:14px; margin-top:14px; }
+      .note-head{ font-weight:800; font-size:1.1rem; margin-bottom:8px; }
+      .note-card textarea{
+        width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:14px;
+        background:var(--card-soft); color:var(--ink); font-size:1.05rem; font-weight:700;
+        font-family:inherit; resize:vertical; min-height:56px;
+      }
+      .note-saved{ color:var(--green); font-weight:800; font-size:.9rem; min-height:1.2em; margin-top:4px; }
+      .note-show{ background:var(--gold-light); border-radius:12px; padding:8px 12px; font-weight:700; margin:2px 0 8px; }
+
+      /* ---------- Coloring corner ---------- */
+      .color-btn{ width:100%; margin-top:12px; }
+      .color-sub{ color:var(--gray); font-weight:700; margin:2px 0 0; line-height:1.55; }
+      .daily-card{
+        display:flex; align-items:center; gap:14px; width:100%; margin-top:10px;
+        background:var(--gold-light); border:2px solid var(--gold); border-radius:20px;
+        padding:10px 14px; cursor:pointer; text-align:start; color:var(--ink);
+      }
+      .daily-card svg{ width:84px; height:84px; flex:0 0 84px; background:#fff; border-radius:14px; pointer-events:none; }
+      .daily-card .dt{ font-weight:800; font-size:1.15rem; display:block; }
+      .daily-card .ds{ color:var(--gray); font-weight:700; font-size:.95rem; display:block; }
+      .color-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+      @media (min-width:560px){ .color-grid{ grid-template-columns:repeat(3,1fr); } }
+      .pic-card{
+        background:var(--card); border:2px solid var(--line); border-radius:20px; padding:10px;
+        cursor:pointer; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:6px;
+      }
+      .pic-card:active{ transform:scale(.97); }
+      .pic-card svg{ width:100%; height:auto; background:#fff; border-radius:12px; pointer-events:none; }
+      .pic-card.gold{ border:3px solid var(--gold); background:var(--gold-light); }
+      .pic-name{ font-weight:800; font-size:1.05rem; }
+      .pic-badge{ font-size:.85rem; font-weight:800; padding:2px 12px; border-radius:999px; }
+      .pic-badge.lock{ background:var(--gold); color:var(--ink); }
+      .pic-badge.open{ background:var(--green-light); color:var(--green); }
+      #colorEditor{ margin-top:14px; background:var(--card); border:2px solid var(--line); border-radius:var(--radius); padding:14px; }
+      #colorEditor h3{ margin:0 0 10px; font-size:1.2rem; font-weight:800; text-align:center; }
+      .pstage{ background:#fff; border:2px solid var(--line); border-radius:20px; padding:8px; }
+      .pstage svg{ width:100%; height:auto; display:block; }
+      .csvg [data-r]{ stroke:#5B4632; stroke-width:3; stroke-linejoin:round; stroke-linecap:round; }
+      .csvg .deco-line{ fill:none; stroke:#5B4632; stroke-width:2.5; stroke-linecap:round; }
+      .csvg .deco-dot{ fill:#5B4632; stroke:none; }
+      .pstage .csvg [data-r]{ cursor:pointer; }
+      .pstage .csvg [data-r]:active{ opacity:.7; }
+      .palette{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; margin-top:14px; }
+      .swatch{
+        width:44px; height:44px; min-height:44px; border-radius:50%; cursor:pointer;
+        border:3px solid #fff; box-shadow:0 0 0 2px var(--line); padding:0;
+      }
+      .swatch.on{ box-shadow:0 0 0 3px var(--ink); transform:scale(1.15); }
+      .ctools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+      .ctools .mini{ flex:1; min-width:100px; min-height:48px; font-size:1rem; }
+      .ctools .mini.on{ background:var(--gold); border-color:var(--gold); color:var(--ink); }
       .hidden{ display:none !important; }
     </style>
   </head>
@@ -457,13 +510,38 @@
       <h2 class="section-title" id="tasksTitle">مهام اليوم 📋</h2>
       <div id="taskList"></div>
 
+      <div class="note-card">
+        <div class="note-head" id="noteTitle">📝 ملاحظتي عن اليوم</div>
+        <textarea id="dayNote" rows="2" maxlength="300" placeholder="اكتبي حاجة حلوة حصلت النهارده... ✏️" aria-label="ملاحظتي عن اليوم"></textarea>
+        <div class="note-saved" id="noteSaved"></div>
+      </div>
+
       <div class="nav-btns">
         <button class="btn-gold" id="rewardsBtn" type="button">المكافآت 🎁</button>
         <button class="btn-soft" id="parentsBtn" type="button">للأهل 🔒</button>
       </div>
+      <button class="btn-gold color-btn" id="colorBtn" type="button">🎨 ركن التلوين</button>
 
       <h2 class="section-title" id="rewardsTitle">🎁 المكافآت</h2>
       <div id="rewardList"></div>
+
+      <h2 class="section-title" id="colorTitle">🎨 ركن التلوين</h2>
+      <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — اختاري رسمة ولوّنيها، وشغلك بيتحفظ في معرضك. والرسومات الدهبية 👑 بتتفتح بالنجوم!</p>
+      <div id="colorDaily"></div>
+      <div class="color-grid" id="colorGrid"></div>
+
+      <div id="colorEditor" class="hidden">
+        <h3 id="edTitle">🎨 التلوين</h3>
+        <div class="pstage" id="edStage"></div>
+        <div class="palette" id="edPalette" aria-label="لوحة الألوان"></div>
+        <div class="ctools">
+          <button class="mini" id="edUndo" type="button">↩️ تراجع</button>
+          <button class="mini" id="edEraser" type="button">🧽 ممحاة</button>
+          <button class="mini del" id="edReset" type="button">🗑️ امسح الكل</button>
+          <button class="mini" id="edDone" type="button">✅ خلصت</button>
+        </div>
+        <p class="guide-note" style="text-align:center">اختاري لون من فوق وبعدين دوسي على الجزء اللي عايزة تلوّنيه — شغلك بيتحفظ لوحده ⭐</p>
+      </div>
 
       <section id="parents">
         <h2 class="section-title">منطقة الأهل 🔐</h2>
@@ -627,24 +705,41 @@
       var uidC = 1;
       function uid(p){ return p + Date.now().toString(36) + (uidC++); }
 
+      function emptyColoring(){
+        return { judy:{ unlocked:[], works:{} }, karma:{ unlocked:[], works:{} } };
+      }
       function seed(){
         return {
           tasks: DEFAULT_TASKS.map(function(t,i){ return { id:"t"+(i+1), name:t[0], emoji:t[1], stars:t[2], girl:"both" }; }),
           rewards: DEFAULT_REWARDS.map(function(r,i){ return { id:"r"+(i+1), name:r[0], emoji:r[1], price:r[2] }; }),
           balances: { judy:0, karma:0 },
-          days: {}
+          days: {},
+          coloring: emptyColoring(),
+          selectedGirl: "judy"
         };
       }
       function load(){
         try{
           var raw = localStorage.getItem(LS_KEY);
-          if(raw){ var s = JSON.parse(raw); if(s && s.tasks && s.rewards && s.balances && s.days) return s; }
+          if(raw){
+            var s = JSON.parse(raw);
+            if(s && s.tasks && s.rewards && s.balances && s.days){
+              /* migrate older saves: add the coloring corner state */
+              if(!s.coloring) s.coloring = emptyColoring();
+              GIRL_KEYS.forEach(function(g){
+                if(!s.coloring[g]) s.coloring[g] = { unlocked:[], works:{} };
+                if(!s.coloring[g].unlocked) s.coloring[g].unlocked = [];
+                if(!s.coloring[g].works) s.coloring[g].works = {};
+              });
+              return s;
+            }
+          }
         }catch(e){}
         var s = seed(); save(s); return s;
       }
       function save(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s || S)); }catch(e){} }
       var S = load();
-      var currentGirl = "judy";
+      var currentGirl = (S.selectedGirl === "karma" || S.selectedGirl === "judy") ? S.selectedGirl : "judy";
       var parentsUnlocked = false;
       var praiseIndex = 0;
 
@@ -998,11 +1093,15 @@
           btn.addEventListener("click", function(){ buyReward(girl, btn.getAttribute("data-reward")); });
         });
       }
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); if(parentsUnlocked) renderAdmin(); }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); }
 
       GIRL_KEYS.forEach(function(g){
         $("card-" + g).addEventListener("click", function(){
-          currentGirl = g; renderAll();
+          currentGirl = g;
+          S.selectedGirl = g;
+          save();
+          closeEditor();
+          renderAll();
         });
       });
       $("rewardsBtn").addEventListener("click", function(){
@@ -1244,6 +1343,7 @@
       $("resetBtn").addEventListener("click", function(){
         showModal("⚠️", "مسح كل البيانات؟", "كل النجوم والسجلات والتقارير هتتمسح، والمهام والمكافآت هترجع للافتراضية. ده مش هيترجع فيه!", "أيوه، امسح الكل", function(){
           S = seed(); save(); currentGirl = "judy";
+          closeEditor();
           cancelEditTask(); cancelEditReward(); renderAll(); renderReports();
           toast("بدأنا من جديد ⭐", "");
         }, true);
@@ -1251,13 +1351,13 @@
 
       /* ================= Reports ================= */
       function evIcon(type){
-        return { task:"✅", uncheck:"↩️", surprise:"🎁", twin:"👯", "twin-off":"👯", fullday:"🏅", "fullday-off":"🏅", redeem:"🎁" }[type] || "•";
+        return { task:"✅", uncheck:"↩️", surprise:"🎁", twin:"👯", "twin-off":"👯", fullday:"🏅", "fullday-off":"🏅", redeem:"🎁", unlock:"🎨" }[type] || "•";
       }
       function renderDayReport(key){
         var box = $("dayReport");
         var day = S.days[key];
         var html = '<p style="font-weight:800;margin:8px 0 0">📅 ' + esc(fmtDateAr(key)) + "</p>";
-        if(!day || (!day.judy.events.length && !day.karma.events.length)){
+        if(!day || (!day.judy.events.length && !day.karma.events.length && !day.judy.note && !day.karma.note)){
           box.innerHTML = html + '<div class="empty-note">مفيش نشاط مسجل في اليوم ده</div>';
           return;
         }
@@ -1266,8 +1366,9 @@
           var mine = tasksFor(g);
           var doneList = mine.filter(function(t){ return !!r.done[t.id]; });
           html += '<div class="girl-head ' + (g === "judy" ? "j" : "k") + '">' + GIRLS[g].emoji + " " + GIRLS[g].name +
-            ' — خلصت ' + doneList.length + " من " + mine.length + " مهام • كسبت ⭐ " + earnedOn(key, g) + " النهارده" +
+            ' — خلصت ' + doneList.length + " من " + mine.length + " مهام • نجوم اكتسبتها النهارده: ⭐ " + earnedOn(key, g) + " • الرصيد الحالي: ⭐ " + S.balances[g] +
             (r.fullDay ? " • 🏅 يوم كامل" : "") + "</div>";
+          if(r.note) html += '<div class="note-show">📝 ملاحظتها عن اليوم: «' + esc(r.note) + "»</div>";
           if(!r.events.length){ html += '<div class="empty-note">لا نشاط</div>'; return; }
           html += r.events.map(function(e){
             var d = e.delta > 0 ? '<span class="plus">+' + e.delta + '⭐</span>'
@@ -1307,7 +1408,8 @@
           });
           html += '<div class="girl-head ' + (g === "judy" ? "j" : "k") + '">' + GIRLS[g].emoji + " " + GIRLS[g].name + "</div>" +
             '<div class="stat-grid">' +
-            '<div class="stat"><div class="v">⭐ ' + totalEarned + '</div><div class="k">نجوم اتكسبت في الشهر</div></div>' +
+            '<div class="stat"><div class="v">⭐ ' + totalEarned + '</div><div class="k">نجوم اكتسبتها في الشهر</div></div>' +
+            '<div class="stat"><div class="v">⭐ ' + S.balances[g] + '</div><div class="k">الرصيد الحالي</div></div>' +
             '<div class="stat"><div class="v">' + pct + '%</div><div class="k">نسبة إنجاز المهام</div></div>' +
             '<div class="stat"><div class="v">🏅 ' + fullDays + '</div><div class="k">أيام كاملة</div></div>' +
             '<div class="stat"><div class="v">' + (best ? best.emoji + " " + bestN + " مرة" : "—") + '</div><div class="k">أكتر مهمة اتعملت' + (best ? ": " + esc(best.name) : "") + '</div></div>' +
@@ -1318,7 +1420,7 @@
           var ej = earnedOn(k, "judy"), ek = earnedOn(k, "karma");
           var dj = Object.keys(S.days[k].judy.done).length, dk = Object.keys(S.days[k].karma.done).length;
           return '<button class="day-row" type="button" data-day="' + k + '"><span>📅</span><span class="grow">' + esc(fmtDateAr(k)) +
-            "<small>" + GIRLS.judy.name + ": " + dj + " مهام • ⭐" + ej + " &nbsp;—&nbsp; " + GIRLS.karma.name + ": " + dk + " مهام • ⭐" + ek + "</small></span><span>‹</span></button>";
+            "<small>" + GIRLS.judy.name + ": " + dj + " مهام • كسبت ⭐" + ej + " &nbsp;—&nbsp; " + GIRLS.karma.name + ": " + dk + " مهام • كسبت ⭐" + ek + "</small></span><span>‹</span></button>";
         }).join("");
         box.innerHTML = html;
         box.querySelectorAll("[data-day]").forEach(function(b){
@@ -1338,6 +1440,305 @@
       }
       $("repDayBtn").addEventListener("click", function(){ if($("repDay").value) renderDayReport($("repDay").value); });
       $("repMonthBtn").addEventListener("click", function(){ if($("repMonth").value) renderMonthReport($("repMonth").value); });
+
+      /* ================= Daily note (per girl, per day) ================= */
+      function renderNote(){
+        var ta = $("dayNote");
+        $("noteTitle").textContent = "📝 ملاحظتي عن اليوم — " + GIRLS[currentGirl].name + " " + GIRLS[currentGirl].emoji;
+        if(document.activeElement !== ta){
+          var r = S.days[todayKey()] && S.days[todayKey()][currentGirl];
+          ta.value = r && r.note ? r.note : "";
+        }
+      }
+      var noteTimer = null;
+      $("dayNote").addEventListener("input", function(){
+        clearTimeout(noteTimer);
+        noteTimer = setTimeout(function(){
+          var r = rec(todayKey(), currentGirl);
+          r.note = $("dayNote").value.trim();
+          save();
+          $("noteSaved").textContent = "اتحفظت ✓";
+          setTimeout(function(){ $("noteSaved").textContent = ""; }, 2200);
+        }, 400);
+      });
+
+      /* ================= Coloring corner =================
+         Always open. Each drawing is line-art SVG made of tappable regions
+         (data-r). A girl picks a color, taps a region, and her work is saved
+         per drawing in S.coloring[girl].works. Golden drawings unlock once
+         with stars (logged like a purchase in the parents' day report). */
+      var PALETTE = ["#EF476F","#FF7B54","#FFB800","#FFD93D","#8AC926","#43AA8B","#38BDF8","#4361EE","#9B5DE5","#F15BB5","#B08968","#6B7280","#22223B"];
+      var DRAWINGS = [
+        { id:"butterfly", name:"فراشة", emoji:"🦋", gold:false, svg:
+          '<ellipse data-r="0" fill="#fff" cx="58" cy="72" rx="36" ry="27" transform="rotate(-24 58 72)"/>' +
+          '<ellipse data-r="1" fill="#fff" cx="142" cy="72" rx="36" ry="27" transform="rotate(24 142 72)"/>' +
+          '<ellipse data-r="2" fill="#fff" cx="62" cy="128" rx="29" ry="22" transform="rotate(18 62 128)"/>' +
+          '<ellipse data-r="3" fill="#fff" cx="138" cy="128" rx="29" ry="22" transform="rotate(-18 138 128)"/>' +
+          '<circle data-r="4" fill="#fff" cx="52" cy="66" r="10"/>' +
+          '<circle data-r="5" fill="#fff" cx="148" cy="66" r="10"/>' +
+          '<circle data-r="6" fill="#fff" cx="66" cy="126" r="8"/>' +
+          '<circle data-r="7" fill="#fff" cx="134" cy="126" r="8"/>' +
+          '<ellipse data-r="8" fill="#fff" cx="100" cy="108" rx="12" ry="44"/>' +
+          '<circle data-r="9" fill="#fff" cx="100" cy="54" r="13"/>' +
+          '<path class="deco-line" d="M94 44 Q82 26 70 24"/><path class="deco-line" d="M106 44 Q118 26 130 24"/>' +
+          '<circle class="deco-dot" cx="68" cy="22" r="3.5"/><circle class="deco-dot" cx="132" cy="22" r="3.5"/>' +
+          '<circle class="deco-dot" cx="93" cy="52" r="2.2"/><circle class="deco-dot" cx="107" cy="52" r="2.2"/>' },
+        { id:"flower", name:"وردة", emoji:"🌷", gold:false, svg:
+          '<ellipse data-r="0" fill="#fff" cx="100" cy="44" rx="15" ry="26"/>' +
+          '<ellipse data-r="1" fill="#fff" cx="100" cy="44" rx="15" ry="26" transform="rotate(60 100 72)"/>' +
+          '<ellipse data-r="2" fill="#fff" cx="100" cy="44" rx="15" ry="26" transform="rotate(120 100 72)"/>' +
+          '<ellipse data-r="3" fill="#fff" cx="100" cy="44" rx="15" ry="26" transform="rotate(180 100 72)"/>' +
+          '<ellipse data-r="4" fill="#fff" cx="100" cy="44" rx="15" ry="26" transform="rotate(240 100 72)"/>' +
+          '<ellipse data-r="5" fill="#fff" cx="100" cy="44" rx="15" ry="26" transform="rotate(300 100 72)"/>' +
+          '<circle data-r="6" fill="#fff" cx="100" cy="72" r="17"/>' +
+          '<rect data-r="7" fill="#fff" x="95" y="92" width="10" height="52" rx="5"/>' +
+          '<ellipse data-r="8" fill="#fff" cx="76" cy="120" rx="20" ry="10" transform="rotate(-24 76 120)"/>' +
+          '<ellipse data-r="9" fill="#fff" cx="124" cy="130" rx="20" ry="10" transform="rotate(24 124 130)"/>' +
+          '<rect data-r="10" fill="#fff" x="64" y="142" width="72" height="12" rx="6"/>' +
+          '<polygon data-r="11" fill="#fff" points="72,154 128,154 120,190 80,190"/>' },
+        { id:"star", name:"نجمة سعيدة", emoji:"⭐", gold:false, svg:
+          '<polygon data-r="0" fill="#fff" points="100,16 123,70 181,72 136,109 150,167 100,136 50,167 64,109 19,72 77,70"/>' +
+          '<polygon data-r="1" fill="#fff" points="163,126 168,140 183,140 171,149 175,164 163,156 151,164 155,149 143,140 158,140"/>' +
+          '<polygon data-r="2" fill="#fff" points="36,118 40,129 52,129 42,136 46,148 36,141 26,148 30,136 20,129 32,129"/>' +
+          '<circle class="deco-dot" cx="85" cy="90" r="4"/><circle class="deco-dot" cx="115" cy="90" r="4"/>' +
+          '<path class="deco-line" d="M86 106 Q100 119 114 106"/>' },
+        { id:"house", name:"بيتنا", emoji:"🏠", gold:false, svg:
+          '<rect data-r="0" fill="#fff" x="14" y="170" width="172" height="14" rx="7"/>' +
+          '<circle data-r="1" fill="#fff" cx="170" cy="32" r="15"/>' +
+          '<rect data-r="2" fill="#fff" x="124" y="48" width="13" height="30"/>' +
+          '<polygon data-r="3" fill="#fff" points="26,100 100,38 174,100"/>' +
+          '<rect data-r="4" fill="#fff" x="48" y="100" width="104" height="70"/>' +
+          '<rect data-r="5" fill="#fff" x="60" y="112" width="22" height="22" rx="3"/>' +
+          '<rect data-r="6" fill="#fff" x="118" y="112" width="22" height="22" rx="3"/>' +
+          '<path data-r="7" fill="#fff" d="M88 170 v-34 a12 12 0 0 1 24 0 v34 z"/>' +
+          '<path class="deco-line" d="M170 4 v8 M192 14 l-5 5 M148 14 l5 5"/>' +
+          '<circle class="deco-dot" cx="107" cy="153" r="2.5"/>' },
+        { id:"cat", name:"قطة", emoji:"🐱", gold:false, svg:
+          '<polygon data-r="0" fill="#fff" points="64,68 56,28 94,48"/>' +
+          '<polygon data-r="1" fill="#fff" points="136,68 144,28 106,48"/>' +
+          '<path data-r="2" fill="#fff" d="M146 186 q38 -2 40 -38 l-12 -1 q-1 25 -28 27 z"/>' +
+          '<ellipse data-r="3" fill="#fff" cx="100" cy="170" rx="54" ry="24"/>' +
+          '<circle data-r="4" fill="#fff" cx="100" cy="94" r="47"/>' +
+          '<polygon data-r="5" fill="#fff" points="66,60 62,40 85,51"/>' +
+          '<polygon data-r="6" fill="#fff" points="134,60 138,40 115,51"/>' +
+          '<polygon data-r="7" fill="#fff" points="93,102 107,102 100,110"/>' +
+          '<circle class="deco-dot" cx="82" cy="88" r="4"/><circle class="deco-dot" cx="118" cy="88" r="4"/>' +
+          '<path class="deco-line" d="M60 104 H38 M62 114 L42 122 M140 104 H162 M138 114 L158 122"/>' },
+        { id:"fish", name:"سمكة", emoji:"🐠", gold:false, svg:
+          '<path data-r="0" fill="#fff" d="M6 184 q47 -12 94 0 q47 12 94 0 v12 H6 z"/>' +
+          '<path data-r="1" fill="#fff" d="M158 196 q-9 -24 0 -46 q9 22 0 46 z"/>' +
+          '<path data-r="2" fill="#fff" d="M180 196 q-7 -18 0 -36 q7 18 0 36 z"/>' +
+          '<circle data-r="3" fill="#fff" cx="30" cy="56" r="9"/>' +
+          '<circle data-r="4" fill="#fff" cx="50" cy="32" r="6"/>' +
+          '<circle data-r="5" fill="#fff" cx="16" cy="30" r="5"/>' +
+          '<polygon data-r="6" fill="#fff" points="144,100 184,70 184,130"/>' +
+          '<ellipse data-r="7" fill="#fff" cx="94" cy="100" rx="58" ry="37"/>' +
+          '<path data-r="8" fill="#fff" d="M76 67 q15 33 0 66 q-17 -33 0 -66 z"/>' +
+          '<path data-r="9" fill="#fff" d="M108 71 q13 29 0 58 q-15 -29 0 -58 z"/>' +
+          '<polygon data-r="10" fill="#fff" points="86,66 114,66 100,48"/>' +
+          '<circle class="deco-dot" cx="64" cy="92" r="4.5"/>' +
+          '<path class="deco-line" d="M40 108 q6 5 12 0"/>' },
+        { id:"tree", name:"شجرة تفاح", emoji:"🌳", gold:false, svg:
+          '<rect data-r="0" fill="#fff" x="8" y="172" width="184" height="14" rx="7"/>' +
+          '<circle data-r="1" fill="#fff" cx="34" cy="34" r="15"/>' +
+          '<polygon data-r="2" fill="#fff" points="89,178 95,118 105,118 111,178"/>' +
+          '<circle data-r="3" fill="#fff" cx="62" cy="104" r="28"/>' +
+          '<circle data-r="4" fill="#fff" cx="138" cy="104" r="28"/>' +
+          '<circle data-r="5" fill="#fff" cx="100" cy="76" r="43"/>' +
+          '<circle data-r="6" fill="#fff" cx="80" cy="62" r="7"/>' +
+          '<circle data-r="7" fill="#fff" cx="122" cy="86" r="7"/>' +
+          '<circle data-r="8" fill="#fff" cx="96" cy="106" r="7"/>' },
+        { id:"icecream", name:"آيس كريم", emoji:"🍦", gold:false, svg:
+          '<polygon data-r="0" fill="#fff" points="64,100 136,100 100,186"/>' +
+          '<circle data-r="1" fill="#fff" cx="70" cy="78" r="24"/>' +
+          '<circle data-r="2" fill="#fff" cx="130" cy="78" r="24"/>' +
+          '<circle data-r="3" fill="#fff" cx="100" cy="66" r="28"/>' +
+          '<circle data-r="4" fill="#fff" cx="100" cy="30" r="10"/>' +
+          '<path class="deco-line" d="M100 22 q4 -10 14 -12"/>' +
+          '<path class="deco-line" d="M76 122 L112 158 M124 122 L88 158"/>' },
+        { id:"princess", name:"الأميرة", emoji:"👑", gold:true, price:40, svg:
+          '<path data-r="0" fill="#fff" d="M64 76 q-10 48 2 80 l18 0 q-8 -44 -4 -80 z"/>' +
+          '<path data-r="1" fill="#fff" d="M136 76 q10 48 -2 80 l-18 0 q8 -44 4 -80 z"/>' +
+          '<polygon data-r="2" fill="#fff" points="100,112 58,190 142,190"/>' +
+          '<path data-r="3" fill="#fff" d="M86 146 h28 l6 44 H80 z"/>' +
+          '<polygon data-r="9" fill="#fff" points="87,126 113,126 117,139 83,139"/>' +
+          '<circle data-r="4" fill="#fff" cx="100" cy="86" r="31"/>' +
+          '<polygon data-r="5" fill="#fff" points="74,36 87,54 100,30 113,54 126,36 121,64 79,64"/>' +
+          '<circle data-r="6" fill="#fff" cx="74" cy="30" r="5"/>' +
+          '<circle data-r="7" fill="#fff" cx="100" cy="24" r="5"/>' +
+          '<circle data-r="8" fill="#fff" cx="126" cy="30" r="5"/>' +
+          '<circle class="deco-dot" cx="89" cy="84" r="3.2"/><circle class="deco-dot" cx="111" cy="84" r="3.2"/>' +
+          '<path class="deco-line" d="M91 96 Q100 103 109 96"/>' },
+        { id:"castle", name:"القلعة", emoji:"🏰", gold:true, price:50, svg:
+          '<rect data-r="0" fill="#fff" x="12" y="184" width="176" height="12" rx="6"/>' +
+          '<rect data-r="1" fill="#fff" x="28" y="88" width="32" height="96"/>' +
+          '<rect data-r="2" fill="#fff" x="140" y="88" width="32" height="96"/>' +
+          '<rect data-r="3" fill="#fff" x="64" y="68" width="72" height="116"/>' +
+          '<polygon data-r="4" fill="#fff" points="22,90 44,58 66,90"/>' +
+          '<polygon data-r="5" fill="#fff" points="134,90 156,58 178,90"/>' +
+          '<polygon data-r="6" fill="#fff" points="58,70 100,32 142,70"/>' +
+          '<polygon data-r="7" fill="#fff" points="101,13 123,18.5 101,24"/>' +
+          '<path data-r="8" fill="#fff" d="M83 184 v-32 a17 17 0 0 1 34 0 v32 z"/>' +
+          '<rect data-r="9" fill="#fff" x="89" y="86" width="22" height="28" rx="10"/>' +
+          '<rect data-r="10" fill="#fff" x="36" y="106" width="16" height="24" rx="8"/>' +
+          '<rect data-r="11" fill="#fff" x="148" y="106" width="16" height="24" rx="8"/>' +
+          '<path class="deco-line" d="M100 32 V13"/>' },
+        { id:"unicorn", name:"يونيكورن", emoji:"🦄", gold:true, price:60, svg:
+          '<path data-r="0" fill="#fff" d="M40 100 q-22 12 -16 38 q3 13 14 15 q-7 -25 4 -40 z"/>' +
+          '<rect data-r="1" fill="#fff" x="50" y="136" width="13" height="38" rx="6"/>' +
+          '<rect data-r="2" fill="#fff" x="76" y="140" width="13" height="34" rx="6"/>' +
+          '<rect data-r="3" fill="#fff" x="106" y="140" width="13" height="34" rx="6"/>' +
+          '<rect data-r="4" fill="#fff" x="126" y="136" width="13" height="38" rx="6"/>' +
+          '<ellipse data-r="5" fill="#fff" cx="90" cy="116" rx="54" ry="33"/>' +
+          '<path data-r="6" fill="#fff" d="M118 38 q-22 30 -14 62 q-17 -9 -19 -36 q-2 -25 15 -34 z"/>' +
+          '<ellipse data-r="7" fill="#fff" cx="138" cy="74" rx="27" ry="20" transform="rotate(-16 138 74)"/>' +
+          '<polygon data-r="8" fill="#fff" points="120,56 110,34 132,44"/>' +
+          '<polygon data-r="9" fill="#fff" points="130,22 141,54 119,50"/>' +
+          '<circle data-r="10" fill="#fff" cx="72" cy="110" r="10"/>' +
+          '<circle class="deco-dot" cx="146" cy="70" r="3.4"/><circle class="deco-dot" cx="158" cy="82" r="2.2"/>' }
+      ];
+      function picById(id){ return DRAWINGS.find(function(p){ return p.id === id; }) || null; }
+      function picSVG(pic, work){
+        var m = pic.svg;
+        if(work){
+          Object.keys(work).forEach(function(k){
+            m = m.split('data-r="' + k + '" fill="#fff"').join('data-r="' + k + '" fill="' + work[k] + '"');
+          });
+        }
+        return '<svg class="csvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' + m + "</svg>";
+      }
+      function dailyPic(){
+        var free = DRAWINGS.filter(function(p){ return !p.gold; });
+        var n = Math.floor(Date.now() / 86400000);
+        return free[n % free.length];
+      }
+      function renderColoring(){
+        var g = currentGirl, cg = S.coloring[g];
+        $("colorTitle").textContent = "🎨 ركن التلوين — " + GIRLS[g].name + " " + GIRLS[g].emoji;
+        var dp = dailyPic();
+        $("colorDaily").innerHTML =
+          '<button class="daily-card" type="button" data-pic="' + dp.id + '">' + picSVG(dp, cg.works[dp.id]) +
+          '<span><span class="dt">🌞 رسمة اليوم: ' + dp.emoji + " " + dp.name + '</span>' +
+          '<span class="ds">رسمة جديدة كل يوم — دوسي عليها وابدئي التلوين!</span></span></button>';
+        $("colorGrid").innerHTML = DRAWINGS.map(function(p){
+          var locked = p.gold && cg.unlocked.indexOf(p.id) < 0;
+          var badge = !p.gold ? "" : locked
+            ? '<span class="pic-badge lock">🔒 افتحيها بـ ' + p.price + " ⭐</span>"
+            : '<span class="pic-badge open">✨ مفتوحة</span>';
+          var started = cg.works[p.id] && Object.keys(cg.works[p.id]).length > 0;
+          return '<button class="pic-card' + (p.gold ? " gold" : "") + '" type="button" data-pic="' + p.id + '">' +
+            picSVG(p, cg.works[p.id]) +
+            '<span class="pic-name">' + (p.gold ? "👑 " : "") + p.emoji + " " + p.name + "</span>" +
+            badge +
+            (started && !locked ? '<span class="pic-badge open">🎨 بدأتي تلوينها</span>' : "") +
+          "</button>";
+        }).join("");
+        document.querySelectorAll("[data-pic]").forEach(function(b){
+          b.addEventListener("click", function(){ openPic(b.getAttribute("data-pic")); });
+        });
+      }
+
+      var edPic = null, edColor = PALETTE[0], edEraser = false, undoStack = [];
+      function openPic(id){
+        var pic = picById(id); if(!pic) return;
+        var g = currentGirl, cg = S.coloring[g];
+        if(pic.gold && cg.unlocked.indexOf(id) < 0){
+          if(S.balances[g] < pic.price){
+            showModal("🔒", "رسمة دهبية مقفولة", "رسمة «" + esc(pic.name) + "» " + pic.emoji + " محتاجة <b>" + pic.price + " ⭐</b> عشان تتفتح، ومعاكي دلوقتي <b>" + S.balances[g] + " ⭐</b>.<br />خلصي مهام أكتر واجمعي نجوم! 🌟", "تمام");
+            return;
+          }
+          showModal("👑", "نفتح الرسمة الدهبية؟",
+            GIRLS[g].name + " هتدفع <b>" + pic.price + " ⭐</b> عشان تفتح رسمة «" + esc(pic.name) + "» " + pic.emoji + " — وهتفضل مفتوحة ليها على طول!",
+            "أيوه، افتحيها! 👑",
+            function(){
+              S.balances[g] -= pic.price;
+              cg.unlocked.push(id);
+              logEvent(todayKey(), g, "unlock", "فتحت رسمة دهبية: " + pic.name, -pic.price);
+              save(); renderAll();
+              playHappy(true); confetti(70);
+              openPic(id);
+            }, true);
+          return;
+        }
+        edPic = id; undoStack = []; edEraser = false; edColor = PALETTE[0];
+        renderEditor();
+        $("colorEditor").classList.remove("hidden");
+        $("colorEditor").scrollIntoView({ behavior:"smooth", block:"start" });
+      }
+      function closeEditor(){
+        edPic = null;
+        $("colorEditor").classList.add("hidden");
+      }
+      function renderEditor(){
+        var pic = picById(edPic); if(!pic) return;
+        var work = S.coloring[currentGirl].works[edPic] || {};
+        $("edTitle").textContent = "🎨 " + pic.emoji + " " + pic.name + " — " + GIRLS[currentGirl].name;
+        $("edStage").innerHTML = picSVG(pic, work);
+        $("edStage").querySelectorAll("[data-r]").forEach(function(el){
+          el.addEventListener("click", function(){ paintRegion(el); });
+        });
+        renderPalette();
+        $("edEraser").classList.toggle("on", edEraser);
+      }
+      function renderPalette(){
+        $("edPalette").innerHTML = PALETTE.map(function(c){
+          return '<button class="swatch' + (!edEraser && edColor === c ? " on" : "") + '" type="button" data-c="' + c + '" style="background:' + c + '" aria-label="اختيار لون"></button>';
+        }).join("");
+        $("edPalette").querySelectorAll(".swatch").forEach(function(b){
+          b.addEventListener("click", function(){
+            edColor = b.getAttribute("data-c"); edEraser = false;
+            renderPalette();
+            $("edEraser").classList.remove("on");
+          });
+        });
+      }
+      function paintRegion(el){
+        var r = el.getAttribute("data-r");
+        var cg = S.coloring[currentGirl];
+        if(!cg.works[edPic]) cg.works[edPic] = {};
+        var work = cg.works[edPic];
+        var prev = work[r] || "#FFFFFF";
+        var c = edEraser ? "#FFFFFF" : edColor;
+        if(prev === c) return;
+        undoStack.push({ r: r, prev: prev });
+        if(c === "#FFFFFF") delete work[r]; else work[r] = c;
+        el.setAttribute("fill", c);
+        save();
+      }
+      $("edUndo").addEventListener("click", function(){
+        var u = undoStack.pop(); if(!u || !edPic) return;
+        var work = S.coloring[currentGirl].works[edPic];
+        if(work){
+          if(u.prev === "#FFFFFF") delete work[u.r]; else work[u.r] = u.prev;
+        }
+        var el = $("edStage").querySelector('[data-r="' + u.r + '"]');
+        if(el) el.setAttribute("fill", u.prev);
+        save();
+      });
+      $("edEraser").addEventListener("click", function(){
+        edEraser = !edEraser;
+        $("edEraser").classList.toggle("on", edEraser);
+        renderPalette();
+      });
+      $("edReset").addEventListener("click", function(){
+        if(!edPic) return;
+        var pic = picById(edPic);
+        showModal("🗑️", "نمسح التلوين كله؟", "كل ألوان رسمة «" + esc(pic.name) + "» هتتمسح وترجع بيضاء من الأول.", "أيوه، امسح", function(){
+          S.coloring[currentGirl].works[edPic] = {};
+          undoStack = [];
+          save(); renderEditor(); renderColoring();
+        }, true);
+      });
+      $("edDone").addEventListener("click", function(){
+        closeEditor();
+        renderColoring();
+        playHappy(false);
+        toast("برافو يا فنانة! 🎨", "لوحتك اتحفظت في ركن التلوين");
+        $("colorTitle").scrollIntoView({ behavior:"smooth" });
+      });
+      $("colorBtn").addEventListener("click", function(){
+        $("colorTitle").scrollIntoView({ behavior:"smooth" });
+      });
 
       /* ================= Welcome / onboarding + install guide =================
          The welcome shows on EVERY browser open (it was hidden for a whole day
