@@ -24,9 +24,9 @@
   }
  ],
  "lang": "ar",
- "name": "Judy & Karma",
- "scope": ".",
- "short_name": "Judy & Karma",
- "start_url": ".",
+ "name": "Judy ❤️ Karma",
+ "scope": "../",
+ "short_name": "Judy ❤️ Karma",
+ "start_url": "../index.html",
  "theme_color": "#FFB800"
 }
