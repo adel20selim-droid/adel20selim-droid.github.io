@@ -526,6 +526,35 @@
       .dc-parents{ background:var(--card); border:2px solid var(--gold-dark); }
       .dc-parents .dc-go{ color:var(--gold-dark); }
       @media (max-width:380px){ .dash-grid{ grid-template-columns:1fr; } .dash-card{ min-height:0; } }
+      /* ---------- Dashboard: كلها في شاشة واحدة من غير سكرول ---------- */
+      body:has(#view-home.active){ overflow:hidden; padding-bottom:0; }
+      body:has(#view-home.active) .wrap{ height:100dvh; height:100svh; display:flex; flex-direction:column; padding:10px 12px 10px; overflow:hidden; }
+      body:has(#view-home.active) .hero h1{ font-size:1.35rem; line-height:1.2; }
+      body:has(#view-home.active) .hero .dates{ font-size:.88rem; margin-top:0; }
+      body:has(#view-home.active) .install-bar{ margin-top:8px; padding:6px 10px; font-size:.88rem; }
+      #view-home.active{ display:flex; flex-direction:column; flex:1; min-height:0; }
+      #view-home .girls{ margin-top:10px; gap:8px; flex:0 0 auto; }
+      #view-home .girl{ padding:8px 8px 7px; border-radius:18px; }
+      #view-home .girl.judy.sel, #view-home .girl.karma.sel{ padding:6px 6px 5px; border-width:3px; transform:scale(1.01); }
+      #view-home .girl .gname{ font-size:1.15rem; }
+      #view-home .girl .today-line{ font-size:.84rem; margin-top:2px; }
+      #view-home .girl .bar{ height:9px; margin-top:4px; }
+      #view-home .girl .balance{ font-size:1rem; margin-top:3px; }
+      #view-home .girl .sel-badge{ font-size:.76rem; padding:1px 10px; top:-11px; }
+      #view-home .now-strip{ margin-top:8px; padding:5px 8px; font-size:.98rem; border-width:2px; border-radius:16px; flex:0 0 auto; }
+      #view-home .praise{ margin-top:6px; padding:6px; font-size:1rem; border-radius:16px; }
+      #view-home .dash-grid{ margin-top:8px; gap:8px; flex:1; min-height:0; grid-template-rows:repeat(3,1fr); grid-template-columns:1fr 1fr; }
+      #view-home .dash-card{ min-height:0; height:100%; padding:8px 10px; border-radius:18px; gap:1px; justify-content:center; }
+      #view-home .dash-card .dc-icon{ font-size:1.05rem; }
+      #view-home .dash-card .dc-title{ font-size:1.02rem; }
+      #view-home .dash-card .dc-meta{ font-size:.8rem; line-height:1.3; }
+      #view-home .dash-card .dc-go{ font-size:.82rem; }
+      #view-home .dash-card .dc-bar{ height:7px; }
+      @media (max-height:640px){
+        #view-home .girl .today-line{ display:none; }
+        #view-home .dash-card .dc-meta{ display:none; }
+        body:has(#view-home.active) .hero h1{ font-size:1.2rem; }
+      }
       .hidden{ display:none !important; }
     </style>
   </head>
