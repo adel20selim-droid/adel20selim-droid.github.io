@@ -48,7 +48,7 @@
         margin:0; color:var(--ink); background:var(--cream);
         font-family:"Baloo Bhaijaan 2","Segoe UI",Tahoma,system-ui,sans-serif;
         min-height:100vh;
-        padding: env(safe-area-inset-top) 0 calc(28px + env(safe-area-inset-bottom));
+        padding: env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom));
       }
       button, input, select{ font-family:inherit; }
       button{ min-height:44px; }
@@ -327,22 +327,17 @@
       .mock-home .app.ours{ color:var(--ink); font-weight:800; }
       .mock-home .app.ours img{ width:46px; height:46px; border-radius:13px; border:3px solid var(--gold); display:block; margin:0 auto 3px; box-shadow:0 4px 12px rgba(255,150,0,.45); }
       .mock-safari{ background:#fff; border:2px solid var(--line); border-radius:14px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; font-size:1.15rem; color:var(--gray); }
-      /* persistent install bar inside the app */
-      .install-bar{
-        display:flex; align-items:center; gap:10px; margin-top:16px;
-        background:var(--gold-light); border:2px solid var(--gold); border-radius:var(--radius);
-        padding:10px 14px; font-weight:800; font-size:1rem; line-height:1.45;
+      /* floating install pill: small, fixed in the bottom-left corner
+         (the "end" side in this RTL layout) so it takes no layout space */
+      .install-pill-wrap{
+        position:fixed; left:16px; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:55;
       }
-      .install-bar .txt{ flex:1; }
-      .install-bar .go{
-        flex:0 0 auto; border:none; border-radius:999px; background:var(--gold); color:var(--ink);
+      .install-pill{
+        border:none; border-radius:999px; background:var(--gold); color:var(--ink);
         font-weight:800; font-size:1rem; padding:10px 18px; cursor:pointer; min-height:46px;
+        box-shadow:0 6px 18px rgba(160,110,0,.35); white-space:nowrap;
       }
-      .install-bar .go:active{ background:var(--gold-dark); }
-      .install-bar .x{
-        flex:0 0 auto; background:none; border:none; color:var(--gray); font-size:1.15rem;
-        cursor:pointer; min-height:40px; min-width:36px; font-weight:800;
-      }
+      .install-pill:active{ background:var(--gold-dark); }
       /* install readiness note under the welcome install button */
       .w-install-note{
         color:var(--gray); font-weight:700; font-size:.95rem; line-height:1.55;
@@ -629,10 +624,8 @@
         <div class="dates" id="dateLine"></div>
       </header>
 
-      <div class="install-bar hidden" id="installBar" role="status">
-        <span class="txt">📲 ثبّت التطبيق على موبايلك — هيبقى بأيقونة على الشاشة ويفتح على طول</span>
-        <button class="go" id="installBarBtn" type="button">تثبيت</button>
-        <button class="x" id="installBarClose" type="button" aria-label="إخفاء شريط التثبيت">✕</button>
+      <div class="install-pill-wrap hidden" id="installBar">
+        <button class="install-pill" id="installBarBtn" type="button">📲 تثبيت</button>
       </div>
 
       <div class="mom-strip" id="momStrip" role="status"></div>
@@ -3106,12 +3099,11 @@
         startGate(storedPinHash() ? "entry" : "setup1");
       });
 
-      /* ----- persistent install bar inside the app ----- */
-      var installBarDismissed = false;
+      /* ----- floating install pill inside the app ----- */
       function refreshInstallBar(){
         var bar = $("installBar");
         if(!bar) return;
-        var show = !isStandalone() && !welcomeNever() && !installBarDismissed &&
+        var show = !isStandalone() && !welcomeNever() &&
                    !$("welcomeOverlay").classList.contains("open");
         bar.classList.toggle("hidden", !show);
       }
@@ -3123,9 +3115,6 @@
         $("welcomeOverlay").classList.add("open");
         if(ctx === "ios") openGuide("ios"); else openGuide();
         refreshInstallBar();
-      });
-      $("installBarClose").addEventListener("click", function(){
-        installBarDismissed = true; refreshInstallBar();
       });
 
       /* ================= Backup / restore =================
