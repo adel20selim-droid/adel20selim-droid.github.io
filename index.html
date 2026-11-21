@@ -134,7 +134,7 @@
         display:flex; align-items:center; justify-content:center;
       }
       .task .mid{ flex:1; min-width:0; }
-      .task .tname{ font-size:1.2rem; font-weight:800; line-height:1.3; }
+      .task .tname{ font-size:1.05rem; font-weight:800; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:start; }
       .task .tstars{ color:var(--gold-dark); font-weight:800; font-size:.95rem; }
       .check{
         width:58px; height:58px; flex:0 0 58px; border-radius:50%;
@@ -172,7 +172,7 @@
         display:flex; align-items:center; justify-content:center;
       }
       .reward .mid{ flex:1; min-width:0; }
-      .reward .rname{ font-weight:800; font-size:1.2rem; line-height:1.3; }
+      .reward .rname{ font-weight:800; font-size:1.05rem; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:start; }
       .reward .rprice{ color:var(--gold-dark); font-weight:800; font-size:1rem; }
       .buy{
         flex:0 0 auto; height:54px; border:none; border-radius:28px; padding:0 18px;
@@ -499,7 +499,7 @@
         display:flex; align-items:center; justify-content:center;
       }
       .deduct-row .mid{ flex:1; min-width:0; }
-      .deduct-row .dname{ font-weight:800; font-size:1.2rem; line-height:1.3; }
+      .deduct-row .dname{ font-weight:800; font-size:1.05rem; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:start; }
       .deduct-row .dprice{ color:var(--red); font-weight:800; font-size:1rem; }
       .deduct-apply{
         flex:0 0 auto; height:54px; border:2px solid var(--red); border-radius:28px; padding:0 18px;
@@ -1384,7 +1384,7 @@
           var isDone = !!r.done[t.id];
           return '<div class="task' + (isDone ? " done" : "") + '">' +
             '<span class="ic">' + t.emoji + '</span>' +
-            '<div class="mid"><div class="tname">' + esc(t.name) + '</div>' +
+            '<div class="mid"><div class="tname" dir="auto">' + esc(t.name) + '</div>' +
             '<div class="tstars">⭐ ' + t.stars + '</div></div>' +
             '<button class="check" type="button" data-task="' + t.id + '" aria-label="' + (isDone ? "إلغاء إتمام " : "إتمام ") + esc(t.name) + '">✓</button>' +
           '</div>';
@@ -1402,7 +1402,7 @@
           var can = missing <= 0;
           return '<div class="reward">' +
             '<span class="ric">' + rw.emoji + '</span>' +
-            '<div class="mid"><div class="rname">' + esc(rw.name) + '</div>' +
+            '<div class="mid"><div class="rname" dir="auto">' + esc(rw.name) + '</div>' +
             '<div class="rprice">⭐ ' + rw.price + '</div></div>' +
             '<button class="buy" type="button" data-reward="' + rw.id + '"' + (can ? "" : " disabled") + '>' +
             (can ? "اشتري 🎁" : "محتاجة " + missing + " نجمة") + '</button></div>';
@@ -1423,7 +1423,7 @@
         box.innerHTML = S.deductions.map(function(d){
           return '<div class="deduct-row">' +
             '<span class="dic">' + d.emoji + '</span>' +
-            '<div class="mid"><div class="dname">' + esc(d.name) + '</div>' +
+            '<div class="mid"><div class="dname" dir="auto">' + esc(d.name) + '</div>' +
             '<div class="dprice">الخصم: ⭐ ' + d.stars + '</div></div>' +
             '<button class="deduct-apply" type="button" data-pub-ded="' + d.id + '">🔒 اخصم ⭐</button></div>';
         }).join("");
@@ -1431,7 +1431,26 @@
           b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl, true); });
         });
       }
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderSyncBanner(); }catch(e){} }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderSyncBanner(); }catch(e){} fitNames(); }
+
+      /* Names stay on ONE line: shrink the font just enough to fit the row.
+         Base size comes from CSS (1.05rem); only names that still overflow
+         get stepped down, never below 11px (then the CSS ellipsis takes over). */
+      function fitNames(){
+        document.querySelectorAll(".task .tname, .reward .rname, .deduct-row .dname").forEach(function(el){
+          el.style.fontSize = "";
+          if(!el.clientWidth) return;
+          var size = parseFloat(window.getComputedStyle(el).fontSize) || 16;
+          var guard = 0;
+          while(el.scrollWidth > el.clientWidth && size > 11 && guard < 24){
+            size -= 0.5;
+            el.style.fontSize = size + "px";
+            guard++;
+          }
+        });
+      }
+      window.addEventListener("resize", fitNames);
+      if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fitNames(); });
 
       GIRL_KEYS.forEach(function(g){
         $("card-" + g).addEventListener("click", function(){
