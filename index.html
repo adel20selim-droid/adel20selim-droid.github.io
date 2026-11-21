@@ -970,8 +970,24 @@
           </div>
           <div id="momEditors" class="hidden">
             <div class="panel">
+              <h3>⚙️ نقاط مكافآت ماما</h3>
+              <p class="guide-note">نقاط ماما بتتحسب من مهام البنات اللي خلصت في اليوم. حدّدوا الرسالة تطلع عند كام نقطة والكوبون عند كام نقطة، وكل الشاشات (البطاقة والشريط وصفحة ماما) هتمشي على الأرقام دي على طول.</p>
+              <form class="f" id="momThreshForm">
+                <div>
+                  <label for="momMsgAtInput">الرسالة تطلع عند كام نقطة؟ 💌</label>
+                  <input type="number" id="momMsgAtInput" min="1" max="500" step="1" inputmode="numeric" />
+                </div>
+                <div>
+                  <label for="momCouponAtInput">الكوبون يطلع عند كام نقطة؟ 🎁</label>
+                  <input type="number" id="momCouponAtInput" min="1" max="500" step="1" inputmode="numeric" />
+                </div>
+                <div class="mom-lock-err" id="momThreshErr"></div>
+                <button class="save-btn" type="submit">حفظ النقاط ✅</button>
+              </form>
+            </div>
+            <div class="panel">
               <h3>💌 رسايل التقدير لماما</h3>
-              <p class="guide-note">كل يوم بييجي دوره على رسالة من القايمة دي بالترتيب، وبتتفتح لماما لما مهام البنات اللي خلصت في اليوم توصل ١٠ مهام. الرسالة بتظهر في بطاقة «💐 مكافأة ماما» في الشاشة الرئيسية موقّعة «— من بابا».</p>
+              <p class="guide-note" id="momMsgNote">كل يوم بييجي دوره على رسالة من القايمة دي بالترتيب، وبتتفتح لماما لما مهام البنات اللي خلصت في اليوم توصل ١٠ مهام. الرسالة بتظهر في بطاقة «💐 مكافأة ماما» في الشاشة الرئيسية موقّعة «— من بابا».</p>
               <form class="f" id="momMsgForm">
                 <div>
                   <label for="momMsgInput" id="momMsgLabel">رسالة جديدة</label>
@@ -984,7 +1000,7 @@
             </div>
             <div class="panel">
               <h3>🎟️ كوبونات الدلع لماما</h3>
-              <p class="guide-note">كل يوم بييجي دوره على كوبون من القايمة دي بالترتيب، وبيطلع لماما لما مهام البنات اللي خلصت في اليوم توصل ٣٠ مهمة — تبعته لبابا وهو ينفذه ❤️</p>
+              <p class="guide-note" id="momCouponNote">كل يوم بييجي دوره على كوبون من القايمة دي بالترتيب، وبيطلع لماما لما مهام البنات اللي خلصت في اليوم توصل ٣٠ مهمة — تبعته لبابا وهو ينفذه ❤️</p>
               <form class="f" id="momCouponForm">
                 <div>
                   <label for="momCouponInput" id="momCouponLabel">كوبون جديد</label>
@@ -1188,11 +1204,14 @@
         return Array.isArray(a) && a.length === b.length && a.every(function(x, i){ return x === b[i]; });
       }
       function defaultMom(){
-        return { messages: DEFAULT_MOM_MESSAGES.slice(), coupons: DEFAULT_MOM_COUPONS.slice() };
+        return { messages: DEFAULT_MOM_MESSAGES.slice(), coupons: DEFAULT_MOM_COUPONS.slice(), msgAt: 10, couponAt: 30 };
       }
       /* Seed the mom pools whenever they are missing or emptied (old saves,
          old backups, old cloud copies) — every other key stays untouched —
-         and upgrade a pool still holding exactly the old defaults. */
+         and upgrade a pool still holding exactly the old defaults. The
+         unlock thresholds (`msgAt` / `couponAt`, editable in the mom tab)
+         only get their defaults when missing or invalid; a stored valid
+         value is never clobbered. */
       function ensureMom(s){
         if(!s) return s;
         if(!s.mom || typeof s.mom !== "object") s.mom = defaultMom();
@@ -1200,6 +1219,8 @@
         if(!Array.isArray(s.mom.coupons) || !s.mom.coupons.length) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
         if(sameStrList(s.mom.messages, OLD_DEFAULT_MOM_MESSAGES)) s.mom.messages = DEFAULT_MOM_MESSAGES.slice();
         if(sameStrList(s.mom.coupons, OLD_DEFAULT_MOM_COUPONS)) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
+        if(!Number.isInteger(s.mom.msgAt) || s.mom.msgAt < 1 || s.mom.msgAt > 500) s.mom.msgAt = 10;
+        if(!Number.isInteger(s.mom.couponAt) || s.mom.couponAt < 1 || s.mom.couponAt > 500) s.mom.couponAt = 30;
         return s;
       }
       var EMOJIS = ["🕌","🛏️","🪥","🎒","📚","📖","🧸","🤝","👯","🤲","🌙","🍦","🎮","🎨","🎬","🍕","🌳","🧩","⭐","🚿","👕","🧹","🍽️","✏️","🦷","🛁","🐱","🌸","🦋","🏃","🎵","🧁","🍎","📝","🧼","🌞","😤","🙊","🤥","😭","💥","✋","📱","📢"];
@@ -1684,8 +1705,9 @@
       /* ================= Mom's reward =================
          Effort = today's NET completed tasks summed over BOTH girls: the
          tasks currently marked done in today's record (unchecking deletes
-         the done entry, so the count drops on its own). At 10+ the day's
-         appreciation message unlocks; at 30+ the day's treat coupon too.
+         the done entry, so the count drops on its own). At `mom.msgAt`+
+         the day's appreciation message unlocks; at `mom.couponAt`+ the
+         day's treat coupon too (both thresholds editable in the mom tab).
          The daily pick is deterministic — (days since 2026-01-01) mod pool
          length — so every linked device shows the same message and coupon
          with no extra storage. */
@@ -1711,29 +1733,30 @@
         ensureMom(S);
         var key = todayKey();
         var x = momEffort(key);
+        var msgAt = S.mom.msgAt, couponAt = S.mom.couponAt;
         /* Top-of-screen Mom strip: same effort number as the card below. */
         var strip = $("momStrip");
         if(strip){
           var sh = '<div class="ms-title">💐 ماما</div>' +
             '<div class="ms-points">نقاط ماما النهاردة: <b>' + x + '</b></div>' +
             '<div class="ms-sub">بتزيد مع كل مهمة البنات يخلّصوها ⭐</div>';
-          if(x >= 30) sh += '<div class="ms-badge">ليها كوبون دلع النهاردة 🎁</div>';
+          if(x >= couponAt) sh += '<div class="ms-badge">ليها كوبون دلع النهاردة 🎁</div>';
           sh += '<span class="ms-chip">التفاصيل ‹</span>';
           strip.innerHTML = sh;
         }
         var html = '<div class="mom-effort">جهد ماما النهاردة: <b>' + x + '</b> مهمة خلصت 💪</div>';
-        if(x >= 10){
+        if(x >= msgAt){
           html += '<div class="mom-msg"><div class="mom-msg-text" dir="rtl">' + esc(momPick(S.mom.messages, key)) + '</div>' +
             '<div class="mom-sign">— من بابا</div></div>';
         } else {
-          html += '<div class="mom-teaser">🔒 كمّلوا مهام وافتحوا رسالة بابا لماما 💌<br />فاضل ' + (10 - x) + ' مهمة وتتفتح الرسالة</div>';
+          html += '<div class="mom-teaser">🔒 كمّلوا مهام وافتحوا رسالة بابا لماما 💌<br />فاضل ' + (msgAt - x) + ' مهمة وتتفتح الرسالة</div>';
         }
-        if(x >= 30){
+        if(x >= couponAt){
           html += '<div class="mom-coupon"><div class="mom-coupon-label">🎟️ كوبون دلع لماما</div>' +
             '<div class="mom-coupon-text" dir="rtl">' + esc(momPick(S.mom.coupons, key)) + '</div>' +
             '<div class="mom-coupon-note">ابعتي الكوبون ده لبابا وهو ينفذه ❤️</div></div>';
         } else {
-          html += '<div class="mom-next">فاضل ' + (30 - x) + ' مهمة ويطلع لماما كوبون دلع 🎟️</div>';
+          html += '<div class="mom-next">فاضل ' + (couponAt - x) + ' مهمة ويطلع لماما كوبون دلع 🎟️</div>';
         }
         html += '<button class="mom-page-btn" id="momPageBtn" type="button">💐 صفحة ماما — كل مكافآتها ومهامها</button>';
         box.innerHTML = html;
@@ -1756,29 +1779,30 @@
         ensureMom(S);
         var key = todayKey();
         var x = momEffort(key);
+        var msgAt = S.mom.msgAt, couponAt = S.mom.couponAt;
         var html = '<div class="mp-head"><div class="mp-title">💐 ماما</div>' +
           '<div class="mp-points">نقاط ماما النهاردة: <b>' + x + '</b></div>' +
           '<div class="mp-date">' + esc(fmtDateAr(key)) + '</div></div>';
 
         html += '<h2 class="mp-sec">📈 التقدم النهاردة</h2>';
-        html += momProgress(x, 10, "رسالة بابا 💌",
-          x >= 10 ? "رسالة بابا اتفتحت النهاردة 💌" : "فاضل " + (10 - x) + " وتفتح رسالة بابا");
-        html += momProgress(x, 30, "كوبون الدلع 🎟️",
-          x >= 30 ? "كوبون الدلع طلع النهاردة 🎁" : "فاضل " + (30 - x) + " ويطلع كوبون الدلع");
+        html += momProgress(x, msgAt, "رسالة بابا 💌",
+          x >= msgAt ? "رسالة بابا اتفتحت النهاردة 💌" : "فاضل " + (msgAt - x) + " وتفتح رسالة بابا");
+        html += momProgress(x, couponAt, "كوبون الدلع 🎟️",
+          x >= couponAt ? "كوبون الدلع طلع النهاردة 🎁" : "فاضل " + (couponAt - x) + " ويطلع كوبون الدلع");
 
         html += '<h2 class="mp-sec">🎁 مكافآت ماما النهاردة</h2>';
-        if(x >= 10){
+        if(x >= msgAt){
           html += '<div class="mom-msg"><div class="mom-msg-text" dir="rtl">' + esc(momPick(S.mom.messages, key)) + '</div>' +
             '<div class="mom-sign">— من بابا</div></div>';
         } else {
-          html += '<div class="mom-teaser">🔒 كمّلوا مهام وافتحوا رسالة بابا لماما 💌<br />فاضل ' + (10 - x) + ' مهمة وتتفتح الرسالة</div>';
+          html += '<div class="mom-teaser">🔒 كمّلوا مهام وافتحوا رسالة بابا لماما 💌<br />فاضل ' + (msgAt - x) + ' مهمة وتتفتح الرسالة</div>';
         }
-        if(x >= 30){
+        if(x >= couponAt){
           html += '<div class="mom-coupon"><div class="mom-coupon-label">🎟️ كوبون دلع لماما</div>' +
             '<div class="mom-coupon-text" dir="rtl">' + esc(momPick(S.mom.coupons, key)) + '</div>' +
             '<div class="mom-coupon-note">ابعتي الكوبون ده لبابا وهو ينفذه ❤️</div></div>';
         } else {
-          html += '<div class="mom-next">فاضل ' + (30 - x) + ' مهمة ويطلع لماما كوبون دلع 🎟️</div>';
+          html += '<div class="mom-next">فاضل ' + (couponAt - x) + ' مهمة ويطلع لماما كوبون دلع 🎟️</div>';
         }
 
         html += '<h2 class="mp-sec">📋 مهام النهاردة اللي عملتها البنات لماما</h2>';
@@ -1807,8 +1831,8 @@
           if(e <= 0) return;
           rows += '<div class="mp-day"><span class="mp-day-date">' + esc(fmtDateAr(k)) + '</span>' +
             '<span class="mp-day-pts">' + e + ' نقطة</span>' +
-            (e >= 10 ? '<span aria-label="رسالة">💌</span>' : "") +
-            (e >= 30 ? '<span aria-label="كوبون">🎁</span>' : "") + "</div>";
+            (e >= msgAt ? '<span aria-label="رسالة">💌</span>' : "") +
+            (e >= couponAt ? '<span aria-label="كوبون">🎁</span>' : "") + "</div>";
         });
         html += rows || '<div class="empty-note">مفيش أيام بنقاط لماما في الشهر ده لسه</div>';
         body.innerHTML = html;
@@ -2284,6 +2308,17 @@
       }
       function renderMomAdmin(){
         ensureMom(S);
+        /* Threshold editors: show the saved numbers (without clobbering a
+           field the parent is typing in right now) and keep the pool
+           notes below in sync with them. */
+        var msgAtEl = $("momMsgAtInput"), cpAtEl = $("momCouponAtInput");
+        if(msgAtEl && document.activeElement !== msgAtEl) msgAtEl.value = S.mom.msgAt;
+        if(cpAtEl && document.activeElement !== cpAtEl) cpAtEl.value = S.mom.couponAt;
+        var arNum = function(n){ return String(n).replace(/[0-9]/g, function(d){ return "٠١٢٣٤٥٦٧٨٩"[+d]; }); };
+        var mn = $("momMsgNote");
+        if(mn) mn.textContent = "كل يوم بييجي دوره على رسالة من القايمة دي بالترتيب، وبتتفتح لماما لما مهام البنات اللي خلصت في اليوم توصل " + arNum(S.mom.msgAt) + " مهام. الرسالة بتظهر في بطاقة «💐 مكافأة ماما» في الشاشة الرئيسية موقّعة «— من بابا».";
+        var cn = $("momCouponNote");
+        if(cn) cn.textContent = "كل يوم بييجي دوره على كوبون من القايمة دي بالترتيب، وبيطلع لماما لما مهام البنات اللي خلصت في اليوم توصل " + arNum(S.mom.couponAt) + " مهمة — تبعته لبابا وهو ينفذه ❤️";
         function bindDeletes(listEl, poolName, noun){
           listEl.querySelectorAll("[data-mom-del]").forEach(function(b){
             b.addEventListener("click", function(){
@@ -2562,6 +2597,22 @@
         $("momMsgInput").value = "";
         save(); renderAll();
         toast("اتضافت رسالة لماما 💌", "");
+      });
+      $("momThreshForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        var err = $("momThreshErr");
+        function fail(m){ err.textContent = m; err.classList.add("show"); }
+        err.classList.remove("show"); err.textContent = "";
+        var a = Number(normDigits($("momMsgAtInput").value).trim());
+        var b = Number(normDigits($("momCouponAtInput").value).trim());
+        if(!Number.isInteger(a) || a < 1 || a > 500){ fail("رقم الرسالة لازم يكون عدد صحيح من ١ لـ ٥٠٠"); $("momMsgAtInput").focus(); return; }
+        if(!Number.isInteger(b) || b < 1 || b > 500){ fail("رقم الكوبون لازم يكون عدد صحيح من ١ لـ ٥٠٠"); $("momCouponAtInput").focus(); return; }
+        ensureMom(S);
+        S.mom.msgAt = a;
+        S.mom.couponAt = b;
+        save(); renderAll();
+        var mp = $("momPage"); if(mp && mp.classList.contains("open")) renderMomPage();
+        toast("اتحفظت نقاط مكافآت ماما ✅", "الرسالة عند " + a + " والكوبون عند " + b);
       });
       $("momCouponForm").addEventListener("submit", function(e){
         e.preventDefault();
