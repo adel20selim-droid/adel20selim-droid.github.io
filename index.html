@@ -309,6 +309,15 @@
         flex:0 0 auto; background:none; border:none; color:var(--gray); font-size:1.15rem;
         cursor:pointer; min-height:40px; min-width:36px; font-weight:800;
       }
+      /* install readiness note under the welcome install button */
+      .w-install-note{
+        color:var(--gray); font-weight:700; font-size:.95rem; line-height:1.55;
+        margin-top:8px; min-height:1.4em;
+      }
+      .w-install-note.ready{ color:var(--green); font-weight:800; }
+      .w-install-note.warn{ color:var(--red); font-weight:800; }
+      /* pulses while the browser is actually ready to install in one tap */
+      .install-ready{ animation:hotPulse 1.2s ease infinite; }
 
       /* ---------- Parents ---------- */
       #parents{ display:none; margin-top:8px; }
@@ -503,6 +512,7 @@
           <h2>Ka ❤️ Ju</h2>
           <p class="wsub">أهلاً بيكم! ⭐<br />مهام يومية ونجوم ومكافآت ومفاجآت لـ كارما وجودي.<br />ثبّتوا التطبيق على الموبايل عشان يبقى بأيقونة على الشاشة ويفتح على طول زي أي تطبيق — أو كمّلوا في المتصفح.</p>
           <button class="btn-gold wbtn" id="wInstall" type="button">📲 ثبّت التطبيق على موبايلك</button>
+          <div class="w-install-note" id="wInstallNote" role="status"></div>
           <button class="btn-soft wbtn" id="wGuideBtn" type="button">❓ إزاي أثبّته؟ خطوة بخطوة</button>
           <button class="btn-soft wbtn" id="wGuideIOS" type="button">🍎 اختصار للآيفون؟ الطريقة من سفاري</button>
           <button class="btn-soft wbtn" id="wBrowser" type="button">🌐 فتح في المتصفح</button>
@@ -2426,6 +2436,7 @@
       window.addEventListener("beforeinstallprompt", function(e){
         e.preventDefault();
         deferredPrompt = e;
+        refreshInstallUI();
       });
       function isStandalone(){
         return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
@@ -2433,7 +2444,54 @@
       function welcomeNever(){ try{ return localStorage.getItem(WELCOME_KEY) === "never"; }catch(e){ return false; } }
       function setWelcomeNever(){ try{ localStorage.setItem(WELCOME_KEY, "never"); }catch(e){} }
       function hideWelcome(){ $("welcomeOverlay").classList.remove("open"); refreshInstallBar(); }
-      window.addEventListener("appinstalled", function(){ setWelcomeNever(); hideWelcome(); });
+      window.addEventListener("appinstalled", function(){
+        deferredPrompt = null;
+        setWelcomeNever(); hideWelcome(); refreshInstallUI();
+        toast("🎉 اتثبّت التطبيق!", "هتلاقوه بأيقونة النجمة الذهبية على الشاشة الرئيسية");
+      });
+
+      /* Where is the page open right now? A real one-tap install only exists
+         when the browser itself offers it (Chrome/Edge/Samsung Internet on
+         the live site). Inside another app's built-in browser (Muse,
+         WhatsApp, Facebook…) the browser never offers it, and on iPhone
+         Apple only allows the Safari Share route — so the install button
+         must say/do the right thing per case instead of looking broken. */
+      function installContext(){
+        if(detectPlatform() === "ios") return "ios";
+        var ua = navigator.userAgent || "";
+        if(/; wv\)/.test(ua)) return "inapp";
+        if(/FBAN|FBAV|Instagram|Line\/|Snapchat|Twitter/i.test(ua)) return "inapp";
+        if(detectPlatform() === "android" && !/Chrome\/|EdgA|OPR\/|SamsungBrowser/.test(ua)) return "inapp";
+        return "browser";
+      }
+      function refreshInstallUI(){
+        var note = $("wInstallNote");
+        var ready = !!deferredPrompt && !isStandalone();
+        $("wInstall").classList.toggle("install-ready", ready);
+        $("installBarBtn").classList.toggle("install-ready", ready);
+        if(!note) return;
+        note.className = "w-install-note";
+        if(isStandalone()){ note.textContent = ""; return; }
+        if(ready){
+          note.classList.add("ready");
+          note.textContent = "جاهز للتثبيت ✅ — دوسوا الزر وهيظهر تأكيد التثبيت على طول، اختاروا «تثبيت» مش «اختصار»";
+          return;
+        }
+        var ctx = installContext();
+        if(ctx === "ios"){
+          note.textContent = "على الآيفون مفيش تثبيت بزر واحد — دوسوا الزر وهنوريكم الطريقة من زر المشاركة في سفاري ⬆️";
+        } else if(ctx === "inapp"){
+          note.classList.add("warn");
+          note.textContent = "⚠️ الصفحة مفتوحة جوه تطبيق تاني، والتثبيت مش بيشتغل من هنا — دوسوا الزر وهنقولكم تفتحوه في كروم إزاي";
+        } else {
+          note.textContent = "دوسوا الزر: لو المتصفح جاهز هيظهر تأكيد التثبيت على طول، ولو لسه مش جاهز هنوريكم الطريقة من قائمة المتصفح ⋮";
+        }
+      }
+      function showInAppInstallHelp(){
+        showModal("🌐", "افتحوا الرابط في كروم الأول",
+          "التثبيت بيشتغل من متصفح كروم نفسه بس، والصفحة دلوقتي مفتوحة جوه تطبيق تاني فزر التثبيت مش هيلاقي اللي يثبّته.<br /><br />١- انسخوا رابط التطبيق.<br />٢- افتحوا تطبيق كروم من شاشة الموبايل.<br />٣- الصقوا الرابط فوق ودوسوا انتقال.<br />٤- دوسوا «ثبّت التطبيق على موبايلك» هناك — هيظهر تأكيد التثبيت على طول، اختاروا «تثبيت» مش «اختصار».",
+          "تمام");
+      }
 
       /* ----- CSS mocks: little pictures of where to tap ----- */
       function mockBarAndroid(){
@@ -2498,8 +2556,9 @@
           return [
             { visual: mockBarAndroid(), text: "اضغطوا قائمة النقط ⋮ اللي فوق في كروم" },
             { visual: mockMenuAndroid(), text: "من القائمة اختاروا «تثبيت التطبيق»",
-              note: "لو مش لاقيين «تثبيت التطبيق»، اختاروا «إضافة إلى الشاشة الرئيسية» — نفس النتيجة ⭐" },
-            { visual: mockDialog("تثبيت"), text: "اضغطوا «تثبيت» — وخلاص!" },
+              note: "«تثبيت التطبيق» هو التثبيت الحقيقي وبيفتح بضغطة واحدة ⭐ أما «إضافة إلى الشاشة الرئيسية» فده اختصار متصفح بس — اختاروه لو «تثبيت التطبيق» مش ظاهرة خالص" },
+            { visual: mockDialog("تثبيت"), text: "اضغطوا «تثبيت» — وخلاص!",
+              note: "لو الشاشة عرضت اختيارين «تثبيت» و«اختصار»، اختاروا «تثبيت» — ولو التثبيت علّق، اقفلوا الشاشة وجرّبوا وانتوا على واي فاي واستنّوا دقيقة" },
             { visual: mockHome(), text: "🎉 اتثبّت! هتلاقوا أيقونة النجمة الذهبية «Ka ❤️ Ju» على الشاشة، وكل مرة تدوسوا عليها التطبيق يفتح على طول من غير متصفح" }
           ];
         }
@@ -2566,18 +2625,31 @@
       function tryNativeInstall(){
         if(!deferredPrompt) return false;
         var dp = deferredPrompt; deferredPrompt = null;
+        refreshInstallUI();
         /* the install event's own method — opens the browser's native install
            UI (not a window dialog); bracket access keeps it distinct from the
            blocked alert/confirm/prompt window APIs */
         dp["prompt"]();
         dp.userChoice.then(function(choice){
-          if(choice && choice.outcome === "accepted"){ setWelcomeNever(); hideWelcome(); }
-          else openGuide();
+          if(choice && choice.outcome === "accepted"){
+            setWelcomeNever(); hideWelcome();
+            toast("🎉 بيتم التثبيت...", "ثواني وهتلاقوا الأيقونة على الشاشة الرئيسية");
+          } else {
+            /* dismissed — the browser won't offer the one-tap prompt again
+               this visit, so fall back to the exact ⋮ menu steps */
+            toast("اتلغى التثبيت", "تقدروا تثبّتوا من قائمة كروم زي الخطوات دي");
+            openGuide();
+          }
+          refreshInstallUI();
         }).catch(function(){ openGuide(); });
         return true;
       }
       $("wInstall").addEventListener("click", function(){
-        if(!tryNativeInstall()) openGuide();
+        if(tryNativeInstall()) return;
+        var ctx = installContext();
+        if(ctx === "ios"){ openGuide("ios"); return; }
+        if(ctx === "inapp"){ showInAppInstallHelp(); return; }
+        openGuide();
       });
       $("wBrowser").addEventListener("click", hideWelcome);
       $("wNever").addEventListener("click", function(){ setWelcomeNever(); hideWelcome(); });
@@ -2604,12 +2676,13 @@
         bar.classList.toggle("hidden", !show);
       }
       $("installBarBtn").addEventListener("click", function(){
-        if(!tryNativeInstall()){
-          closeGuide();
-          $("welcomeOverlay").classList.add("open");
-          openGuide();
-          refreshInstallBar();
-        }
+        if(tryNativeInstall()) return;
+        var ctx = installContext();
+        if(ctx === "inapp"){ showInAppInstallHelp(); return; }
+        closeGuide();
+        $("welcomeOverlay").classList.add("open");
+        if(ctx === "ios") openGuide("ios"); else openGuide();
+        refreshInstallBar();
       });
       $("installBarClose").addEventListener("click", function(){
         installBarDismissed = true; refreshInstallBar();
@@ -2984,6 +3057,21 @@
       });
 
       /* ================= Init ================= */
+      /* Service worker: it sits next to this page on the live site, and
+         registering it is part of what makes Chrome offer a REAL install
+         (beforeinstallprompt) instead of just a browser shortcut. Guarded
+         twice — the file must exist AND come back as JavaScript — so
+         preview copies without it skip this silently. */
+      if("serviceWorker" in navigator){
+        try{
+          fetch("sw.js", { method:"HEAD" }).then(function(r){
+            var ct = r.headers.get("content-type") || "";
+            if(r.ok && /javascript|ecmascript/.test(ct)){
+              navigator.serviceWorker.register("sw.js").catch(function(){});
+            }
+          }).catch(function(){});
+        }catch(e){}
+      }
       syncCfg = syncLoadCfg();
       renderSyncPanel();
       if(syncCfg){
@@ -3001,6 +3089,7 @@
       }
       refreshSetupPinBtn();
       refreshInstallBar();
+      refreshInstallUI();
     </script>
-  <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script></body>
+  </body>
 </html>
