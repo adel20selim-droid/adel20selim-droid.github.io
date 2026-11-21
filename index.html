@@ -355,8 +355,9 @@
       .install-ready{ animation:hotPulse 1.2s ease infinite; }
       /* ---------- Home-screen Mom strip ----------
          Sits at the top of the main screen, above the girl cards: Mom's
-         name and her TODAY points (the same effort number the «مكافأة
-         ماما» card below computes — see renderMom). */
+         name and her points — the live sum of the girls' card numbers
+         (the same number the «مكافأة ماما» card below shows — see
+         renderMom). */
       .mom-strip{
         margin-top:12px; border-radius:var(--radius); padding:12px 16px;
         text-align:center; background:var(--rose-light);
@@ -562,6 +563,8 @@
       }
       .mom-effort{ text-align:center; font-weight:800; font-size:1.12rem; }
       .mom-effort b{ color:var(--rose-dark); font-size:1.35rem; }
+      .mom-breakdown{ text-align:center; color:var(--gray); font-weight:700; margin-top:2px; }
+      .mp-breakdown{ color:var(--gray); font-weight:700; margin-top:2px; font-size:1.05rem; }
       .mom-teaser{
         margin-top:10px; text-align:center; color:var(--gray); font-weight:700; line-height:1.65;
         background:var(--card-soft); border:2px dashed var(--line); border-radius:16px; padding:12px;
@@ -603,9 +606,10 @@
 
       /* ---------- Mama's own page ----------
          Full-screen view opened from the top «💐 ماما» strip (or the card's
-         «صفحة ماما» button): her points, progress, today's rewards, the
-         tasks the girls finished for her, and this month's days. Rendered
-         fresh on every open by renderMomPage — nothing extra is stored. */
+         «صفحة ماما» button): her points and their breakdown, the tier
+         ladder, her revealed rewards, and the tasks the girls finished
+         for her. Rendered fresh on every open by renderMomPage — nothing
+         extra is stored. */
       .mom-page{
         position:fixed; inset:0; z-index:58; display:none; overflow-y:auto;
         background:var(--cream);
@@ -995,7 +999,7 @@
           <div id="momEditors" class="hidden">
             <div class="panel">
               <h3>🎁 باقات مكافآت ماما</h3>
-              <p class="guide-note">نقاط ماما بتتحسب كل يوم لوحدها: نجوم كارما + نجوم جودي اللي كسبوها في اليوم ده. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁 أو كوبون مخصوص 💰 بنص ثابت زي «كوبون ٢٠ ريال»)، وماما بتاخد أعلى باقة وصلت لها أو عدّتها في اليوم — وبين باقتين بتاخد الأقل. محتوى مكافآت الرسايل والكوبونات مفاجأة: بيظهر لها بس لما توصل للباقة، وهي شايفة أرقام الباقات وأنواعها — وقيمة الكوبون المخصوص بس — بس.</p>
+              <p class="guide-note">نقاط ماما هي مجموع الرقمين اللي على كروت البنات: رصيد كارما + رصيد جودي الحاليين — كل ما أرقام البنات تزيد نقاطها تزيد معاهم. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁 أو كوبون مخصوص 💰 بنص ثابت زي «كوبون ٢٠ ريال»)، وماما بتاخد أعلى باقة وصلت لها أو عدّتها — وبين باقتين بتاخد الأقل. محتوى مكافآت الرسايل والكوبونات مفاجأة: بيظهر لها بس لما توصل للباقة أول مرة، وهي شايفة أرقام الباقات وأنواعها — وقيمة الكوبون المخصوص بس — بس.</p>
               <form class="f" id="momTierForm">
                 <div>
                   <label for="momTierPointsInput" id="momTierLabel">باقة جديدة — عدد النقاط</label>
@@ -1021,7 +1025,7 @@
             </div>
             <div class="panel">
               <h3>💌 رسايل التقدير لماما</h3>
-              <p class="guide-note" id="momMsgNote">الرسايل دي محتوى باقات الرسائل 💌 — مفاجأة لماما: لما نقاطها في يوم توصل لباقة رسالة، تفتح التطبيق تلاقي رسالة من القايمة دي في وشها موقّعة «— من بابا» — من غير ما تعرف إنها جاية ولا الرسالة هتكون إيه 💌</p>
+              <p class="guide-note" id="momMsgNote">الرسايل دي محتوى باقات الرسائل 💌 — مفاجأة لماما: لما نقاطها توصل لباقة رسالة أول مرة، تفتح التطبيق تلاقي رسالة من القايمة دي في وشها موقّعة «— من بابا» — من غير ما تعرف إنها جاية ولا الرسالة هتكون إيه 💌</p>
               <form class="f" id="momMsgForm">
                 <div>
                   <label for="momMsgInput" id="momMsgLabel">رسالة جديدة</label>
@@ -1034,7 +1038,7 @@
             </div>
             <div class="panel">
               <h3>🎟️ كوبونات الدلع لماما</h3>
-              <p class="guide-note" id="momCouponNote">الكوبونات دي محتوى باقات الكوبونات 🎁 — مفاجأة لماما: لما نقاطها في يوم توصل لباقة كوبون، بيظهر لها كوبون من القايمة دي فجأة، تبعته لبابا وهو ينفذه ❤️</p>
+              <p class="guide-note" id="momCouponNote">الكوبونات دي محتوى باقات الكوبونات 🎁 — مفاجأة لماما: لما نقاطها توصل لباقة كوبون أول مرة، بيظهر لها كوبون من القايمة دي فجأة، تبعته لبابا وهو ينفذه ❤️</p>
               <form class="f" id="momCouponForm">
                 <div>
                   <label for="momCouponInput" id="momCouponLabel">كوبون جديد</label>
@@ -1131,9 +1135,10 @@
       </div>
     </div>
 
-    <!-- Mama's own page: her points, rewards, the girls' tasks for her, and
-         this month's days. Opened from the top «💐 ماما» strip or the
-         «صفحة ماما» button on the «مكافأة ماما» card; filled fresh by
+    <!-- Mama's own page: her points (the sum of the girls' card numbers),
+         her tier ladder and revealed rewards, and the girls' tasks for
+         her. Opened from the top «💐 ماما» strip or the «صفحة ماما»
+         button on the «مكافأة ماما» card; filled fresh by
          renderMomPage() on every open. -->
     <div class="mom-page" id="momPage" role="dialog" aria-label="صفحة ماما">
       <div class="mom-page-inner">
@@ -1143,14 +1148,14 @@
     </div>
 
     <!-- Mama's surprise reward: pops up full-screen on the main screen
-         when today's points reach a tier she has not been shown yet — the
-         content is a surprise until this moment. Shown by
+         when her points cross into a tier this device has not shown her
+         yet — the content is a surprise until this moment. Shown by
          checkMomSurprise(); closing it records the tier as revealed in
          this device's local tierSeen store. -->
-    <div class="overlay mom-surprise" id="momSurprise" role="dialog" aria-label="مكافأة ماما النهاردة">
+    <div class="overlay mom-surprise" id="momSurprise" role="dialog" aria-label="مكافأة ماما">
       <div class="modal">
         <div class="big-emoji" id="momSurpriseEmoji">🎁</div>
-        <h2>🎁 مكافأة ماما النهاردة</h2>
+        <h2>🎁 مكافأة ماما</h2>
         <div id="momSurpriseBody"></div>
         <button class="cta" id="momSurpriseClose" type="button">❤️</button>
       </div>
@@ -1175,21 +1180,25 @@
       /* Mama's tier-reveal state: LOCAL to this device only. It lives under
          its own key, outside the state object — never synced, never in KAJU1
          backups, and deliberately untouched by the fresh-start wipe above
-         and by clear-all. Each device remembers independently which of
-         today's tiers it has already revealed ({date, idx}), so the
-         surprise popup fires once per tier per day on EVERY device: if
-         Baba opens the app on his phone first and sees/closes the popup,
-         Mama's phone still shows it on her next open. */
+         and by clear-all. It holds just {idx}: the highest tier index this
+         device has already revealed, PERSISTENT (no date) — a tier is
+         revealed once per device, ever, so the surprise popup fires only
+         when the current tier index passes the stored one, and a points
+         drop followed by a re-crossing never re-fires it. Each device
+         tracks its own reveals: if Baba opens the app on his phone first
+         and sees/closes the popup, Mama's phone still shows it on her
+         next open. An old {date, idx} value (from the daily model) is
+         read for its idx only. */
       var TIER_SEEN_KEY = "njwm-jwdy-wkrm-tierseen";
       function localTierSeen(){
         try{
           var ts = JSON.parse(localStorage.getItem(TIER_SEEN_KEY) || "null");
-          if(ts && typeof ts === "object" && typeof ts.date === "string" && Number.isInteger(ts.idx)) return ts;
+          if(ts && typeof ts === "object" && Number.isInteger(ts.idx)) return ts;
         }catch(e){}
         return null;
       }
-      function setLocalTierSeen(date, idx){
-        try{ localStorage.setItem(TIER_SEEN_KEY, JSON.stringify({ date: date, idx: idx })); }catch(e){}
+      function setLocalTierSeen(idx){
+        try{ localStorage.setItem(TIER_SEEN_KEY, JSON.stringify({ idx: idx })); }catch(e){}
       }
       var GIRLS = {
         karma: { name: "كارما", emoji: "🦋" },
@@ -1215,34 +1224,33 @@
         ["اتخانقت مع أختي","😤",2],["ما سمعتش كلام ماما أو بابا","🔇",2],["كدبت","🤥",3],
         ["لعبت بالموبايل من غير إذن","📱",3],["عليت صوتي أو صرخت","📢",1],["سبت أوضتي مش مترتبة","🧺",1]
       ];
-      /* Mom's reward — DAILY TIERS (باقات). Mama's points for a date are
-         the STARS both girls earned that date: the sum of the stored
-         per-completion star values in the day's done records (see
-         mamaPoints) — raw completion stars only, never twin/full-day
-         bonuses, deductions or purchases, and never balances. `mom.tiers`
-         is a list of {points, type} ("message" 💌 / "coupon" 🎁 /
-         "fixed" 💰) sorted ascending; a "fixed" tier carries an extra
-         `text` — its reward is exactly that text (a specific cash
-         coupon), with no pool pick. A day earns the HIGHEST tier whose
-         points are ≤ that day's points (floor rule), or no tier below
-         the lowest one. The reward CONTENT is always a surprise: for
-         message/coupon tiers it is picked deterministically from the
-         tier type's pool by (daysSince2026-01-01 + tierIndex)
-         mod pool.length, and revealed only by the full-screen popup;
-         the highest tier index already revealed for its date is
-         remembered per-device in the local tierSeen store (see
-         TIER_SEEN_KEY), never in the synced state. The pools and tiers
-         live in the synced state under
-         `mom`; points are always derived from the days records, so no
-         points counter is ever stored. */
+      /* Mom's reward — TIERS (باقات). Mama's points are the SUM OF THE
+         GIRLS' CARD NUMBERS: mamaPoints = balances.karma + balances.judy
+         (the same reconciled balances shown on the girl cards) — a live
+         sum, not daily and not completion-only, so as the girls' numbers
+         grow her points grow with them. `mom.tiers` is a list of
+         {points, type} ("message" 💌 / "coupon" 🎁 / "fixed" 💰) sorted
+         ascending; a "fixed" tier carries an extra `text` — its reward
+         is exactly that text (a specific cash coupon), with no pool
+         pick. She earns the HIGHEST tier whose points are ≤ her points
+         (floor rule), or no tier below the lowest one. The reward
+         CONTENT is always a surprise: for message/coupon tiers it is
+         picked deterministically from the tier type's pool by
+         tierIndex mod pool.length (each tier is revealed once ever, so
+         one pick per tier, identical on all devices), and revealed only
+         by the full-screen popup; the highest tier index already
+         revealed is remembered per-device in the local tierSeen store
+         (see TIER_SEEN_KEY), never in the synced state. The pools and
+         tiers live in the synced state under `mom`; points are always
+         derived from the balances, so no points counter is ever stored. */
       var DEFAULT_MOM_TIERS = [
-        { points: 20, type: "message" },
-        { points: 35, type: "coupon" },
-        { points: 50, type: "fixed", text: "كوبون 10 ريال دلع — اختاري اللي نفسك فيه 🎁" },
-        { points: 65, type: "fixed", text: "كوبون 20 ريال دلع — اختاري اللي نفسك فيه 🎁" },
-        { points: 80, type: "fixed", text: "كوبون 30 ريال دلع — يومك النهاردة 🎁" },
-        { points: 90, type: "fixed", text: "كوبون 40 ريال دلع — يومك النهاردة 🎁" },
-        { points: 100, type: "fixed", text: "كوبون 50 ريال دلع — يوم كامل عظمة 🎁" }
+        { points: 50, type: "message" },
+        { points: 100, type: "coupon" },
+        { points: 150, type: "fixed", text: "كوبون 10 ريال دلع — اختاري اللي نفسك فيه 🎁" },
+        { points: 250, type: "fixed", text: "كوبون 20 ريال دلع — اختاري اللي نفسك فيه 🎁" },
+        { points: 400, type: "fixed", text: "كوبون 30 ريال دلع — يومك النهاردة 🎁" },
+        { points: 600, type: "fixed", text: "كوبون 40 ريال دلع — يومك النهاردة 🎁" },
+        { points: 850, type: "fixed", text: "كوبون 50 ريال دلع — يوم كامل عظمة 🎁" }
       ];
       var DEFAULT_MOM_MESSAGES = [
         "شكرًا يا بطلة… كل نجمة للبنات وراها تعبك ❤️",
@@ -1375,7 +1383,7 @@
          Coupons are flattened back to plain strings (any stored price is
          dropped). `tiers` is validated and sorted; an empty result seeds
          the default tiers. `tierSeen` (the highest tier index already
-         revealed for its date) used to live in the synced state; it is
+         revealed on a device) used to live in the synced state; it is
          now per-device (see TIER_SEEN_KEY) and is always deleted from
          state here, so it never reaches storage, sync or backups. The
          previous model's keys — the surprise interval, the coupon
@@ -1878,19 +1886,17 @@
           b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl, true); });
         });
       }
-      /* ================= Mom's reward — daily tiers =================
-         Mama's points for a date = the STARS both girls earned that date:
-         the sum, over both girls, of the stored per-completion star
-         values in the day's done records (the same values the uncheck
-         logic subtracts — unchecking deletes the done entry, so its
-         stars drop out on their own). Raw completion stars ONLY: twin
-         bonuses, full-day bonuses, surprise stars, deductions and reward
-         purchases never count, and no balance is ever used. A day's tier
-         is the HIGHEST tier whose points are ≤ that day's points (floor
-         rule); below the lowest tier there is no reward that day. The
-         reward content is a surprise, picked deterministically from the
-         tier type's pool: (daysSince2026-01-01 + tierIndex) mod pool —
-         so every linked device reveals the same content. */
+      /* ================= Mom's reward — tiers =================
+         Mama's points = the SUM OF THE GIRLS' CARD NUMBERS: the two
+         current star balances (the same reconciled balances renderGirls
+         shows on the cards). Not daily, not completion-only — the sum
+         is live, so her points grow as the girls' numbers grow, and the
+         ladder is judged on this sum. Her tier is the HIGHEST tier
+         whose points are ≤ the sum (floor rule); below the lowest tier
+         there is no reward. The reward content is a surprise, picked
+         deterministically from the tier type's pool: tierIndex mod
+         pool — each tier is revealed once ever, so one pick per tier
+         and every linked device reveals the same content. */
       function girlStarsOn(key, girl){
         var day = S.days[key]; if(!day) return 0;
         var r = day[girl]; if(!r || !r.done) return 0;
@@ -1903,8 +1909,8 @@
         });
         return n;
       }
-      function mamaPoints(key){
-        return girlStarsOn(key, "karma") + girlStarsOn(key, "judy");
+      function mamaPoints(){
+        return (S.balances.karma || 0) + (S.balances.judy || 0);
       }
       function momTierIcon(type){ return type === "message" ? "💌" : type === "fixed" ? "💰" : "🎁"; }
       /* Ladder label for one tier: points + icon everywhere, plus the
@@ -1921,15 +1927,11 @@
         S.mom.tiers.forEach(function(t, i){ if(points >= t.points) idx = i; });
         return idx;
       }
-      function momTierIndex(key){ return momTierIndexForPoints(mamaPoints(key)); }
-      function daysSince2026(key){
-        var p = key.split("-");
-        return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - Date.UTC(2026, 0, 1)) / 86400000);
-      }
-      /* The surprise content for a date's tier, or null when there is no
-         tier or the tier type's pool is empty. Never rendered anywhere
+      function momTierIndex(){ return momTierIndexForPoints(mamaPoints()); }
+      /* The surprise content for a tier, or null when there is no tier
+         or the tier type's pool is empty. Never rendered anywhere
          except the reveal popup and, after revealing, Mama's page. */
-      function momContentFor(key, tierIdx){
+      function momContentFor(tierIdx){
         ensureMom(S);
         if(tierIdx == null || tierIdx < 0) return null;
         var tier = S.mom.tiers[tierIdx]; if(!tier) return null;
@@ -1937,16 +1939,18 @@
         if(tier.type === "fixed") return tier.text ? { type: "fixed", text: tier.text } : null;
         var pool = tier.type === "message" ? S.mom.messages : S.mom.coupons;
         if(!pool || !pool.length) return null;
-        var i = ((daysSince2026(key) + tierIdx) % pool.length + pool.length) % pool.length;
+        /* One deterministic pick per tier: tierIndex mod pool.length. */
+        var i = ((tierIdx % pool.length) + pool.length) % pool.length;
         return { type: tier.type, text: pool[i] };
       }
-      /* The highest tier index already revealed to her for a date, read
-         from THIS device's local tierSeen store: it only counts when its
-         date matches; anything else is -1. Each device tracks its own
+      /* The highest tier index already revealed to her ON THIS DEVICE,
+         read from the local tierSeen store — persistent, with no date:
+         a stored {idx} (or an old {date, idx}, read for its idx) is the
+         marker; anything else is -1. Each device tracks its own
          reveals, so one phone revealing a tier never consumes another's. */
-      function momRevealedIdx(key){
+      function momRevealedIdx(){
         var ts = localTierSeen();
-        return (ts && ts.date === key) ? ts.idx : -1;
+        return ts ? ts.idx : -1;
       }
       /* Shared rendering for a revealed reward's content: a message is
          shown signed by Baba; a coupon is a ticket she sends to Baba. */
@@ -1962,28 +1966,32 @@
       function renderMom(){
         var box = $("momCard"); if(!box) return;
         ensureMom(S);
-        var key = todayKey();
-        var x = mamaPoints(key);
+        var x = mamaPoints();
         var idx = momTierIndexForPoints(x);
-        /* Top-of-screen Mom strip: today's points (stars-based) and,
-           when a tier is reached, a small badge naming only its type —
-           never the content. */
+        var breakdown = 'كارما ' + (S.balances.karma || 0) + ' + جودي ' + (S.balances.judy || 0);
+        /* Top-of-screen Mom strip: her points (the live sum of the
+           girls' card numbers) with its breakdown and, when a tier is
+           reached, a small badge naming only its type — never the
+           content. */
         var strip = $("momStrip");
         if(strip){
           var sh = '<div class="ms-title">💐 ماما</div>' +
-            '<div class="ms-points">نقاط ماما النهاردة: <b>' + x + '</b></div>';
-          if(idx >= 0) sh += '<div class="ms-badge">' + momTierIcon(S.mom.tiers[idx].type) + (S.mom.tiers[idx].type === "fixed" ? " " + esc(momFixedLabel(S.mom.tiers[idx].text)) : "") + ' باقة النهاردة</div>';
+            '<div class="ms-points">نقاط ماما: <b>' + x + '</b></div>' +
+            '<div class="ms-sub">' + breakdown + '</div>';
+          if(idx >= 0) sh += '<div class="ms-badge">' + momTierIcon(S.mom.tiers[idx].type) + (S.mom.tiers[idx].type === "fixed" ? " " + esc(momFixedLabel(S.mom.tiers[idx].text)) : "") + '</div>';
           sh += '<span class="ms-chip">التفاصيل ‹</span>';
           strip.innerHTML = sh;
         }
-        var html = '<div class="mom-effort">نقاط ماما النهاردة: <b>' + x + '</b> ⭐</div>';
+        var html = '<div class="mom-effort">نقاط ماما: <b>' + x + '</b> ⭐</div>';
+        html += '<div class="mom-breakdown">' + breakdown + '</div>';
         html += '<div class="mom-chips">' + S.mom.tiers.map(function(t, i){
           return '<span class="mom-chip' + (i === idx ? " on" : "") + '">' + esc(momTierChipText(t)) + '</span>';
         }).join("") + '</div>';
-        if(idx >= 0){
-          html += '<div class="mom-next">مكافأة النهاردة جاهزة… مفاجأة 🎁</div>';
-        } else if(S.mom.tiers.length){
-          html += '<div class="mom-next">فاضل ' + (S.mom.tiers[0].points - x) + ' نقطة وتوصل لأول باقة</div>';
+        var next = S.mom.tiers[idx + 1];
+        if(next){
+          html += '<div class="mom-next">فاضل ' + (next.points - x) + ' نقطة وتوصل لباقة ' + esc(momTierChipText(next)) + '</div>';
+        } else if(idx >= 0){
+          html += '<div class="mom-next">وصلتي لأعلى باقة 🏆</div>';
         }
         html += '<button class="mom-page-btn" id="momPageBtn" type="button">💐 صفحة ماما — كل مكافآتها ومهامها</button>';
         box.innerHTML = html;
@@ -1992,23 +2000,25 @@
       }
       /* ================= Mama's own page =================
          Everything on her page is derived on open from the same state the
-         strip and card already read — the days records (via mamaPoints)
-         and the `mom` tiers/pools. Reward CONTENTS appear here only for
-         tiers already revealed to her today (the local tierSeen); an
-         unrevealed reached tier shows only a "waiting on the main
-         screen" note, never its content. */
+         strip and card already read — the balances (via mamaPoints) and
+         the `mom` tiers/pools. Reward CONTENTS appear here only for
+         tiers already revealed to her on this device (the local
+         tierSeen marker, no date scoping); an unrevealed reached tier
+         shows only a "waiting on the main screen" note, never its
+         content. */
       function renderMomPage(){
         var body = $("momPageBody"); if(!body) return;
         ensureMom(S);
         var key = todayKey();
-        var x = mamaPoints(key);
+        var x = mamaPoints();
         var idx = momTierIndexForPoints(x);
-        var revealed = momRevealedIdx(key);
+        var revealed = momRevealedIdx();
         var html = '<div class="mp-head"><div class="mp-title">💐 ماما</div>' +
-          '<div class="mp-points">نقاط ماما النهاردة: <b>' + x + '</b> ⭐</div>' +
+          '<div class="mp-points">نقاط ماما: <b>' + x + '</b> ⭐</div>' +
+          '<div class="mp-breakdown">كارما ' + (S.balances.karma || 0) + ' + جودي ' + (S.balances.judy || 0) + '</div>' +
           '<div class="mp-date">' + esc(fmtDateAr(key)) + '</div></div>';
 
-        html += '<h2 class="mp-sec">🎁 باقات النهاردة</h2>';
+        html += '<h2 class="mp-sec">🎁 الباقات</h2>';
         html += S.mom.tiers.map(function(t, i){
           var reached = i <= idx;
           return '<div class="mp-day"><span class="mp-day-date">' + momTierIcon(t.type) + ' باقة ' + t.points + ' نقطة' + (t.type === "fixed" ? ' — ' + esc(momFixedLabel(t.text)) : '') + '</span>' +
@@ -2018,16 +2028,16 @@
             '</div>';
         }).join("");
 
-        html += '<h2 class="mp-sec">🎁 مكافأة النهاردة</h2>';
+        html += '<h2 class="mp-sec">🎁 مكافآت ماما</h2>';
         if(idx > revealed){
-          html += '<div class="mom-teaser">في مكافأة جديدة مستنياكي على الشاشة الرئيسية 🎁</div>';
+          html += '<div class="mom-teaser">في مفاجأة جديدة مستنياكي على الشاشة الرئيسية 🎁</div>';
         }
         var shown = "";
         for(var ti = 0; ti <= revealed; ti++){
-          var c = momContentFor(key, ti);
+          var c = momContentFor(ti);
           if(c) shown += momRewardHtml(c);
         }
-        html += shown || (idx > revealed ? "" : '<div class="empty-note">لسه مفيش مكافأة اتكشفت النهاردة — أول ما توصلي لباقة هتظهر لك مفاجأة 🎁</div>');
+        html += shown || (idx > revealed ? "" : '<div class="empty-note">لسه مفيش مكافأة اتكشفت — أول ما توصلي لباقة هتظهر لك مفاجأة 🎁</div>');
 
         html += '<h2 class="mp-sec">📋 مهام النهاردة اللي عملتها البنات لماما</h2>';
         var day = S.days[key];
@@ -2048,20 +2058,6 @@
           }
         });
 
-        html += '<h2 class="mp-sec">🗓️ أيام الشهر ده</h2>';
-        var ym = key.slice(0, 7);
-        var keys = Object.keys(S.days).filter(function(k){ return k.slice(0, 7) === ym; }).sort().reverse();
-        var rows = "";
-        keys.forEach(function(k){
-          var e = mamaPoints(k);
-          if(e <= 0) return;
-          var di = momTierIndexForPoints(e);
-          rows += '<div class="mp-day"><span class="mp-day-date">' + esc(fmtDateAr(k)) + '</span>' +
-            '<span class="mp-day-pts">' + e + ' نقطة</span>' +
-            (di >= 0 ? '<span>' + momTierIcon(S.mom.tiers[di].type) + '</span>' : '') +
-            '</div>';
-        });
-        html += rows || '<div class="empty-note">مفيش أيام بنقاط لماما في الشهر ده لسه</div>';
         body.innerHTML = html;
         try{ fitNames(); }catch(e){}
       }
@@ -2078,17 +2074,20 @@
         try{ checkMomSurprise(); }catch(e){}
       }
       /* ================= Mama's surprise reveal =================
-         When today's tier index exceeds the tier index already revealed
-         for today (this device's local tierSeen), the CURRENT tier's
+         When the CURRENT tier index (from the live balance sum) exceeds
+         the tier index already revealed on this device (the local
+         tierSeen marker, persistent — no date), the CURRENT tier's
          content pops up full-screen on the main screen — on app load,
-         and again after any render that changed today's points. She
-         never knows it is coming, and the content is shown nowhere
-         before this moment. The popup waits while another full-screen
-         view is up (welcome, PIN gate, a modal, or Mama's own page) and
-         is retried when those close. One popup per open; closing it
-         records the revealed tier in the LOCAL tierSeen store only —
-         never in the synced state — so every device reveals each tier
-         independently and no phone can consume another phone's reveal. */
+         and again after any render that changed the points. Crossing
+         into a new tier reveals it once per device; a points drop
+         followed by a re-crossing never re-fires it. She never knows it
+         is coming, and the content is shown nowhere before this moment.
+         The popup waits while another full-screen view is up (welcome,
+         PIN gate, a modal, or Mama's own page) and is retried when
+         those close. One popup per open; closing it records the
+         revealed tier in the LOCAL tierSeen store only — never in the
+         synced state — so every device reveals each tier independently
+         and no phone can consume another phone's reveal. */
       var momSurpriseOpen = false;
       var momSurpriseTier = -1;
       function checkMomSurprise(){
@@ -2099,11 +2098,10 @@
         if($("modalOverlay").classList.contains("open")) return;
         var mp = $("momPage"); if(mp && mp.classList.contains("open")) return;
         ensureMom(S);
-        var key = todayKey();
-        var idx = momTierIndex(key);
+        var idx = momTierIndex();
         if(idx < 0) return;
-        if(idx <= momRevealedIdx(key)) return;
-        var c = momContentFor(key, idx);
+        if(idx <= momRevealedIdx()) return;
+        var c = momContentFor(idx);
         if(!c) return;
         momSurpriseOpen = true;
         momSurpriseTier = idx;
@@ -2117,7 +2115,7 @@
         var ov = $("momSurprise"); if(ov) ov.classList.remove("open");
         momSurpriseOpen = false;
         if(momSurpriseTier >= 0){
-          setLocalTierSeen(todayKey(), momSurpriseTier);
+          setLocalTierSeen(momSurpriseTier);
           momSurpriseTier = -1;
         }
         renderAll();
