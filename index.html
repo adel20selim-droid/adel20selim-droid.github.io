@@ -995,7 +995,7 @@
           <div id="momEditors" class="hidden">
             <div class="panel">
               <h3>🎁 باقات مكافآت ماما</h3>
-              <p class="guide-note">نقاط ماما بتتحسب كل يوم لوحدها: نجوم كارما + نجوم جودي اللي كسبوها في اليوم ده. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁)، وماما بتاخد أعلى باقة وصلت لها أو عدّتها في اليوم — وبين باقتين بتاخد الأقل. محتوى المكافأة نفسه مفاجأة: بيظهر لها بس لما توصل للباقة، وهي شايفة أرقام الباقات وأنواعها بس.</p>
+              <p class="guide-note">نقاط ماما بتتحسب كل يوم لوحدها: نجوم كارما + نجوم جودي اللي كسبوها في اليوم ده. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁 أو كوبون مخصوص 💰 بنص ثابت زي «كوبون ٢٠ ريال»)، وماما بتاخد أعلى باقة وصلت لها أو عدّتها في اليوم — وبين باقتين بتاخد الأقل. محتوى مكافآت الرسايل والكوبونات مفاجأة: بيظهر لها بس لما توصل للباقة، وهي شايفة أرقام الباقات وأنواعها — وقيمة الكوبون المخصوص بس — بس.</p>
               <form class="f" id="momTierForm">
                 <div>
                   <label for="momTierPointsInput" id="momTierLabel">باقة جديدة — عدد النقاط</label>
@@ -1006,7 +1006,12 @@
                   <select id="momTierTypeInput">
                     <option value="message">💌 رسالة من بابا</option>
                     <option value="coupon">🎁 كوبون دلع</option>
+                    <option value="fixed">كوبون مخصوص 💰</option>
                   </select>
+                </div>
+                <div id="momTierTextWrap" class="hidden">
+                  <label for="momTierTextInput">نص الكوبون المخصوص</label>
+                  <input type="text" id="momTierTextInput" maxlength="200" placeholder="مثال: كوبون 10 ريال دلع — اختاري اللي نفسك فيه 🎁" />
                 </div>
                 <div class="mom-lock-err" id="momTierErr"></div>
                 <button class="save-btn" type="submit" id="momTierSaveBtn">إضافة الباقة 🎁</button>
@@ -1215,11 +1220,14 @@
          per-completion star values in the day's done records (see
          mamaPoints) — raw completion stars only, never twin/full-day
          bonuses, deductions or purchases, and never balances. `mom.tiers`
-         is a list of {points, type} ("message" 💌 / "coupon" 🎁) sorted
-         ascending; a day earns the HIGHEST tier whose points are ≤ that
-         day's points (floor rule), or no tier below the lowest one. The
-         reward CONTENT is always a surprise: picked deterministically
-         from the tier type's pool by (daysSince2026-01-01 + tierIndex)
+         is a list of {points, type} ("message" 💌 / "coupon" 🎁 /
+         "fixed" 💰) sorted ascending; a "fixed" tier carries an extra
+         `text` — its reward is exactly that text (a specific cash
+         coupon), with no pool pick. A day earns the HIGHEST tier whose
+         points are ≤ that day's points (floor rule), or no tier below
+         the lowest one. The reward CONTENT is always a surprise: for
+         message/coupon tiers it is picked deterministically from the
+         tier type's pool by (daysSince2026-01-01 + tierIndex)
          mod pool.length, and revealed only by the full-screen popup;
          the highest tier index already revealed for its date is
          remembered per-device in the local tierSeen store (see
@@ -1228,9 +1236,13 @@
          `mom`; points are always derived from the days records, so no
          points counter is ever stored. */
       var DEFAULT_MOM_TIERS = [
-        { points: 30, type: "message" },
-        { points: 50, type: "coupon" },
-        { points: 75, type: "coupon" }
+        { points: 20, type: "message" },
+        { points: 35, type: "coupon" },
+        { points: 50, type: "fixed", text: "كوبون 10 ريال دلع — اختاري اللي نفسك فيه 🎁" },
+        { points: 65, type: "fixed", text: "كوبون 20 ريال دلع — اختاري اللي نفسك فيه 🎁" },
+        { points: 80, type: "fixed", text: "كوبون 30 ريال دلع — يومك النهاردة 🎁" },
+        { points: 90, type: "fixed", text: "كوبون 40 ريال دلع — يومك النهاردة 🎁" },
+        { points: 100, type: "fixed", text: "كوبون 50 ريال دلع — يوم كامل عظمة 🎁" }
       ];
       var DEFAULT_MOM_MESSAGES = [
         "شكرًا يا بطلة… كل نجمة للبنات وراها تعبك ❤️",
@@ -1284,7 +1296,11 @@
         return Array.isArray(a) && a.length === b.length && a.every(function(x, i){ return x === b[i]; });
       }
       function defaultMomTiers(){
-        return DEFAULT_MOM_TIERS.map(function(t){ return { points: t.points, type: t.type }; });
+        return DEFAULT_MOM_TIERS.map(function(t){
+          var o = { points: t.points, type: t.type };
+          if(t.type === "fixed") o.text = t.text;
+          return o;
+        });
       }
       function defaultMom(){
         return {
@@ -1316,20 +1332,42 @@
         return out;
       }
       /* Tier validation: keep only entries with integer points in
-         1..100000 and a type of "message" or "coupon", sorted ascending
-         by points. An empty result is seeded by ensureMom with the
-         defaults. Deterministic and idempotent. */
+         1..100000 and a type of "message", "coupon" or "fixed", sorted
+         ascending by points and deduped by points (first one wins). A
+         "fixed" tier also carries a non-empty `text` — its reward is
+         exactly that text (a specific cash coupon); a fixed tier with
+         blank text is dropped. Existing {points, type} tiers pass
+         through unchanged. An empty result is seeded by ensureMom with
+         the defaults. Deterministic and idempotent. */
       function validateMomTiers(list){
-        var out = [];
+        var out = [], seen = {};
         (Array.isArray(list) ? list : []).forEach(function(t){
           if(!t || typeof t !== "object") return;
           var p = Number(t.points);
           if(!Number.isInteger(p) || p < 1 || p > 100000) return;
-          if(t.type !== "message" && t.type !== "coupon") return;
-          out.push({ points: p, type: t.type });
+          if(t.type !== "message" && t.type !== "coupon" && t.type !== "fixed") return;
+          if(seen[p]) return;
+          var o = { points: p, type: t.type };
+          if(t.type === "fixed"){
+            var text = (t.text == null ? "" : String(t.text)).trim();
+            if(!text) return;
+            o.text = text;
+          }
+          seen[p] = true;
+          out.push(o);
         });
         out.sort(function(a, b){ return a.points - b.points; });
         return out;
+      }
+      /* The short cash label shown for a fixed tier wherever the ladder
+         is visible (strip chips, Mom card, Mama page): the tier text up
+         to the first " — ", or the whole text when there is no
+         separator. Only the fixed tier's label is ever shown this way —
+         message/coupon contents stay hidden surprises. */
+      function momFixedLabel(text){
+        var s = (text == null ? "" : String(text)).trim();
+        var i = s.indexOf(" — ");
+        return i >= 0 ? s.slice(0, i) : s;
       }
       /* Seed the mom pools whenever they are missing or emptied (old saves,
          old backups, old cloud copies) — every other key stays untouched —
@@ -1868,7 +1906,12 @@
       function mamaPoints(key){
         return girlStarsOn(key, "karma") + girlStarsOn(key, "judy");
       }
-      function momTierIcon(type){ return type === "message" ? "💌" : "🎁"; }
+      function momTierIcon(type){ return type === "message" ? "💌" : type === "fixed" ? "💰" : "🎁"; }
+      /* Ladder label for one tier: points + icon everywhere, plus the
+         cash label for fixed tiers (their amount is a visible target). */
+      function momTierChipText(t){
+        return t.points + " نقطة " + momTierIcon(t.type) + (t.type === "fixed" ? " " + momFixedLabel(t.text) : "");
+      }
       /* Floor rule over the sorted tiers: the index of the highest tier
          whose points are ≤ the given points, or -1 when even the lowest
          tier is out of reach. */
@@ -1890,6 +1933,8 @@
         ensureMom(S);
         if(tierIdx == null || tierIdx < 0) return null;
         var tier = S.mom.tiers[tierIdx]; if(!tier) return null;
+        /* A fixed tier's content is its own text — no pool pick. */
+        if(tier.type === "fixed") return tier.text ? { type: "fixed", text: tier.text } : null;
         var pool = tier.type === "message" ? S.mom.messages : S.mom.coupons;
         if(!pool || !pool.length) return null;
         var i = ((daysSince2026(key) + tierIdx) % pool.length + pool.length) % pool.length;
@@ -1927,13 +1972,13 @@
         if(strip){
           var sh = '<div class="ms-title">💐 ماما</div>' +
             '<div class="ms-points">نقاط ماما النهاردة: <b>' + x + '</b></div>';
-          if(idx >= 0) sh += '<div class="ms-badge">' + momTierIcon(S.mom.tiers[idx].type) + ' باقة النهاردة</div>';
+          if(idx >= 0) sh += '<div class="ms-badge">' + momTierIcon(S.mom.tiers[idx].type) + (S.mom.tiers[idx].type === "fixed" ? " " + esc(momFixedLabel(S.mom.tiers[idx].text)) : "") + ' باقة النهاردة</div>';
           sh += '<span class="ms-chip">التفاصيل ‹</span>';
           strip.innerHTML = sh;
         }
         var html = '<div class="mom-effort">نقاط ماما النهاردة: <b>' + x + '</b> ⭐</div>';
         html += '<div class="mom-chips">' + S.mom.tiers.map(function(t, i){
-          return '<span class="mom-chip' + (i === idx ? " on" : "") + '">' + t.points + ' نقطة ' + momTierIcon(t.type) + '</span>';
+          return '<span class="mom-chip' + (i === idx ? " on" : "") + '">' + esc(momTierChipText(t)) + '</span>';
         }).join("") + '</div>';
         if(idx >= 0){
           html += '<div class="mom-next">مكافأة النهاردة جاهزة… مفاجأة 🎁</div>';
@@ -1966,7 +2011,7 @@
         html += '<h2 class="mp-sec">🎁 باقات النهاردة</h2>';
         html += S.mom.tiers.map(function(t, i){
           var reached = i <= idx;
-          return '<div class="mp-day"><span class="mp-day-date">' + momTierIcon(t.type) + ' باقة ' + t.points + ' نقطة</span>' +
+          return '<div class="mp-day"><span class="mp-day-date">' + momTierIcon(t.type) + ' باقة ' + t.points + ' نقطة' + (t.type === "fixed" ? ' — ' + esc(momFixedLabel(t.text)) : '') + '</span>' +
             (reached
               ? '<span class="mp-tier-status ok">وصلتلها ✓</span>'
               : '<span class="mp-tier-status wait">فاضل ' + (t.points - x) + ' نقطة</span>') +
@@ -2544,7 +2589,7 @@
         if(tierList){
           tierList.innerHTML = S.mom.tiers.length ? S.mom.tiers.map(function(t, i){
             return '<div class="row-item"><span class="e">' + momTierIcon(t.type) + '</span>' +
-              '<span class="n">' + t.points + ' نقطة<small>' + (t.type === "message" ? "رسالة 💌" : "كوبون 🎁") + '</small></span>' +
+              '<span class="n">' + t.points + ' نقطة<small>' + (t.type === "message" ? "رسالة 💌" : t.type === "coupon" ? "كوبون 🎁" : "كوبون مخصوص 💰 " + esc(momFixedLabel(t.text))) + '</small></span>' +
               '<button class="mini" type="button" data-mom-tier-edit="' + i + '">تعديل</button>' +
               '<button class="mini del" type="button" data-mom-tier-del="' + i + '">حذف</button></div>';
           }).join("") : '<div class="empty-note">مفيش باقات</div>';
@@ -2639,12 +2684,20 @@
       /* Tiers use the same add/edit form pattern: the form fills with the
          tier's points and type, and saving updates it in place; the list
          is re-sorted ascending by points after every change. */
+      /* The fixed-tier text input only shows when «كوبون مخصوص 💰» is
+         the selected tier type. */
+      function syncMomTierTextVisibility(){
+        var ty = $("momTierTypeInput"), wrap = $("momTierTextWrap");
+        if(ty && wrap) wrap.classList.toggle("hidden", ty.value !== "fixed");
+      }
       function startEditMomTier(i){
         ensureMom(S);
         var t = S.mom.tiers[i]; if(!t) return;
         editMomTierIndex = i;
         $("momTierPointsInput").value = t.points;
         $("momTierTypeInput").value = t.type;
+        $("momTierTextInput").value = t.type === "fixed" ? (t.text || "") : "";
+        syncMomTierTextVisibility();
         $("momTierLabel").textContent = "✏️ تعديل الباقة — عدد النقاط";
         $("momTierSaveBtn").textContent = "حفظ التعديل ✅";
         $("momTierCancelEdit").classList.remove("hidden");
@@ -2655,6 +2708,8 @@
         editMomTierIndex = null;
         var p = $("momTierPointsInput"); if(p) p.value = "";
         var ty = $("momTierTypeInput"); if(ty) ty.value = "message";
+        var tx = $("momTierTextInput"); if(tx) tx.value = "";
+        syncMomTierTextVisibility();
         var lb = $("momTierLabel"); if(lb) lb.textContent = "باقة جديدة — عدد النقاط";
         var sb = $("momTierSaveBtn"); if(sb) sb.textContent = "إضافة الباقة 🎁";
         var cb = $("momTierCancelEdit"); if(cb) cb.classList.add("hidden");
@@ -2677,6 +2732,7 @@
       $("momMsgCancelEdit").addEventListener("click", cancelEditMomMsg);
       $("momCouponCancelEdit").addEventListener("click", cancelEditMomCoupon);
       $("momTierCancelEdit").addEventListener("click", cancelEditMomTier);
+      $("momTierTypeInput").addEventListener("change", syncMomTierTextVisibility);
 
       /* ================= Parents: star deductions ================= */
       function renderDeductions(){
@@ -2877,19 +2933,27 @@
         err.classList.remove("show"); err.textContent = "";
         var p = Number(normDigits($("momTierPointsInput").value).trim());
         if(!Number.isInteger(p) || p < 1 || p > 100000){ fail("النقاط لازم تكون عدد صحيح من ١ لـ ١٠٠٠٠٠"); $("momTierPointsInput").focus(); return; }
-        var type = $("momTierTypeInput").value === "coupon" ? "coupon" : "message";
+        var type = $("momTierTypeInput").value;
+        if(type !== "message" && type !== "coupon" && type !== "fixed") type = "message";
+        var tier = { points: p, type: type };
+        if(type === "fixed"){
+          var tx = $("momTierTextInput").value.trim();
+          if(!tx){ fail("اكتبوا نص الكوبون المخصوص الأول"); $("momTierTextInput").focus(); return; }
+          tier.text = tx;
+        }
         ensureMom(S);
         if(editMomTierIndex != null && S.mom.tiers[editMomTierIndex] != null){
-          S.mom.tiers[editMomTierIndex] = { points: p, type: type };
+          S.mom.tiers[editMomTierIndex] = tier;
           cancelEditMomTier();
           S.mom.tiers = validateMomTiers(S.mom.tiers);
           save(); renderAll();
           toast("اتعدّلت الباقة 🎁", "");
           return;
         }
-        S.mom.tiers.push({ points: p, type: type });
+        S.mom.tiers.push(tier);
         S.mom.tiers = validateMomTiers(S.mom.tiers);
         $("momTierPointsInput").value = "";
+        $("momTierTextInput").value = "";
         save(); renderAll();
         toast("اتضافت باقة لماما 🎁", "");
       });
