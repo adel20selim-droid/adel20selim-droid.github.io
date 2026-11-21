@@ -586,6 +586,20 @@
         color:var(--rose-dark); font-size:1.08rem; font-weight:800; cursor:pointer;
       }
       .mom-page-btn:active{ background:var(--rose); color:#fff; }
+      /* tier ladder chips on the home card */
+      .mom-chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:10px; }
+      .mom-chip{
+        padding:6px 14px; border-radius:999px; border:2px solid var(--line);
+        background:var(--card-soft); font-weight:800; font-size:.98rem;
+      }
+      .mom-chip.on{
+        background:var(--gold-light); border-color:var(--gold-dark); color:var(--gold-dark);
+        box-shadow:0 4px 12px rgba(217,119,6,.25);
+      }
+      /* tier rows on Mama's page */
+      .mp-tier-status{ white-space:nowrap; font-weight:800; }
+      .mp-tier-status.ok{ color:var(--green); }
+      .mp-tier-status.wait{ color:var(--gray); }
 
       /* ---------- Mama's own page ----------
          Full-screen view opened from the top «💐 ماما» strip (or the card's
@@ -643,7 +657,7 @@
          below the confetti and toast: a message from Baba she never
          knew was coming. */
       .mom-surprise{ z-index:64; }
-      #momSurpriseText{ font-size:1.35rem; font-weight:800; color:var(--ink); line-height:1.65; }
+      #momSurpriseBody .mom-msg-text, #momSurpriseBody .mom-coupon-text{ font-size:1.35rem; }
 
       .hidden{ display:none !important; }
     </style>
@@ -974,26 +988,35 @@
             </div>
             <div id="momLockedBox" class="hidden">
               <h3>🔒 قوائم مكافآت ماما مقفولة</h3>
-              <p class="guide-note">رسايل وكوبونات ماما الجاية سرية — بابا بس اللي يقدر يشوف القوائم ويعدّل عليها بكوده الخاص. ماما بتشوف رصيدها ومتجر مكافآتها في صفحتها عادي، والرسايل بتوصلها مفاجأة 💐</p>
+              <p class="guide-note">رسايل وكوبونات وباقات ماما سرية — بابا بس اللي يقدر يشوف القوائم ويعدّل عليها بكوده الخاص. ماما بتشوف نقاطها والباقات في صفحتها عادي، ومحتوى المكافأة نفسه بيوصلها مفاجأة 💐</p>
               <button class="save-btn" id="momUnlockBtn" type="button">🔓 فتح بكود بابا</button>
             </div>
           </div>
           <div id="momEditors" class="hidden">
             <div class="panel">
-              <h3>⚙️ رسايل مفاجأة ماما</h3>
-              <p class="guide-note">نقاط ماما بتتراكم يوم ورا يوم من مهام البنات اللي بتخلص — زي نجوم البنات بالظبط — وليها رصيد ومتجر مكافآت في صفحتها. حدّدوا كل كام نقطة متراكمة توصلها رسالة مفاجأة من بابا: هي متعرفش إنها جاية، تفتح التطبيق تلاقيها في وشها 💌 أما الكوبونات فكل كوبون تحت له سعره لوحده.</p>
-              <form class="f" id="momThreshForm">
+              <h3>🎁 باقات مكافآت ماما</h3>
+              <p class="guide-note">نقاط ماما بتتحسب كل يوم لوحدها: نجوم كارما + نجوم جودي اللي كسبوها في اليوم ده. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁)، وماما بتاخد أعلى باقة وصلت لها أو عدّتها في اليوم — وبين باقتين بتاخد الأقل. محتوى المكافأة نفسه مفاجأة: بيظهر لها بس لما توصل للباقة، وهي شايفة أرقام الباقات وأنواعها بس.</p>
+              <form class="f" id="momTierForm">
                 <div>
-                  <label for="momMsgAtInput">رسالة مفاجأة كل كام نقطة متراكمة؟ 💌</label>
-                  <input type="number" id="momMsgAtInput" min="1" max="100000" step="1" inputmode="numeric" />
+                  <label for="momTierPointsInput" id="momTierLabel">باقة جديدة — عدد النقاط</label>
+                  <input type="number" id="momTierPointsInput" min="1" max="100000" step="1" inputmode="numeric" placeholder="مثال: ٣٠" />
                 </div>
-                <div class="mom-lock-err" id="momThreshErr"></div>
-                <button class="save-btn" type="submit">حفظ ✅</button>
+                <div>
+                  <label for="momTierTypeInput">نوع مكافأة الباقة</label>
+                  <select id="momTierTypeInput">
+                    <option value="message">💌 رسالة من بابا</option>
+                    <option value="coupon">🎁 كوبون دلع</option>
+                  </select>
+                </div>
+                <div class="mom-lock-err" id="momTierErr"></div>
+                <button class="save-btn" type="submit" id="momTierSaveBtn">إضافة الباقة 🎁</button>
+                <button class="mini hidden" type="button" id="momTierCancelEdit">إلغاء التعديل</button>
               </form>
+              <div id="adminMomTierList"></div>
             </div>
             <div class="panel">
               <h3>💌 رسايل التقدير لماما</h3>
-              <p class="guide-note" id="momMsgNote">الرسايل دي مفاجأة لماما: كل ما نقاطها المتراكمة توصل لمضاعفات الرقم اللي حددتوه فوق، تفتح التطبيق تلاقي رسالة من القايمة دي في وشها موقّعة «— من بابا» — من غير ما تعرف إنها جاية 💌</p>
+              <p class="guide-note" id="momMsgNote">الرسايل دي محتوى باقات الرسائل 💌 — مفاجأة لماما: لما نقاطها في يوم توصل لباقة رسالة، تفتح التطبيق تلاقي رسالة من القايمة دي في وشها موقّعة «— من بابا» — من غير ما تعرف إنها جاية ولا الرسالة هتكون إيه 💌</p>
               <form class="f" id="momMsgForm">
                 <div>
                   <label for="momMsgInput" id="momMsgLabel">رسالة جديدة</label>
@@ -1006,15 +1029,11 @@
             </div>
             <div class="panel">
               <h3>🎟️ كوبونات الدلع لماما</h3>
-              <p class="guide-note" id="momCouponNote">كل كوبون مكافأة ليها سعر بالنقاط زي مكافآت البنات بالظبط: ماما بتجمّع من مهام البنات كل يوم، ولما رصيدها يوصل لسعر كوبون تقدر تستلمه من صفحتها ويتخصم من رصيدها — تبعته لبابا وهو ينفذه ❤️</p>
+              <p class="guide-note" id="momCouponNote">الكوبونات دي محتوى باقات الكوبونات 🎁 — مفاجأة لماما: لما نقاطها في يوم توصل لباقة كوبون، بيظهر لها كوبون من القايمة دي فجأة، تبعته لبابا وهو ينفذه ❤️</p>
               <form class="f" id="momCouponForm">
                 <div>
                   <label for="momCouponInput" id="momCouponLabel">كوبون جديد</label>
                   <input type="text" id="momCouponInput" maxlength="200" placeholder="مثال: كوبون عشا بره على حسابي 🍽️" />
-                </div>
-                <div>
-                  <label for="momCouponPriceInput">سعر الكوبون بالنقاط</label>
-                  <input type="number" id="momCouponPriceInput" min="1" max="100000" step="1" inputmode="numeric" value="60" />
                 </div>
                 <button class="save-btn" type="submit" id="momCouponSaveBtn">إضافة الكوبون 🎟️</button>
                 <button class="mini hidden" type="button" id="momCouponCancelEdit">إلغاء التعديل</button>
@@ -1118,16 +1137,16 @@
       </div>
     </div>
 
-    <!-- Mama's surprise message: pops up full-screen on the main screen
-         when her accumulated points cross a new message milestone — she
-         never knows it is coming. Shown by checkMomSurprise(); closing it
-         marks the milestones as seen. -->
-    <div class="overlay mom-surprise" id="momSurprise" role="dialog" aria-label="رسالة مفاجأة من بابا">
+    <!-- Mama's surprise reward: pops up full-screen on the main screen
+         when today's points reach a tier she has not been shown yet — the
+         content is a surprise until this moment. Shown by
+         checkMomSurprise(); closing it records the tier as revealed in
+         mom.tierSeen. -->
+    <div class="overlay mom-surprise" id="momSurprise" role="dialog" aria-label="مكافأة ماما النهاردة">
       <div class="modal">
-        <div class="big-emoji">💌</div>
-        <h2>وصلتك رسالة من بابا</h2>
-        <p id="momSurpriseText" dir="rtl"></p>
-        <div class="mom-sign">— من بابا</div>
+        <div class="big-emoji" id="momSurpriseEmoji">🎁</div>
+        <h2>🎁 مكافأة ماما النهاردة</h2>
+        <div id="momSurpriseBody"></div>
         <button class="cta" id="momSurpriseClose" type="button">❤️</button>
       </div>
     </div>
@@ -1172,17 +1191,26 @@
         ["اتخانقت مع أختي","😤",2],["ما سمعتش كلام ماما أو بابا","🔇",2],["كدبت","🤥",3],
         ["لعبت بالموبايل من غير إذن","📱",3],["عليت صوتي أو صرخت","📢",1],["سبت أوضتي مش مترتبة","🧺",1]
       ];
-      /* Mom's reward — the kids' star model, for Mama: she EARNS points
-         every day (the girls' net completed tasks, see momEffort) into an
-         ACCUMULATED balance, and SPENDS them in her own little shop where
-         every coupon is a reward with a PRICE (see renderMomPage). The
-         appreciation messages are SURPRISES: every time her total earned
-         crosses another multiple of `mom.msgAt`, one message from the pool
-         becomes pending and pops up full-screen on the next app open (see
-         checkMomSurprise). The pools live in the synced state under `mom`;
-         the earned total is always derived from the days records, so no
-         earnings counter is ever stored. */
-      var DEFAULT_COUPON_PRICE = 60;
+      /* Mom's reward — DAILY TIERS (باقات). Mama's points for a date are
+         the STARS both girls earned that date: the sum of the stored
+         per-completion star values in the day's done records (see
+         mamaPoints) — raw completion stars only, never twin/full-day
+         bonuses, deductions or purchases, and never balances. `mom.tiers`
+         is a list of {points, type} ("message" 💌 / "coupon" 🎁) sorted
+         ascending; a day earns the HIGHEST tier whose points are ≤ that
+         day's points (floor rule), or no tier below the lowest one. The
+         reward CONTENT is always a surprise: picked deterministically
+         from the tier type's pool by (daysSince2026-01-01 + tierIndex)
+         mod pool.length, and revealed only by the full-screen popup;
+         `mom.tierSeen` remembers the highest tier index already revealed
+         for its date. The pools and tiers live in the synced state under
+         `mom`; points are always derived from the days records, so no
+         points counter is ever stored. */
+      var DEFAULT_MOM_TIERS = [
+        { points: 30, type: "message" },
+        { points: 50, type: "coupon" },
+        { points: 75, type: "coupon" }
+      ];
       var DEFAULT_MOM_MESSAGES = [
         "شكرًا يا بطلة… كل نجمة للبنات وراها تعبك ❤️",
         "أنا بعيد بس شايف تعبك كل يوم، ربنا يخليكي لينا",
@@ -1234,72 +1262,83 @@
       function sameStrList(a, b){
         return Array.isArray(a) && a.length === b.length && a.every(function(x, i){ return x === b[i]; });
       }
+      function defaultMomTiers(){
+        return DEFAULT_MOM_TIERS.map(function(t){ return { points: t.points, type: t.type }; });
+      }
       function defaultMom(){
         return {
           messages: DEFAULT_MOM_MESSAGES.slice(),
-          coupons: DEFAULT_MOM_COUPONS.map(function(t){ return { text: t, price: DEFAULT_COUPON_PRICE }; }),
-          msgAt: 50,
-          redeemed: [],
-          msgSeen: 0
+          coupons: DEFAULT_MOM_COUPONS.slice(),
+          tiers: defaultMomTiers()
         };
       }
-      /* A coupon's display text: coupons are {text, price} objects; a plain
-         string (pre-migration data, not yet normalized) reads as itself. */
+      /* A coupon's text: coupons are plain strings now; a stored
+         {text, price} object (from the previous shop model) reads as its
+         text, so the migration below can flatten it. */
       function momCouponText(c){
         if(typeof c === "string") return c;
         if(c && typeof c === "object" && c.text != null) return String(c.text);
         return "";
       }
-      /* A coupon's price in points: a valid stored integer (clamped to
-         1..100000); anything missing or invalid falls back to the default
-         price, exactly like the migration below. */
-      function momCouponPrice(c){
-        var p = (c && typeof c === "object") ? Number(c.price) : NaN;
-        if(!Number.isInteger(p)) p = DEFAULT_COUPON_PRICE;
-        if(p < 1) p = 1;
-        if(p > 100000) p = 100000;
-        return p;
-      }
-      /* Coupons migrate from plain strings to {text, price} objects: a
-         string becomes {text: it, price: DEFAULT_COUPON_PRICE}; an object
-         passes through with its price normalized by momCouponPrice. The
-         migration is deterministic and idempotent, so every linked device
-         reaches the same result on its own. Blank entries are dropped. */
+      /* Coupons migrate back to plain strings: a {text, price} object
+         becomes its text (the price is dropped); a string passes through
+         unchanged. The migration is deterministic and idempotent, so
+         every linked device reaches the same result on its own. Blank
+         entries are dropped. */
       function migrateMomCoupons(list){
         var out = [];
         (Array.isArray(list) ? list : []).forEach(function(c){
           var text = momCouponText(c);
           if(!text.trim()) return;
-          out.push({ text: text, price: momCouponPrice(c) });
+          out.push(text);
         });
+        return out;
+      }
+      /* Tier validation: keep only entries with integer points in
+         1..100000 and a type of "message" or "coupon", sorted ascending
+         by points. An empty result is seeded by ensureMom with the
+         defaults. Deterministic and idempotent. */
+      function validateMomTiers(list){
+        var out = [];
+        (Array.isArray(list) ? list : []).forEach(function(t){
+          if(!t || typeof t !== "object") return;
+          var p = Number(t.points);
+          if(!Number.isInteger(p) || p < 1 || p > 100000) return;
+          if(t.type !== "message" && t.type !== "coupon") return;
+          out.push({ points: p, type: t.type });
+        });
+        out.sort(function(a, b){ return a.points - b.points; });
         return out;
       }
       /* Seed the mom pools whenever they are missing or emptied (old saves,
          old backups, old cloud copies) — every other key stays untouched —
-         and upgrade a pool still holding exactly the old defaults. `msgAt`
-         is the surprise-message interval in accumulated points (editable
-         in the mom tab); it only gets its default when missing or invalid,
-         and a stored valid value is never clobbered. `redeemed` (her claim
-         history) and `msgSeen` (message milestones already celebrated)
-         are normalized the same way. The old daily coupon-threshold key
-         is obsolete: it is never read or written anymore. */
+         and upgrade a pool still holding exactly the old defaults.
+         Coupons are flattened back to plain strings (any stored price is
+         dropped). `tiers` is validated and sorted; an empty result seeds
+         the default tiers. `tierSeen` (the highest tier index already
+         revealed for its date) is kept only when well-formed. The
+         previous model's keys — the surprise interval, the coupon
+         threshold, the claim history and the milestone counter — are
+         obsolete: they are deleted here and never written again. */
       function ensureMom(s){
         if(!s) return s;
         if(!s.mom || typeof s.mom !== "object") s.mom = defaultMom();
         if(!Array.isArray(s.mom.messages) || !s.mom.messages.length) s.mom.messages = DEFAULT_MOM_MESSAGES.slice();
-        if(!Array.isArray(s.mom.coupons) || !s.mom.coupons.length) s.mom.coupons = defaultMom().coupons;
+        if(!Array.isArray(s.mom.coupons) || !s.mom.coupons.length) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
         if(sameStrList(s.mom.messages, OLD_DEFAULT_MOM_MESSAGES)) s.mom.messages = DEFAULT_MOM_MESSAGES.slice();
-        if(sameStrList(s.mom.coupons, OLD_DEFAULT_MOM_COUPONS)) s.mom.coupons = defaultMom().coupons;
+        if(sameStrList(s.mom.coupons.map(momCouponText), OLD_DEFAULT_MOM_COUPONS)) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
         s.mom.coupons = migrateMomCoupons(s.mom.coupons);
-        if(!s.mom.coupons.length) s.mom.coupons = defaultMom().coupons;
-        if(!Number.isInteger(s.mom.msgAt) || s.mom.msgAt < 1 || s.mom.msgAt > 100000) s.mom.msgAt = 50;
-        if(!Array.isArray(s.mom.redeemed)) s.mom.redeemed = [];
-        s.mom.redeemed = s.mom.redeemed.filter(function(r){
-          return r && typeof r === "object" && typeof r.date === "string" && r.text != null && isFinite(Number(r.price));
-        }).map(function(r){
-          return { date: r.date, text: String(r.text), price: Math.max(0, Math.round(Number(r.price))) };
-        });
-        if(!Number.isInteger(s.mom.msgSeen) || s.mom.msgSeen < 0) s.mom.msgSeen = 0;
+        if(!s.mom.coupons.length) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
+        s.mom.tiers = validateMomTiers(s.mom.tiers);
+        if(!s.mom.tiers.length) s.mom.tiers = defaultMomTiers();
+        var ts = s.mom.tierSeen;
+        if(!(ts && typeof ts === "object" && typeof ts.date === "string" && Number.isInteger(ts.idx))){
+          delete s.mom.tierSeen;
+        }
+        delete s.mom.msgAt;
+        delete s.mom.couponAt;
+        delete s.mom.redeemed;
+        delete s.mom.msgSeen;
         return s;
       }
       var EMOJIS = ["🕌","🛏️","🪥","🎒","📚","📖","🧸","🤝","👯","🤲","🌙","🍦","🎮","🎨","🎬","🍕","🌳","🧩","⭐","🚿","👕","🧹","🍽️","✏️","🦷","🛁","🐱","🌸","🦋","🏃","🎵","🧁","🍎","📝","🧼","🌞","😤","🙊","🤥","😭","💥","✋","📱","📢"];
@@ -1781,78 +1820,103 @@
           b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl, true); });
         });
       }
-      /* ================= Mom's reward =================
-         The kids' star model, for Mama. Effort on a day = that day's NET
-         completed tasks summed over BOTH girls: the tasks currently marked
-         done in the day's record (unchecking deletes the done entry, so
-         the count drops on its own). Her total EARNED is the sum of effort
-         over ALL recorded days — derived from the days data, never stored.
-         She SPENDS from that total in her shop (each coupon has a price;
-         claims are appended to `mom.redeemed`), so balance = earned −
-         spent. Messages are surprises: milestones = floor(earned /
-         mom.msgAt); while milestones > mom.msgSeen one is pending, and
-         its text is deterministic — messages[(milestones−1) mod pool] —
-         so every linked device celebrates the same message. */
-      function momEffort(key){
+      /* ================= Mom's reward — daily tiers =================
+         Mama's points for a date = the STARS both girls earned that date:
+         the sum, over both girls, of the stored per-completion star
+         values in the day's done records (the same values the uncheck
+         logic subtracts — unchecking deletes the done entry, so its
+         stars drop out on their own). Raw completion stars ONLY: twin
+         bonuses, full-day bonuses, surprise stars, deductions and reward
+         purchases never count, and no balance is ever used. A day's tier
+         is the HIGHEST tier whose points are ≤ that day's points (floor
+         rule); below the lowest tier there is no reward that day. The
+         reward content is a surprise, picked deterministically from the
+         tier type's pool: (daysSince2026-01-01 + tierIndex) mod pool —
+         so every linked device reveals the same content. */
+      function girlStarsOn(key, girl){
         var day = S.days[key]; if(!day) return 0;
+        var r = day[girl]; if(!r || !r.done) return 0;
         var n = 0;
-        GIRL_KEYS.forEach(function(g){
-          var r = day[g];
-          if(r && r.done) n += Object.keys(r.done).length;
+        Object.keys(r.done).forEach(function(id){
+          var info = r.done[id];
+          if(info && typeof info.stars === "number"){ n += info.stars; return; }
+          var t = S.tasks.find(function(x){ return x.id === id; });
+          if(t) n += t.stars;
         });
         return n;
       }
-      function momTotalEarned(){
-        var t = 0;
-        Object.keys(S.days || {}).forEach(function(k){ t += momEffort(k); });
-        return t;
+      function mamaPoints(key){
+        return girlStarsOn(key, "karma") + girlStarsOn(key, "judy");
       }
-      function momSpent(){
-        return (S.mom.redeemed || []).reduce(function(t, r){ return t + (Number(r.price) || 0); }, 0);
-      }
-      function momBalance(){ return momTotalEarned() - momSpent(); }
-      function momMilestones(){
-        var at = S.mom.msgAt;
-        return (Number.isInteger(at) && at > 0) ? Math.floor(momTotalEarned() / at) : 0;
-      }
-      /* The pending surprise, or null: needs a non-empty message pool and
-         an uncelebrated milestone. One popup per open — the LATEST pending
-         milestone — and closing marks all current milestones as seen. */
-      function momPendingMessage(){
-        var stored = S.mom && S.mom.messages;
-        if(!Array.isArray(stored) || !stored.length) return null;
+      function momTierIcon(type){ return type === "message" ? "💌" : "🎁"; }
+      /* Floor rule over the sorted tiers: the index of the highest tier
+         whose points are ≤ the given points, or -1 when even the lowest
+         tier is out of reach. */
+      function momTierIndexForPoints(points){
         ensureMom(S);
-        var pool = S.mom.messages;
+        var idx = -1;
+        S.mom.tiers.forEach(function(t, i){ if(points >= t.points) idx = i; });
+        return idx;
+      }
+      function momTierIndex(key){ return momTierIndexForPoints(mamaPoints(key)); }
+      function daysSince2026(key){
+        var p = key.split("-");
+        return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - Date.UTC(2026, 0, 1)) / 86400000);
+      }
+      /* The surprise content for a date's tier, or null when there is no
+         tier or the tier type's pool is empty. Never rendered anywhere
+         except the reveal popup and, after revealing, Mama's page. */
+      function momContentFor(key, tierIdx){
+        ensureMom(S);
+        if(tierIdx == null || tierIdx < 0) return null;
+        var tier = S.mom.tiers[tierIdx]; if(!tier) return null;
+        var pool = tier.type === "message" ? S.mom.messages : S.mom.coupons;
         if(!pool || !pool.length) return null;
-        var ms = momMilestones();
-        if(ms <= (S.mom.msgSeen || 0)) return null;
-        return { milestones: ms, text: pool[(ms - 1) % pool.length] };
+        var i = ((daysSince2026(key) + tierIdx) % pool.length + pool.length) % pool.length;
+        return { type: tier.type, text: pool[i] };
+      }
+      /* The highest tier index already revealed to her for a date:
+         tierSeen only counts when its date matches; anything else is -1. */
+      function momRevealedIdx(key){
+        var ts = S.mom && S.mom.tierSeen;
+        return (ts && ts.date === key && Number.isInteger(ts.idx)) ? ts.idx : -1;
+      }
+      /* Shared rendering for a revealed reward's content: a message is
+         shown signed by Baba; a coupon is a ticket she sends to Baba. */
+      function momRewardHtml(c){
+        if(c.type === "message"){
+          return '<div class="mom-msg"><div class="mom-msg-text">' + esc(c.text) + '</div>' +
+            '<div class="mom-sign">— من بابا</div></div>';
+        }
+        return '<div class="mom-coupon"><div class="mom-coupon-label">🎟️ كوبون دلع لماما</div>' +
+          '<div class="mom-coupon-text">' + esc(c.text) + '</div>' +
+          '<div class="mom-coupon-note">ابعتي الكوبون ده لبابا وهو ينفذه ❤️</div></div>';
       }
       function renderMom(){
         var box = $("momCard"); if(!box) return;
         ensureMom(S);
         var key = todayKey();
-        var x = momEffort(key);
-        var bal = momBalance();
-        var toMsg = (momMilestones() + 1) * S.mom.msgAt - momTotalEarned();
-        var anyAfford = S.mom.coupons.some(function(c){ return momCouponPrice(c) <= bal; });
-        /* Top-of-screen Mom strip: today's points + her balance. */
+        var x = mamaPoints(key);
+        var idx = momTierIndexForPoints(x);
+        /* Top-of-screen Mom strip: today's points (stars-based) and,
+           when a tier is reached, a small badge naming only its type —
+           never the content. */
         var strip = $("momStrip");
         if(strip){
           var sh = '<div class="ms-title">💐 ماما</div>' +
-            '<div class="ms-points">نقاط ماما النهاردة: <b>' + x + '</b></div>' +
-            '<div class="ms-sub">رصيدها: <b>' + bal + '</b> نقطة 💐</div>';
-          if(anyAfford) sh += '<div class="ms-badge">عندها مكافأة تقدر تستلمها 🎁</div>';
+            '<div class="ms-points">نقاط ماما النهاردة: <b>' + x + '</b></div>';
+          if(idx >= 0) sh += '<div class="ms-badge">' + momTierIcon(S.mom.tiers[idx].type) + ' باقة النهاردة</div>';
           sh += '<span class="ms-chip">التفاصيل ‹</span>';
           strip.innerHTML = sh;
         }
-        var html = '<div class="mom-effort">رصيد ماما: <b>' + bal + '</b> نقطة 💐</div>';
-        html += '<div class="mom-next">فاضل ' + toMsg + ' نقطة وتوصلها رسالة مفاجأة من بابا 💌</div>';
-        if(anyAfford){
-          html += '<div class="mom-next">عندها مكافآت تقدر تستلمها في صفحتها 🎁</div>';
-        } else if(S.mom.coupons.length){
-          var nc = S.mom.coupons.reduce(function(a, c){ return momCouponPrice(c) < momCouponPrice(a) ? c : a; });
-          html += '<div class="mom-next">أقرب مكافأة: ' + esc(momCouponText(nc)) + ' — فاضل ' + (momCouponPrice(nc) - bal) + ' نقطة</div>';
+        var html = '<div class="mom-effort">نقاط ماما النهاردة: <b>' + x + '</b> ⭐</div>';
+        html += '<div class="mom-chips">' + S.mom.tiers.map(function(t, i){
+          return '<span class="mom-chip' + (i === idx ? " on" : "") + '">' + t.points + ' نقطة ' + momTierIcon(t.type) + '</span>';
+        }).join("") + '</div>';
+        if(idx >= 0){
+          html += '<div class="mom-next">مكافأة النهاردة جاهزة… مفاجأة 🎁</div>';
+        } else if(S.mom.tiers.length){
+          html += '<div class="mom-next">فاضل ' + (S.mom.tiers[0].points - x) + ' نقطة وتوصل لأول باقة</div>';
         }
         html += '<button class="mom-page-btn" id="momPageBtn" type="button">💐 صفحة ماما — كل مكافآتها ومهامها</button>';
         box.innerHTML = html;
@@ -1861,75 +1925,56 @@
       }
       /* ================= Mama's own page =================
          Everything on her page is derived on open from the same state the
-         strip and card already read — the days records (via momEffort and
-         the accumulated totals) and the `mom` pools. The only stored
-         additions are her claim records (`mom.redeemed`), appended by
-         claimMomCoupon and never edited. */
-      function momProgress(x, goal, label, text){
-        var pct = Math.min(100, Math.round(x / goal * 100));
-        return '<div class="mp-prog"><div class="mp-prog-top"><span>' + label + '</span><span>' + x + ' / ' + goal + '</span></div>' +
-          '<div class="mp-bar"><i style="width:' + pct + '%"></i></div>' +
-          '<div class="mp-prog-text">' + text + '</div></div>';
-      }
+         strip and card already read — the days records (via mamaPoints)
+         and the `mom` tiers/pools. Reward CONTENTS appear here only for
+         tiers already revealed to her today (mom.tierSeen); an
+         unrevealed reached tier shows only a "waiting on the main
+         screen" note, never its content. */
       function renderMomPage(){
         var body = $("momPageBody"); if(!body) return;
         ensureMom(S);
         var key = todayKey();
-        var x = momEffort(key);
-        var bal = momBalance();
-        var total = momTotalEarned();
-        var into = total - momMilestones() * S.mom.msgAt;
-        var toMsg = S.mom.msgAt - into;
+        var x = mamaPoints(key);
+        var idx = momTierIndexForPoints(x);
+        var revealed = momRevealedIdx(key);
         var html = '<div class="mp-head"><div class="mp-title">💐 ماما</div>' +
-          '<div class="mp-points">رصيد ماما: <b>' + bal + '</b> نقطة</div>' +
-          '<div class="mp-today">نقاط ماما النهاردة: <b>' + x + '</b> ⭐</div>' +
+          '<div class="mp-points">نقاط ماما النهاردة: <b>' + x + '</b> ⭐</div>' +
           '<div class="mp-date">' + esc(fmtDateAr(key)) + '</div></div>';
 
-        html += '<h2 class="mp-sec">💌 رسالة مفاجأة جاية في الطريق</h2>';
-        html += momProgress(into, S.mom.msgAt, "نحو الرسالة الجاية 💌",
-          "فاضل " + toMsg + " نقطة وتوصلها رسالة مفاجأة من بابا — هي متعرفش إنها جاية 🤫");
+        html += '<h2 class="mp-sec">🎁 باقات النهاردة</h2>';
+        html += S.mom.tiers.map(function(t, i){
+          var reached = i <= idx;
+          return '<div class="mp-day"><span class="mp-day-date">' + momTierIcon(t.type) + ' باقة ' + t.points + ' نقطة</span>' +
+            (reached
+              ? '<span class="mp-tier-status ok">وصلتلها ✓</span>'
+              : '<span class="mp-tier-status wait">فاضل ' + (t.points - x) + ' نقطة</span>') +
+            '</div>';
+        }).join("");
 
-        html += '<h2 class="mp-sec">🎟️ متجر مكافآت ماما</h2>';
-        if(S.mom.coupons.length){
-          html += S.mom.coupons.map(function(c, i){
-            var price = momCouponPrice(c), text = momCouponText(c);
-            var can = bal >= price;
-            return '<div class="reward">' +
-              '<span class="ric">🎟️</span>' +
-              '<div class="mid"><div class="rname" dir="rtl">' + esc(text) + '</div>' +
-              '<div class="rprice">بسعر ' + price + ' نقطة</div></div>' +
-              (can
-                ? '<button class="buy" type="button" data-mom-claim="' + i + '">استلمي 🎁</button>'
-                : '<button class="buy" type="button" disabled>محتاجة ' + (price - bal) + ' نقطة كمان</button>') +
-              '</div>';
-          }).join("");
-        } else {
-          html += '<div class="empty-note">مفيش مكافآت في المتجر لسه 🎟️</div>';
+        html += '<h2 class="mp-sec">🎁 مكافأة النهاردة</h2>';
+        if(idx > revealed){
+          html += '<div class="mom-teaser">في مكافأة جديدة مستنياكي على الشاشة الرئيسية 🎁</div>';
         }
-
-        html += '<h2 class="mp-sec">🎁 اللي استلمته قبل كده</h2>';
-        var red = S.mom.redeemed || [];
-        if(red.length){
-          html += red.slice().reverse().map(function(r){
-            return '<div class="mp-day"><span class="mp-day-date" dir="rtl">🎟️ ' + esc(r.text) +
-              '<small>' + esc(fmtDateAr(r.date)) + '</small></span>' +
-              '<span class="mp-day-pts">' + r.price + ' نقطة</span></div>';
-          }).join("");
-        } else {
-          html += '<div class="empty-note">لسه ما استلمتش أي مكافأة — رصيدها بيكبر كل يوم ⭐</div>';
+        var shown = "";
+        for(var ti = 0; ti <= revealed; ti++){
+          var c = momContentFor(key, ti);
+          if(c) shown += momRewardHtml(c);
         }
+        html += shown || (idx > revealed ? "" : '<div class="empty-note">لسه مفيش مكافأة اتكشفت النهاردة — أول ما توصلي لباقة هتظهر لك مفاجأة 🎁</div>');
 
         html += '<h2 class="mp-sec">📋 مهام النهاردة اللي عملتها البنات لماما</h2>';
         var day = S.days[key];
         GIRL_KEYS.forEach(function(g){
           var r = day && day[g];
-          var cnt = r && r.done ? Object.keys(r.done).length : 0;
+          var stars = girlStarsOn(key, g);
           var doneList = r ? tasksFor(g).filter(function(t){ return !!r.done[t.id]; }) : [];
           html += '<div class="girl-head ' + (g === "judy" ? "j" : "k") + '">' + GIRLS[g].emoji + " " + GIRLS[g].name +
-            " — خلصت " + cnt + " مهمة لماما</div>";
+            " — كسبت ⭐ " + stars + " لماما</div>";
           if(doneList.length){
             html += '<div class="mp-tasks">' + doneList.map(function(t){
-              return '<span class="mp-task">' + t.emoji + " " + esc(t.name) + "</span>";
+              var info = r.done[t.id];
+              var st = (info && typeof info.stars === "number") ? info.stars : t.stars;
+              return '<span class="mp-task">' + t.emoji + " " + esc(t.name) + " ⭐ " + st + "</span>";
             }).join("") + "</div>";
           } else {
             html += '<div class="empty-note">لسه مفيش مهام خلصت النهاردة</div>';
@@ -1941,16 +1986,16 @@
         var keys = Object.keys(S.days).filter(function(k){ return k.slice(0, 7) === ym; }).sort().reverse();
         var rows = "";
         keys.forEach(function(k){
-          var e = momEffort(k);
+          var e = mamaPoints(k);
           if(e <= 0) return;
+          var di = momTierIndexForPoints(e);
           rows += '<div class="mp-day"><span class="mp-day-date">' + esc(fmtDateAr(k)) + '</span>' +
-            '<span class="mp-day-pts">' + e + ' نقطة</span></div>';
+            '<span class="mp-day-pts">' + e + ' نقطة</span>' +
+            (di >= 0 ? '<span>' + momTierIcon(S.mom.tiers[di].type) + '</span>' : '') +
+            '</div>';
         });
         html += rows || '<div class="empty-note">مفيش أيام بنقاط لماما في الشهر ده لسه</div>';
         body.innerHTML = html;
-        body.querySelectorAll("[data-mom-claim]").forEach(function(b){
-          b.addEventListener("click", function(){ claimMomCoupon(+b.getAttribute("data-mom-claim")); });
-        });
         try{ fitNames(); }catch(e){}
       }
       function openMomPage(){
@@ -1965,36 +2010,18 @@
         document.body.style.overflow = "";
         try{ checkMomSurprise(); }catch(e){}
       }
-      /* Claiming a coupon from Mama's shop: NO PIN — it is her own reward,
-         bought with her own accumulated balance, exactly like the girls'
-         purchases minus the gate. A light confirm, then the claim is
-         appended to `mom.redeemed` (never edited), saved + synced, and
-         celebrated in the app's usual style with the coupon shown big. */
-      function claimMomCoupon(i){
-        ensureMom(S);
-        var c = S.mom.coupons[i]; if(!c) return;
-        var price = momCouponPrice(c), text = momCouponText(c);
-        var bal = momBalance();
-        if(bal < price) return;
-        showModal("🎟️", "تستلمي «" + text + "»؟",
-          "هيتخصم <b>" + price + " نقطة</b> من رصيد ماما وهيتبقى معاها <b>" + (bal - price) + " نقطة</b>",
-          "أيوه، استلمي! 🎁",
-          function(){
-            S.mom.redeemed.push({ date: todayKey(), text: text, price: price });
-            save(); renderAll();
-            var mp = $("momPage"); if(mp && mp.classList.contains("open")) renderMomPage();
-            playHappy(true); confetti(80);
-            showModal("🎊", "مبروك يا ماما!", "استلمتي: <b>" + esc(text) + "</b> 🎟️<br />ابعتي الكوبون ده لبابا وهو ينفذه ❤️", "تمام 🎉");
-          }, true);
-      }
-      /* ================= Mama's surprise message =================
-         When a pending milestone exists, the message pops up full-screen
-         on the main screen — on app load, and again after any render that
-         changed the totals. She never knows it is coming. The popup waits
-         while another full-screen view is up (welcome, PIN gate, a modal,
-         or Mama's own page) and is retried when those close. Closing it
-         marks ALL current milestones as seen, silently saved + synced. */
+      /* ================= Mama's surprise reveal =================
+         When today's tier index exceeds the tier index already revealed
+         for today (mom.tierSeen), the CURRENT tier's content pops up
+         full-screen on the main screen — on app load, and again after
+         any render that changed today's points. She never knows it is
+         coming, and the content is shown nowhere before this moment.
+         The popup waits while another full-screen view is up (welcome,
+         PIN gate, a modal, or Mama's own page) and is retried when those
+         close. One popup per open; closing it records the revealed tier
+         in mom.tierSeen, saved + synced. */
       var momSurpriseOpen = false;
+      var momSurpriseTier = -1;
       function checkMomSurprise(){
         if(momSurpriseOpen) return;
         var ov = $("momSurprise"); if(!ov) return;
@@ -2002,10 +2029,17 @@
         if($("gateOverlay").classList.contains("open")) return;
         if($("modalOverlay").classList.contains("open")) return;
         var mp = $("momPage"); if(mp && mp.classList.contains("open")) return;
-        var p = momPendingMessage();
-        if(!p) return;
+        ensureMom(S);
+        var key = todayKey();
+        var idx = momTierIndex(key);
+        if(idx < 0) return;
+        if(idx <= momRevealedIdx(key)) return;
+        var c = momContentFor(key, idx);
+        if(!c) return;
         momSurpriseOpen = true;
-        $("momSurpriseText").textContent = p.text;
+        momSurpriseTier = idx;
+        $("momSurpriseEmoji").textContent = momTierIcon(c.type);
+        $("momSurpriseBody").innerHTML = momRewardHtml(c);
         ov.classList.add("open");
         try{ playHappy(true); }catch(e){}
         confetti(50);
@@ -2014,8 +2048,12 @@
         var ov = $("momSurprise"); if(ov) ov.classList.remove("open");
         momSurpriseOpen = false;
         ensureMom(S);
-        var ms = momMilestones();
-        if((S.mom.msgSeen || 0) < ms){ S.mom.msgSeen = ms; save(); }
+        if(momSurpriseTier >= 0){
+          S.mom.tierSeen = { date: todayKey(), idx: momSurpriseTier };
+          momSurpriseTier = -1;
+          save();
+        }
+        renderAll();
       }
 
       function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); try{ checkMomSurprise(); }catch(e){} }
@@ -2461,7 +2499,7 @@
          the tab asks for the code on every open — `momTabUnlocked` is a
          plain in-memory flag for the current visit, never stored. */
       var momTabUnlocked = false;
-      var editMomMsgIndex = null, editMomCouponIndex = null;
+      var editMomMsgIndex = null, editMomCouponIndex = null, editMomTierIndex = null;
       function refreshMomTabLock(){
         var panel = $("momLockPanel"), editors = $("momEditors");
         if(!panel || !editors) return;
@@ -2478,16 +2516,34 @@
       }
       function renderMomAdmin(){
         ensureMom(S);
-        /* Surprise-interval editor: show the saved number (without
-           clobbering the field while the parent is typing in it) and keep
-           the pool notes below in sync with it. */
-        var msgAtEl = $("momMsgAtInput");
-        if(msgAtEl && document.activeElement !== msgAtEl) msgAtEl.value = S.mom.msgAt;
-        var arNum = function(n){ return String(n).replace(/[0-9]/g, function(d){ return "٠١٢٣٤٥٦٧٨٩"[+d]; }); };
-        var mn = $("momMsgNote");
-        if(mn) mn.textContent = "الرسايل دي مفاجأة لماما: كل ما نقاطها المتراكمة توصل لمضاعفات " + arNum(S.mom.msgAt) + " نقطة، تفتح التطبيق تلاقي رسالة من القايمة دي في وشها موقّعة «— من بابا» — من غير ما تعرف إنها جاية 💌";
-        var cn = $("momCouponNote");
-        if(cn) cn.textContent = "كل كوبون مكافأة ليها سعر بالنقاط زي مكافآت البنات بالظبط: ماما بتجمّع من مهام البنات كل يوم، ولما رصيدها يوصل لسعر كوبون تقدر تستلمه من صفحتها ويتخصم من رصيدها — تبعته لبابا وهو ينفذه ❤️";
+        /* Tiers editor: one row per tier (points + type), kept sorted
+           ascending by points after every change. */
+        var tierList = $("adminMomTierList");
+        if(tierList){
+          tierList.innerHTML = S.mom.tiers.length ? S.mom.tiers.map(function(t, i){
+            return '<div class="row-item"><span class="e">' + momTierIcon(t.type) + '</span>' +
+              '<span class="n">' + t.points + ' نقطة<small>' + (t.type === "message" ? "رسالة 💌" : "كوبون 🎁") + '</small></span>' +
+              '<button class="mini" type="button" data-mom-tier-edit="' + i + '">تعديل</button>' +
+              '<button class="mini del" type="button" data-mom-tier-del="' + i + '">حذف</button></div>';
+          }).join("") : '<div class="empty-note">مفيش باقات</div>';
+          tierList.querySelectorAll("[data-mom-tier-edit]").forEach(function(b){
+            b.addEventListener("click", function(){ startEditMomTier(+b.getAttribute("data-mom-tier-edit")); });
+          });
+          tierList.querySelectorAll("[data-mom-tier-del]").forEach(function(b){
+            b.addEventListener("click", function(){
+              var i = +b.getAttribute("data-mom-tier-del");
+              var t = S.mom.tiers[i]; if(!t) return;
+              showModal("🗑️", "نحذف الباقة دي؟", "باقة «" + t.points + " نقطة " + momTierIcon(t.type) + "» هتتشال من باقات ماما.", "أيوه، احذف", function(){
+                S.mom.tiers.splice(i, 1);
+                if(editMomTierIndex != null){
+                  if(i === editMomTierIndex) cancelEditMomTier();
+                  else if(i < editMomTierIndex) editMomTierIndex--;
+                }
+                save(); renderAll();
+              }, true);
+            });
+          });
+        }
         function bindDeletes(listEl, poolName, noun){
           listEl.querySelectorAll("[data-mom-del]").forEach(function(b){
             b.addEventListener("click", function(){
@@ -2524,7 +2580,7 @@
         }).join("") : '<div class="empty-note">مفيش رسايل</div>';
         cpList.innerHTML = S.mom.coupons.length ? S.mom.coupons.map(function(c, i){
           return '<div class="row-item"><span class="e">🎟️</span>' +
-            '<span class="n">' + esc(momCouponText(c)) + '<small>بسعر ' + momCouponPrice(c) + ' نقطة</small></span>' +
+            '<span class="n">' + esc(momCouponText(c)) + '</span>' +
             '<button class="mini" type="button" data-mom-edit="' + i + '">تعديل</button>' +
             '<button class="mini del" type="button" data-mom-del="' + i + '">حذف</button></div>';
         }).join("") : '<div class="empty-note">مفيش كوبونات</div>';
@@ -2551,13 +2607,36 @@
         } else {
           editMomCouponIndex = i;
           $("momCouponInput").value = momCouponText(txt);
-          $("momCouponPriceInput").value = momCouponPrice(txt);
           $("momCouponLabel").textContent = "✏️ تعديل الكوبون";
           $("momCouponSaveBtn").textContent = "حفظ التعديل ✅";
           $("momCouponCancelEdit").classList.remove("hidden");
           $("momCouponForm").scrollIntoView({ behavior:"smooth", block:"center" });
           $("momCouponInput").focus();
         }
+      }
+      /* Tiers use the same add/edit form pattern: the form fills with the
+         tier's points and type, and saving updates it in place; the list
+         is re-sorted ascending by points after every change. */
+      function startEditMomTier(i){
+        ensureMom(S);
+        var t = S.mom.tiers[i]; if(!t) return;
+        editMomTierIndex = i;
+        $("momTierPointsInput").value = t.points;
+        $("momTierTypeInput").value = t.type;
+        $("momTierLabel").textContent = "✏️ تعديل الباقة — عدد النقاط";
+        $("momTierSaveBtn").textContent = "حفظ التعديل ✅";
+        $("momTierCancelEdit").classList.remove("hidden");
+        $("momTierForm").scrollIntoView({ behavior:"smooth", block:"center" });
+        $("momTierPointsInput").focus();
+      }
+      function cancelEditMomTier(){
+        editMomTierIndex = null;
+        var p = $("momTierPointsInput"); if(p) p.value = "";
+        var ty = $("momTierTypeInput"); if(ty) ty.value = "message";
+        var lb = $("momTierLabel"); if(lb) lb.textContent = "باقة جديدة — عدد النقاط";
+        var sb = $("momTierSaveBtn"); if(sb) sb.textContent = "إضافة الباقة 🎁";
+        var cb = $("momTierCancelEdit"); if(cb) cb.classList.add("hidden");
+        var er = $("momTierErr"); if(er){ er.classList.remove("show"); er.textContent = ""; }
       }
       function cancelEditMomMsg(){
         editMomMsgIndex = null;
@@ -2569,13 +2648,13 @@
       function cancelEditMomCoupon(){
         editMomCouponIndex = null;
         $("momCouponInput").value = "";
-        $("momCouponPriceInput").value = DEFAULT_COUPON_PRICE;
         $("momCouponLabel").textContent = "كوبون جديد";
         $("momCouponSaveBtn").textContent = "إضافة الكوبون 🎟️";
         $("momCouponCancelEdit").classList.add("hidden");
       }
       $("momMsgCancelEdit").addEventListener("click", cancelEditMomMsg);
       $("momCouponCancelEdit").addEventListener("click", cancelEditMomCoupon);
+      $("momTierCancelEdit").addEventListener("click", cancelEditMomTier);
 
       /* ================= Parents: star deductions ================= */
       function renderDeductions(){
@@ -2769,36 +2848,42 @@
         save(); renderAll();
         toast("اتضافت رسالة لماما 💌", "");
       });
-      $("momThreshForm").addEventListener("submit", function(e){
+      $("momTierForm").addEventListener("submit", function(e){
         e.preventDefault();
-        var err = $("momThreshErr");
+        var err = $("momTierErr");
         function fail(m){ err.textContent = m; err.classList.add("show"); }
         err.classList.remove("show"); err.textContent = "";
-        var a = Number(normDigits($("momMsgAtInput").value).trim());
-        if(!Number.isInteger(a) || a < 1 || a > 100000){ fail("الرقم لازم يكون عدد صحيح من ١ لـ ١٠٠٠٠٠"); $("momMsgAtInput").focus(); return; }
+        var p = Number(normDigits($("momTierPointsInput").value).trim());
+        if(!Number.isInteger(p) || p < 1 || p > 100000){ fail("النقاط لازم تكون عدد صحيح من ١ لـ ١٠٠٠٠٠"); $("momTierPointsInput").focus(); return; }
+        var type = $("momTierTypeInput").value === "coupon" ? "coupon" : "message";
         ensureMom(S);
-        S.mom.msgAt = a;
+        if(editMomTierIndex != null && S.mom.tiers[editMomTierIndex] != null){
+          S.mom.tiers[editMomTierIndex] = { points: p, type: type };
+          cancelEditMomTier();
+          S.mom.tiers = validateMomTiers(S.mom.tiers);
+          save(); renderAll();
+          toast("اتعدّلت الباقة 🎁", "");
+          return;
+        }
+        S.mom.tiers.push({ points: p, type: type });
+        S.mom.tiers = validateMomTiers(S.mom.tiers);
+        $("momTierPointsInput").value = "";
         save(); renderAll();
-        var mp = $("momPage"); if(mp && mp.classList.contains("open")) renderMomPage();
-        toast("اتحفظت إعدادات رسايل ماما ✅", "رسالة مفاجأة كل " + a + " نقطة متراكمة");
+        toast("اتضافت باقة لماما 🎁", "");
       });
       $("momCouponForm").addEventListener("submit", function(e){
         e.preventDefault();
         var v = $("momCouponInput").value.trim(); if(!v) return;
-        var praw = normDigits($("momCouponPriceInput").value).trim();
-        var price = praw === "" ? DEFAULT_COUPON_PRICE : Number(praw);
-        if(!Number.isInteger(price) || price < 1 || price > 100000){ toast("⚠️ سعر الكوبون مش صح", "اكتبوا سعر من ١ لـ ١٠٠٠٠٠ نقطة"); $("momCouponPriceInput").focus(); return; }
         ensureMom(S);
         if(editMomCouponIndex != null && S.mom.coupons[editMomCouponIndex] != null){
-          S.mom.coupons[editMomCouponIndex] = { text: v, price: price };
+          S.mom.coupons[editMomCouponIndex] = v;
           cancelEditMomCoupon();
           save(); renderAll();
           toast("اتعدّل الكوبون 🎟️", "");
           return;
         }
-        S.mom.coupons.push({ text: v, price: price });
+        S.mom.coupons.push(v);
         $("momCouponInput").value = "";
-        $("momCouponPriceInput").value = DEFAULT_COUPON_PRICE;
         save(); renderAll();
         toast("اتضاف كوبون لماما 🎟️", "");
       });
@@ -2842,7 +2927,7 @@
         showModal("⚠️", "مسح كل البيانات؟", "كل النجوم والسجلات والتقارير هتتمسح، والمهام والمكافآت هترجع للافتراضية. ده مش هيترجع فيه!", "أيوه، امسح الكل", function(){
           S = seed(); save(); currentGirl = "karma";
           closeEditor();
-          cancelEditTask(); cancelEditReward(); cancelEditMomMsg(); cancelEditMomCoupon(); renderAll(); renderReports();
+          cancelEditTask(); cancelEditReward(); cancelEditMomMsg(); cancelEditMomCoupon(); cancelEditMomTier(); renderAll(); renderReports();
           toast("بدأنا من جديد ⭐", "");
         }, true);
       });
