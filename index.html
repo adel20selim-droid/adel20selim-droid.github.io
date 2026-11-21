@@ -1333,9 +1333,16 @@
         }
       }
 
+      var buyOnceOk = false;
       function buyReward(girl, rewardId){
         var rw = S.rewards.find(function(r){ return r.id === rewardId; });
         if(!rw || S.balances[girl] < rw.price) return;
+        if(!buyOnceOk){
+          gateOnSuccess = function(){ buyOnceOk = true; buyReward(girl, rewardId); };
+          startGate(storedPinHash() ? "buy" : "setup1");
+          return;
+        }
+        buyOnceOk = false;
         showModal(rw.emoji, "نشتري «" + rw.name + "»؟",
           GIRLS[girl].name + " هتدفع <b>" + rw.price + " ⭐</b> وهيتبقى معاها <b>" + (S.balances[girl] - rw.price) + " ⭐</b>",
           "أيوه، اشتري! 🎉",
@@ -1405,7 +1412,7 @@
             '<div class="mid"><div class="rname" dir="rtl">' + esc(rw.name) + '</div>' +
             '<div class="rprice">⭐ ' + rw.price + '</div></div>' +
             '<button class="buy" type="button" data-reward="' + rw.id + '"' + (can ? "" : " disabled") + '>' +
-            (can ? "اشتري 🎁" : "محتاجة " + missing + " نجمة") + '</button></div>';
+            (can ? "اشتري 🔒" : "محتاجة " + missing + " نجمة") + '</button></div>';
         }).join("");
         box.querySelectorAll(".buy").forEach(function(btn){
           btn.addEventListener("click", function(){ buyReward(girl, btn.getAttribute("data-reward")); });
@@ -1492,6 +1499,7 @@
         setup2: ["تأكيد الرقم", "اكتبي نفس الرقم تاني للتأكيد", "حفظ ودخول"],
         entry:  ["للأهل فقط 🔒", "اكتبي رقمك المفضل (٣ أرقام)", "دخول"],
         deduct: ["الخصم للأهل بس 🔒", "اكتبوا الرقم المفضل (٣ أرقام) عشان تكملوا الخصم", "دخول"],
+        buy: ["شراء المكافآت للأهل بس 🔒", "اكتبوا الرقم المفضل (٣ أرقام) عشان تكملوا الشراء", "دخول"],
         chg1:   ["تغيير الرقم المفضل 🔑", "اكتبي رقمك المفضل الحالي الأول", "كمّلي"],
         chg2:   ["تغيير الرقم المفضل 🔑", "اختاري رقمك المفضل الجديد — رقم من ٣ أرقام", "كمّلي"],
         chg3:   ["تأكيد الرقم الجديد", "اكتبي الرقم الجديد تاني للتأكيد", "حفظ الرقم الجديد"]
@@ -1500,7 +1508,7 @@
          existing number (entry / change-current / locked deduction), and
          only when a number is actually stored on this device. In the setup
          modes there is nothing to recover yet, so it stays hidden. */
-      function isVerifyGateMode(m){ return m === "entry" || m === "chg1" || m === "deduct"; }
+      function isVerifyGateMode(m){ return m === "entry" || m === "chg1" || m === "deduct" || m === "buy"; }
       function refreshForgotLink(){
         var b = $("gateForgot"); if(!b) return;
         var show = isVerifyGateMode(gateMode) && !!storedPinHash();
@@ -1601,6 +1609,12 @@
               var pending = gateOnSuccess;
               gateOnSuccess = null;
               if(pending) pending();
+            }
+            else if(gateMode === "buy"){
+              $("gateOverlay").classList.remove("open");
+              var pendingBuy = gateOnSuccess;
+              gateOnSuccess = null;
+              if(pendingBuy) pendingBuy();
             }
             else startGate("chg2");
           } else {
