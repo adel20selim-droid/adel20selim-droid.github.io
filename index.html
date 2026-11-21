@@ -586,7 +586,7 @@
       <div id="rewardList"></div>
 
       <h2 class="section-title" id="deductPublicTitle">⭐ الخصومات</h2>
-      <p class="color-sub">لو حصلت حالة من دول، دوسوا «اخصم» وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
+      <p class="color-sub">الخصم مقفول برقم الأهل 🔒 — لو حصلت حالة من دول، دوسوا «اخصم» واكتبوا الرقم المفضل، وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
       <div class="deduct-balance" id="deductPublicBalance"></div>
       <div id="publicDeductList"></div>
 
@@ -756,7 +756,7 @@
             </div>
             <p class="guide-note" id="deductBalanceLine"></p>
             <div id="deductApplyList"></div>
-            <p class="guide-note">الخصم متاح كمان من قسم «الخصومات» في الشاشة الرئيسية، وبيتسجل في تقرير اليوم عشان يبقى واضح اتخصم إمتى وليه. من هنا تقدروا تضيفوا وتعدّلوا وتحذفوا الحالات نفسها.</p>
+            <p class="guide-note">الخصم متاح كمان من قسم «الخصومات» في الشاشة الرئيسية — بس هناك مقفول بالرقم المفضل وبيتطلب إدخاله قبل أي خصم — وبيتسجل في تقرير اليوم عشان يبقى واضح اتخصم إمتى وليه. من هنا تقدروا تضيفوا وتعدّلوا وتحذفوا الحالات نفسها.</p>
           </div>
           <div class="panel">
             <h3 id="deductFormTitle">➕ إضافة حالة خصم</h3>
@@ -1331,10 +1331,10 @@
             '<span class="dic">' + d.emoji + '</span>' +
             '<div class="mid"><div class="dname">' + esc(d.name) + '</div>' +
             '<div class="dprice">الخصم: ⭐ ' + d.stars + '</div></div>' +
-            '<button class="deduct-apply" type="button" data-pub-ded="' + d.id + '">اخصم ⭐</button></div>';
+            '<button class="deduct-apply" type="button" data-pub-ded="' + d.id + '">🔒 اخصم ⭐</button></div>';
         }).join("");
         box.querySelectorAll("[data-pub-ded]").forEach(function(b){
-          b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl); });
+          b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl, true); });
         });
       }
       function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); }
@@ -1369,10 +1369,16 @@
       }
       function isValidPin(v){ return /^[0-9]{3}$/.test(v); }
       var gateMode = "", gateTemp = "";
+      /* Deductions on the home screen are locked with the same parents'
+         number: applying one asks for the number first (once per session,
+         like the parents area). gateOnSuccess carries the pending action. */
+      var deductUnlocked = false;
+      var gateOnSuccess = null;
       var GATE_TEXT = {
         setup1: ["أول مرة هنا 👋", "اختاري رقمك المفضل — رقم من ٣ أرقام هتدخليه كل مرة تيجي تدخلي قسم الأهل، ولازم تكوني انتي بس اللي عارفاه", "كمّلي"],
         setup2: ["تأكيد الرقم", "اكتبي نفس الرقم تاني للتأكيد", "حفظ ودخول"],
         entry:  ["للأهل فقط 🔒", "اكتبي رقمك المفضل (٣ أرقام)", "دخول"],
+        deduct: ["الخصم للأهل بس 🔒", "اكتبوا الرقم المفضل (٣ أرقام) عشان تكملوا الخصم", "دخول"],
         chg1:   ["تغيير الرقم المفضل 🔑", "اكتبي رقمك المفضل الحالي الأول", "كمّلي"],
         chg2:   ["تغيير الرقم المفضل 🔑", "اختاري رقمك المفضل الجديد — رقم من ٣ أرقام", "كمّلي"],
         chg3:   ["تأكيد الرقم الجديد", "اكتبي الرقم الجديد تاني للتأكيد", "حفظ الرقم الجديد"]
@@ -1397,6 +1403,7 @@
       }
       function unlockParents(){
         parentsUnlocked = true;
+        deductUnlocked = true;
         $("gateOverlay").classList.remove("open");
         $("parents").classList.add("open");
         renderAdmin();
@@ -1424,7 +1431,18 @@
                number the parent had just registered suddenly "was wrong". */
             try{ save(); }catch(e){}
             if(gateMode === "setup2"){
-              unlockParents();
+              /* First-time setup may have been started from a locked
+                 deduction: finish that deduction instead of opening the
+                 parents area. */
+              var pendingSetup = gateOnSuccess;
+              gateOnSuccess = null;
+              if(pendingSetup){
+                deductUnlocked = true;
+                $("gateOverlay").classList.remove("open");
+                pendingSetup();
+              } else {
+                unlockParents();
+              }
             } else {
               $("gateOverlay").classList.remove("open");
               toast("اتغيّر الرقم المفضل 🔑", "المرة الجاية ادخلي بالرقم الجديد");
@@ -1432,11 +1450,18 @@
           });
           return;
         }
-        /* entry / chg1: verify against the stored hash */
+        /* entry / chg1 / deduct: verify against the stored hash */
         if(!isValidPin(v)){ gateFail("الرقم مش صح، حاولي تاني"); return; }
         sha256hex(v).then(function(h){
           if(h === storedPinHash()){
             if(gateMode === "entry") unlockParents();
+            else if(gateMode === "deduct"){
+              deductUnlocked = true;
+              $("gateOverlay").classList.remove("open");
+              var pending = gateOnSuccess;
+              gateOnSuccess = null;
+              if(pending) pending();
+            }
             else startGate("chg2");
           } else {
             gateFail("الرقم مش صح، حاولي تاني");
@@ -1454,7 +1479,7 @@
         var v = normDigits($("gateInput").value).replace(/[^0-9]/g, "").slice(0, 3);
         if(v !== $("gateInput").value) $("gateInput").value = v;
       });
-      $("gateCancel").addEventListener("click", function(){ $("gateOverlay").classList.remove("open"); });
+      $("gateCancel").addEventListener("click", function(){ gateOnSuccess = null; $("gateOverlay").classList.remove("open"); });
 
       /* tabs */
       document.querySelectorAll(".tab").forEach(function(tab){
@@ -1565,9 +1590,17 @@
           });
         });
       }
-      function applyDeduction(dedId, girlOverride){
+      function applyDeduction(dedId, girlOverride, fromPublic){
         var d = S.deductions.find(function(x){ return x.id === dedId; });
         if(!d) return;
+        /* From the home screen the deduction is locked with the parents'
+           number — ask for it first (once per session). Inside the parents
+           area the number was already entered, so no extra prompt. */
+        if(fromPublic && !deductUnlocked && !parentsUnlocked){
+          gateOnSuccess = function(){ applyDeduction(dedId, girlOverride, fromPublic); };
+          startGate(storedPinHash() ? "deduct" : "setup1");
+          return;
+        }
         var g = girlOverride || dedGirl, bal = S.balances[g];
         if(bal <= 0){
           showModal("⭐", "مفيش نجوم تتخصم", GIRLS[g].name + " رصيدها صفر دلوقتي، فمفيش نجوم يتخصم منها.", "تمام");
@@ -2686,12 +2719,5 @@
       refreshSetupPinBtn();
       refreshInstallBar();
     </script>
-  <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js").catch(function () {});
-  });
-}
-</script>
-</body>
+  <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script></body>
 </html>
