@@ -352,26 +352,24 @@
       .w-install-note.warn{ color:var(--red); font-weight:800; }
       /* pulses while the browser is actually ready to install in one tap */
       .install-ready{ animation:hotPulse 1.2s ease infinite; }
-      /* ---------- Home-screen sync banner ----------
-         Sync state must be visible WITHOUT opening the parents area: a new
-         shortcut or a different link opens with empty per-origin storage
-         (no data, no sync link), and until now nothing on the home screen
-         said so or offered the one-tap re-link. */
-      .sync-banner{
-        display:flex; align-items:center; gap:10px; margin-top:12px;
-        border-radius:var(--radius); padding:10px 14px;
-        font-weight:700; font-size:.98rem; line-height:1.55;
+      /* ---------- Home-screen Mom strip ----------
+         Sits at the top of the main screen, above the girl cards: Mom's
+         name and her TODAY points (the same effort number the «مكافأة
+         ماما» card below computes — see renderMom). */
+      .mom-strip{
+        margin-top:12px; border-radius:var(--radius); padding:12px 16px;
+        text-align:center; background:var(--rose-light);
+        border:2px solid var(--rose); box-shadow:var(--shadow);
       }
-      .sync-banner.off{ background:var(--violet-light); border:2px solid var(--violet-dark); }
-      .sync-banner.on{ background:var(--green-light); border:2px solid var(--green); }
-      .sync-banner .txt{ flex:1; }
-      .sync-banner .sb-status{ display:block; font-size:.88rem; color:var(--gray); font-weight:700; }
-      .sync-banner .go{
-        flex:0 0 auto; border:none; border-radius:999px; background:var(--violet-dark); color:#fff;
-        font-weight:800; font-size:.98rem; padding:10px 16px; cursor:pointer; min-height:46px;
+      .mom-strip .ms-title{ font-size:1.3rem; font-weight:800; }
+      .mom-strip .ms-points{ font-weight:800; font-size:1.1rem; margin-top:2px; }
+      .mom-strip .ms-points b{ color:var(--rose-dark); font-size:1.4rem; }
+      .mom-strip .ms-sub{ color:var(--gray); font-weight:700; font-size:.93rem; margin-top:2px; }
+      .mom-strip .ms-badge{
+        display:inline-block; margin-top:8px; padding:4px 14px;
+        background:var(--gold-light); border:2px dashed var(--gold-dark);
+        border-radius:999px; color:var(--gold-dark); font-weight:800; font-size:.97rem;
       }
-      .sync-banner.on .go{ background:var(--green); }
-      .sync-banner .go:active{ transform:scale(.96); }
 
       /* ---------- Parents ---------- */
       #parents{ display:none; margin-top:8px; }
@@ -637,10 +635,7 @@
         <button class="x" id="installBarClose" type="button" aria-label="إخفاء شريط التثبيت">✕</button>
       </div>
 
-      <div class="sync-banner off" id="syncBanner" role="status">
-        <span class="txt" id="syncBannerText"></span>
-        <button class="go" id="syncBannerBtn" type="button">🔗 ربط بكود العيلة</button>
-      </div>
+      <div class="mom-strip" id="momStrip" role="status"></div>
 
       <section class="girls" aria-label="اختيار البنت">
         <button class="girl karma" id="card-karma" type="button">
@@ -1559,6 +1554,15 @@
         ensureMom(S);
         var key = todayKey();
         var x = momEffort(key);
+        /* Top-of-screen Mom strip: same effort number as the card below. */
+        var strip = $("momStrip");
+        if(strip){
+          var sh = '<div class="ms-title">💐 ماما</div>' +
+            '<div class="ms-points">نقاط ماما النهاردة: <b>' + x + '</b></div>' +
+            '<div class="ms-sub">بتزيد مع كل مهمة البنات يخلّصوها ⭐</div>';
+          if(x >= 30) sh += '<div class="ms-badge">ليها كوبون دلع النهاردة 🎁</div>';
+          strip.innerHTML = sh;
+        }
         var html = '<div class="mom-effort">جهد ماما النهاردة: <b>' + x + '</b> مهمة خلصت 💪</div>';
         if(x >= 10){
           html += '<div class="mom-msg"><div class="mom-msg-text" dir="rtl">' + esc(momPick(S.mom.messages, key)) + '</div>' +
@@ -1575,7 +1579,7 @@
         }
         box.innerHTML = html;
       }
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderSyncBanner(); }catch(e){} fitNames(); }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); }
 
       /* Names stay on ONE line: shrink the font just enough to fit the row.
          Base size comes from CSS (1.05rem); only names that still overflow
@@ -1735,7 +1739,7 @@
             if(gateMode === "entry"){
               unlockParents();
               /* an action queued before the gate (e.g. "link this device"
-                 from the home sync banner) runs right after unlocking */
+                 from the welcome screen) runs right after unlocking */
               var pendingEntry = gateOnSuccess;
               gateOnSuccess = null;
               if(pendingEntry) pendingEntry();
@@ -3286,45 +3290,17 @@
       function syncUrl(code){ return SYNC_DB + "/families/" + (code || syncCfg.code) + "/state.json"; }
       function syncStatus(txt){
         var el = $("syncStatus"); if(el) el.textContent = txt;
-        var b = $("syncBannerStatus"); if(b) b.textContent = txt ? " — " + txt : "";
       }
-      /* "Pristine" = this copy has never recorded anything: no day events
-         and zero balances. A pristine copy that is not linked is almost
-         always a fresh shortcut/link that opened with empty storage. */
-      function isPristineState(){
-        try{
-          if(!S || !S.days) return true;
-          var has = false;
-          Object.keys(S.days).forEach(function(k){
-            GIRL_KEYS.forEach(function(g){
-              var r = S.days[k] && S.days[k][g];
-              if(r && r.events && r.events.length) has = true;
-            });
-          });
-          return !has && !(S.balances && (S.balances.judy || S.balances.karma));
-        }catch(e){ return false; }
-      }
-      function renderSyncBanner(){
-        var b = $("syncBanner"); if(!b) return;
+      /* The welcome screen offers a one-tap "link this device" path only
+         while the device is not linked yet; hide it once sync is on. */
+      function renderWelcomeSync(){
         var on = !!syncCfg;
-        b.classList.toggle("on", on);
-        b.classList.toggle("off", !on);
-        if(on){
-          $("syncBannerText").innerHTML = "🔄 <b>المزامنة مفعّلة</b> — كود العيلة: <b dir=\"ltr\">" + esc(syncCfg.code) + "</b><span class=\"sb-status\" id=\"syncBannerStatus\"></span>";
-          $("syncBannerBtn").textContent = "عرض الحالة";
-        } else if(isPristineState()){
-          $("syncBannerText").innerHTML = "⚠️ <b>النسخة دي جديدة ولسه مش مربوطة</b> — أي شورت كت أو رابط جديد بيفتح فاضي، ونجوم البنات ونتائجهم مش هتظهر هنا لحد ما تربطوا الجهاز بكود العيلة";
-          $("syncBannerBtn").textContent = "🔗 ربط بكود العيلة";
-        } else {
-          $("syncBannerText").innerHTML = "⚠️ <b>المزامنة مش مفعّلة على النسخة دي</b> — النجوم والتعديلات اللي هنا مش هتوصل لباقي أجهزة العيلة لحد ما تربطوها";
-          $("syncBannerBtn").textContent = "🔗 ربط بكود العيلة";
-        }
         var wj = $("wSyncJoin"); if(wj) wj.classList.toggle("hidden", on);
         var wn = $("wSyncNote"); if(wn) wn.classList.toggle("hidden", on);
       }
-      /* One-tap path from the home screen / welcome screen into the sync
-         link flow: pass the parents gate first (same protection as the
-         sync panel itself), then land on the panel with the code box open. */
+      /* One-tap path from the welcome screen into the sync link flow:
+         pass the parents gate first (same protection as the sync panel
+         itself), then land on the panel with the code box open. */
       function openSyncJoin(){
         function go(){
           try{ renderAdmin(); }catch(e){}
@@ -3456,7 +3432,7 @@
         $("syncOff").classList.toggle("hidden", on);
         $("syncOn").classList.toggle("hidden", !on);
         if(on) $("syncCodeShow").textContent = syncCfg.code;
-        renderSyncBanner();
+        renderWelcomeSync();
       }
       function syncStartLoops(){
         setInterval(function(){
@@ -3549,7 +3525,6 @@
       $("syncNowBtn").addEventListener("click", function(){
         if(syncPending) syncPush(); else syncPull(true);
       });
-      $("syncBannerBtn").addEventListener("click", openSyncJoin);
       $("wSyncJoin").addEventListener("click", function(){ hideWelcome(); openSyncJoin(); });
       $("syncOffBtn").addEventListener("click", function(){
         showModal("🔌", "نفصل المزامنة من الجهاز ده؟",
