@@ -550,6 +550,32 @@
       .ctools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
       .ctools .mini{ flex:1; min-width:100px; min-height:48px; font-size:1rem; }
       .ctools .mini.on{ background:var(--gold); border-color:var(--gold); color:var(--ink); }
+      /* ---------- Mom's reward ---------- */
+      .mom-card{
+        background:var(--card); border:2px solid var(--rose); border-radius:var(--radius);
+        padding:14px; margin-top:10px; box-shadow:var(--shadow);
+      }
+      .mom-effort{ text-align:center; font-weight:800; font-size:1.12rem; }
+      .mom-effort b{ color:var(--rose-dark); font-size:1.35rem; }
+      .mom-teaser{
+        margin-top:10px; text-align:center; color:var(--gray); font-weight:700; line-height:1.65;
+        background:var(--card-soft); border:2px dashed var(--line); border-radius:16px; padding:12px;
+      }
+      .mom-msg{
+        margin-top:10px; background:var(--rose-light); border:2px solid var(--rose);
+        border-radius:16px; padding:14px; text-align:center;
+      }
+      .mom-msg-text{ font-size:1.18rem; font-weight:800; line-height:1.6; }
+      .mom-sign{ margin-top:6px; color:var(--rose-dark); font-weight:800; }
+      .mom-next{ margin-top:10px; text-align:center; font-weight:800; color:var(--gold-dark); line-height:1.6; }
+      .mom-coupon{
+        margin-top:12px; text-align:center; padding:14px;
+        background:var(--gold-light); border:2.5px dashed var(--gold-dark); border-radius:16px;
+      }
+      .mom-coupon-label{ font-weight:800; color:var(--gold-dark); font-size:.95rem; }
+      .mom-coupon-text{ font-size:1.22rem; font-weight:800; line-height:1.55; margin-top:4px; }
+      .mom-coupon-note{ margin-top:6px; font-weight:700; }
+
       .hidden{ display:none !important; }
     </style>
   </head>
@@ -656,6 +682,9 @@
       <h2 class="section-title" id="rewardsTitle">🎁 المكافآت</h2>
       <div id="rewardList"></div>
 
+      <h2 class="section-title">💐 مكافأة ماما</h2>
+      <div class="mom-card" id="momCard"></div>
+
       <h2 class="section-title" id="deductPublicTitle">⭐ الخصومات</h2>
       <p class="color-sub">الخصم مقفول برقم الأهل 🔒 — لو حصلت حالة من دول، دوسوا «اخصم» واكتبوا الرقم المفضل، وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
       <div class="deduct-balance" id="deductPublicBalance"></div>
@@ -686,6 +715,7 @@
           <button class="tab" data-tab="rewards" type="button">🎁 المكافآت</button>
           <button class="tab" data-tab="reports" type="button">📊 التقارير</button>
           <button class="tab" data-tab="deduct" type="button">⭐ الخصومات</button>
+          <button class="tab" data-tab="mom" type="button">💐 ماما</button>
         </div>
         <button class="change-pin" id="changePinBtn" type="button">🔑 تغيير الرقم المفضل</button>
 
@@ -854,6 +884,33 @@
           </div>
         </div>
 
+        <div id="tab-mom" class="hidden">
+          <div class="panel">
+            <h3>💌 رسايل التقدير لماما</h3>
+            <p class="guide-note">كل يوم بييجي دوره على رسالة من القايمة دي بالترتيب، وبتتفتح لماما لما مهام البنات اللي خلصت في اليوم توصل ١٠ مهام. الرسالة بتظهر في بطاقة «💐 مكافأة ماما» في الشاشة الرئيسية موقّعة «— من بابا».</p>
+            <form class="f" id="momMsgForm">
+              <div>
+                <label for="momMsgInput">رسالة جديدة</label>
+                <input type="text" id="momMsgInput" maxlength="200" placeholder="مثال: شكرًا يا حبيبتي على تعبك معانا ❤️" />
+              </div>
+              <button class="save-btn" type="submit">إضافة الرسالة 💌</button>
+            </form>
+            <div id="adminMomMsgList"></div>
+          </div>
+          <div class="panel">
+            <h3>🎟️ كوبونات الدلع لماما</h3>
+            <p class="guide-note">كل يوم بييجي دوره على كوبون من القايمة دي بالترتيب، وبيطلع لماما لما مهام البنات اللي خلصت في اليوم توصل ٣٠ مهمة — تبعته لبابا وهو ينفذه ❤️</p>
+            <form class="f" id="momCouponForm">
+              <div>
+                <label for="momCouponInput">كوبون جديد</label>
+                <input type="text" id="momCouponInput" maxlength="200" placeholder="مثال: كوبون عشا بره على حسابي 🍽️" />
+              </div>
+              <button class="save-btn" type="submit">إضافة الكوبون 🎟️</button>
+            </form>
+            <div id="adminMomCouponList"></div>
+          </div>
+        </div>
+
         <div id="tab-reports" class="hidden">
           <div class="panel">
             <h3>📅 سجل يوم</h3>
@@ -972,6 +1029,37 @@
         ["اتخانقت مع أختي","😤",2],["ما سمعتش كلام ماما أو بابا","🔇",2],["كدبت","🤥",3],
         ["لعبت بالموبايل من غير إذن","📱",3],["عليت صوتي أو صرخت","📢",1],["سبت أوضتي مش مترتبة","🧺",1]
       ];
+      /* Mom's reward: daily appreciation messages + treat coupons for the
+         mother, unlocked by the girls' completed tasks (see renderMom).
+         The pools live in the synced state under `mom`; the daily pick is
+         deterministic by date, so no unlock state is ever stored. */
+      var DEFAULT_MOM_MESSAGES = [
+        "شكرًا يا بطلة… كل نجمة للبنات وراها تعبك ❤️",
+        "أنا بعيد بس شايف تعبك كل يوم، ربنا يخليكي لينا",
+        "البنات محظوظة إنك أمهم… وأنا محظوظ إنك مراتي",
+        "كل مهمة خلصت النهاردة كانت بإيدك وقلبك، شكرًا يا حبيبتي",
+        "يوم تقيل وعدّى بفضلك… ارتاحي شوية، انتي تستاهلي"
+      ];
+      var DEFAULT_MOM_COUPONS = [
+        "كوبون مشروبك المفضل على حسابي ☕",
+        "كوبون أكلة بتحبيها — اطلبيها النهاردة 🍽️",
+        "كوبون ١٠٠ ريال دلع — اختاري اللي نفسك فيه 🎁",
+        "كوبون مكالمة طويلة الليلة من غير مقاطعة 📞",
+        "كوبون يوم راحة من الطبيخ — الأكل جاهز علىّ 🍲",
+        "كوبون حضن كبير مؤجل لأول ما أرجع 🤗"
+      ];
+      function defaultMom(){
+        return { messages: DEFAULT_MOM_MESSAGES.slice(), coupons: DEFAULT_MOM_COUPONS.slice() };
+      }
+      /* Seed the mom pools whenever they are missing or emptied (old saves,
+         old backups, old cloud copies) — every other key stays untouched. */
+      function ensureMom(s){
+        if(!s) return s;
+        if(!s.mom || typeof s.mom !== "object") s.mom = defaultMom();
+        if(!Array.isArray(s.mom.messages) || !s.mom.messages.length) s.mom.messages = DEFAULT_MOM_MESSAGES.slice();
+        if(!Array.isArray(s.mom.coupons) || !s.mom.coupons.length) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
+        return s;
+      }
       var EMOJIS = ["🕌","🛏️","🪥","🎒","📚","📖","🧸","🤝","👯","🤲","🌙","🍦","🎮","🎨","🎬","🍕","🌳","🧩","⭐","🚿","👕","🧹","🍽️","✏️","🦷","🛁","🐱","🌸","🦋","🏃","🎵","🧁","🍎","📝","🧼","🌞","😤","🙊","🤥","😭","💥","✋","📱","📢"];
       var PRAISES = ["برافو يا بطلة! 🌟","رائعة! كملي كده! 💪","أحسنتي! أنا فخور بيكي! 🥰","ممتازة! نجمة جديدة في الطريق! ⭐","شطورة! استمري! 🎉","عمل رائع يا نجمة! ✨","يا سلام! أحلى بنت! 🌸","خطوة جميلة نحو المكافأة! 🎁"];
       var SECRET_MESSAGES = [
@@ -999,6 +1087,7 @@
           balances: { judy:0, karma:0 },
           days: {},
           coloring: emptyColoring(),
+          mom: defaultMom(),
           selectedGirl: "karma"
         };
       }
@@ -1035,6 +1124,8 @@
               if(s.deductions.length === OLD_DED_NAMES.length && s.deductions.every(function(d){ return OLD_DED_NAMES.indexOf(d.name) >= 0; })){
                 s.deductions = defaultDeductions();
               }
+              /* migrate older saves: add the mom's-reward pools */
+              ensureMom(s);
               GIRL_KEYS.forEach(function(g){
                 if(!s.coloring[g]) s.coloring[g] = { unlocked:[], works:{} };
                 if(!s.coloring[g].unlocked) s.coloring[g].unlocked = [];
@@ -1438,7 +1529,53 @@
           b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl, true); });
         });
       }
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderSyncBanner(); }catch(e){} fitNames(); }
+      /* ================= Mom's reward =================
+         Effort = today's NET completed tasks summed over BOTH girls: the
+         tasks currently marked done in today's record (unchecking deletes
+         the done entry, so the count drops on its own). At 10+ the day's
+         appreciation message unlocks; at 30+ the day's treat coupon too.
+         The daily pick is deterministic — (days since 2026-01-01) mod pool
+         length — so every linked device shows the same message and coupon
+         with no extra storage. */
+      function momEffort(key){
+        var day = S.days[key]; if(!day) return 0;
+        var n = 0;
+        GIRL_KEYS.forEach(function(g){
+          var r = day[g];
+          if(r && r.done) n += Object.keys(r.done).length;
+        });
+        return n;
+      }
+      function momPick(pool, key){
+        if(!pool || !pool.length) return "";
+        var p = key.split("-");
+        var days = Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - Date.UTC(2026, 0, 1)) / 86400000);
+        var i = days % pool.length;
+        if(i < 0) i += pool.length;
+        return pool[i];
+      }
+      function renderMom(){
+        var box = $("momCard"); if(!box) return;
+        ensureMom(S);
+        var key = todayKey();
+        var x = momEffort(key);
+        var html = '<div class="mom-effort">جهد ماما النهاردة: <b>' + x + '</b> مهمة خلصت 💪</div>';
+        if(x >= 10){
+          html += '<div class="mom-msg"><div class="mom-msg-text" dir="rtl">' + esc(momPick(S.mom.messages, key)) + '</div>' +
+            '<div class="mom-sign">— من بابا</div></div>';
+        } else {
+          html += '<div class="mom-teaser">🔒 كمّلوا مهام وافتحوا رسالة بابا لماما 💌<br />فاضل ' + (10 - x) + ' مهمة وتتفتح الرسالة</div>';
+        }
+        if(x >= 30){
+          html += '<div class="mom-coupon"><div class="mom-coupon-label">🎟️ كوبون دلع لماما</div>' +
+            '<div class="mom-coupon-text" dir="rtl">' + esc(momPick(S.mom.coupons, key)) + '</div>' +
+            '<div class="mom-coupon-note">ابعتي الكوبون ده لبابا وهو ينفذه ❤️</div></div>';
+        } else {
+          html += '<div class="mom-next">فاضل ' + (30 - x) + ' مهمة ويطلع لماما كوبون دلع 🎟️</div>';
+        }
+        box.innerHTML = html;
+      }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderSyncBanner(); }catch(e){} fitNames(); }
 
       /* Names stay on ONE line: shrink the font just enough to fit the row.
          Base size comes from CSS (1.05rem); only names that still overflow
@@ -1741,7 +1878,7 @@
         tab.addEventListener("click", function(){
           document.querySelectorAll(".tab").forEach(function(x){ x.classList.remove("on"); });
           tab.classList.add("on");
-          ["tasks","rewards","reports","deduct"].forEach(function(name){
+          ["tasks","rewards","reports","deduct","mom"].forEach(function(name){
             $("tab-" + name).classList.toggle("hidden", name !== tab.getAttribute("data-tab"));
           });
           if(tab.getAttribute("data-tab") === "reports") renderReports();
@@ -1809,6 +1946,38 @@
           });
         });
         renderDeductions();
+        renderMomAdmin();
+      }
+
+      /* ================= Parents: mom's reward pools ================= */
+      function renderMomAdmin(){
+        ensureMom(S);
+        function bindDeletes(listEl, poolName, noun){
+          listEl.querySelectorAll("[data-mom-del]").forEach(function(b){
+            b.addEventListener("click", function(){
+              var i = +b.getAttribute("data-mom-del");
+              var txt = S.mom[poolName][i];
+              showModal("🗑️", "نحذف " + noun + " دي؟", "«" + esc(txt) + "» هتتشال من القايمة.", "أيوه، احذف", function(){
+                S.mom[poolName].splice(i, 1);
+                save(); renderAll();
+              }, true);
+            });
+          });
+        }
+        var msgList = $("adminMomMsgList"), cpList = $("adminMomCouponList");
+        if(!msgList || !cpList) return;
+        msgList.innerHTML = S.mom.messages.length ? S.mom.messages.map(function(m, i){
+          return '<div class="row-item"><span class="e">💌</span>' +
+            '<span class="n">' + esc(m) + '</span>' +
+            '<button class="mini del" type="button" data-mom-del="' + i + '">حذف</button></div>';
+        }).join("") : '<div class="empty-note">مفيش رسايل</div>';
+        cpList.innerHTML = S.mom.coupons.length ? S.mom.coupons.map(function(c, i){
+          return '<div class="row-item"><span class="e">🎟️</span>' +
+            '<span class="n">' + esc(c) + '</span>' +
+            '<button class="mini del" type="button" data-mom-del="' + i + '">حذف</button></div>';
+        }).join("") : '<div class="empty-note">مفيش كوبونات</div>';
+        bindDeletes(msgList, "messages", "الرسالة");
+        bindDeletes(cpList, "coupons", "الكوبون");
       }
 
       /* ================= Parents: star deductions ================= */
@@ -1985,6 +2154,25 @@
         }
         save(); renderAll();
         toast("اتحفظت المكافأة ✅", "");
+      });
+
+      $("momMsgForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        var v = $("momMsgInput").value.trim(); if(!v) return;
+        ensureMom(S);
+        S.mom.messages.push(v);
+        $("momMsgInput").value = "";
+        save(); renderAll();
+        toast("اتضافت رسالة لماما 💌", "");
+      });
+      $("momCouponForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        var v = $("momCouponInput").value.trim(); if(!v) return;
+        ensureMom(S);
+        S.mom.coupons.push(v);
+        $("momCouponInput").value = "";
+        save(); renderAll();
+        toast("اتضاف كوبون لماما 🎟️", "");
       });
 
       $("resetBtn").addEventListener("click", function(){
@@ -2971,6 +3159,7 @@
       function migrateBackupData(d){
         if(!d.coloring) d.coloring = emptyColoring();
         if(!d.deductions) d.deductions = defaultDeductions();
+        ensureMom(d);
         GIRL_KEYS.forEach(function(g){
           if(!d.coloring[g]) d.coloring[g] = { unlocked:[], works:{} };
           if(!d.coloring[g].unlocked) d.coloring[g].unlocked = [];
