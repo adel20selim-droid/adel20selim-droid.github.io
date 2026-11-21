@@ -215,6 +215,40 @@
       }
       .modal .err{ display:none; color:var(--red); font-weight:800; margin-top:10px; }
       .modal .err.show{ display:block; }
+      /* ---------- Gate: forgot-number recovery ----------
+         Shown only in the verify modes when a number is actually stored.
+         Recovery is possession-based: the family code (whose cloud state
+         carries the number's hash) or a backup code (which carries it too). */
+      .modal .forgot-link{
+        display:block; margin:10px auto 0; background:none; border:none; cursor:pointer;
+        color:var(--violet-dark); font-weight:800; font-size:1rem; text-decoration:underline;
+        min-height:40px; padding:6px 10px;
+      }
+      .recovery{
+        margin-top:12px; text-align:start; background:var(--card-soft);
+        border:2px solid var(--violet); border-radius:16px; padding:14px;
+      }
+      .recovery h3{ margin:0 0 6px; font-size:1.12rem; font-weight:800; text-align:center; color:var(--violet-dark); }
+      .recovery p{ text-align:start; }
+      .recovery label{ font-weight:800; display:block; margin:12px 0 6px; font-size:.98rem; }
+      .recovery input[type="text"]{
+        width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:14px;
+        background:var(--card); color:var(--ink); font-size:1.25rem; font-weight:800;
+        text-align:center; letter-spacing:.2em; text-transform:uppercase; min-height:52px;
+      }
+      .recovery textarea{
+        width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:14px;
+        background:var(--card); color:var(--ink); font-size:.82rem; font-weight:600;
+        font-family:ui-monospace,Menlo,Consolas,monospace; resize:vertical; min-height:84px;
+        word-break:break-all; direction:ltr; text-align:left;
+      }
+      .recovery .rec-btn{ width:100%; margin-top:10px; min-height:52px; }
+      .recovery .rec-note{ font-size:.92rem; margin-top:6px; }
+      .recovery .rec-msg{ font-weight:800; margin-top:10px; min-height:1.3em; text-align:center; }
+      .recovery .rec-msg.err{ color:var(--red); }
+      .recovery .rec-msg.ok{ color:var(--green); }
+      .recovery .rec-last{ margin-top:14px; border-top:1px dashed var(--line); padding-top:10px; }
+      .recovery .rec-last ol{ margin:6px 0; padding-inline-start:22px; font-weight:700; line-height:1.75; }
       .shake{ animation:shake .4s ease; }
       @keyframes shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(7px)} 75%{transform:translateX(-7px)} }
 
@@ -318,6 +352,26 @@
       .w-install-note.warn{ color:var(--red); font-weight:800; }
       /* pulses while the browser is actually ready to install in one tap */
       .install-ready{ animation:hotPulse 1.2s ease infinite; }
+      /* ---------- Home-screen sync banner ----------
+         Sync state must be visible WITHOUT opening the parents area: a new
+         shortcut or a different link opens with empty per-origin storage
+         (no data, no sync link), and until now nothing on the home screen
+         said so or offered the one-tap re-link. */
+      .sync-banner{
+        display:flex; align-items:center; gap:10px; margin-top:12px;
+        border-radius:var(--radius); padding:10px 14px;
+        font-weight:700; font-size:.98rem; line-height:1.55;
+      }
+      .sync-banner.off{ background:var(--violet-light); border:2px solid var(--violet-dark); }
+      .sync-banner.on{ background:var(--green-light); border:2px solid var(--green); }
+      .sync-banner .txt{ flex:1; }
+      .sync-banner .sb-status{ display:block; font-size:.88rem; color:var(--gray); font-weight:700; }
+      .sync-banner .go{
+        flex:0 0 auto; border:none; border-radius:999px; background:var(--violet-dark); color:#fff;
+        font-weight:800; font-size:.98rem; padding:10px 16px; cursor:pointer; min-height:46px;
+      }
+      .sync-banner.on .go{ background:var(--green); }
+      .sync-banner .go:active{ transform:scale(.96); }
 
       /* ---------- Parents ---------- */
       #parents{ display:none; margin-top:8px; }
@@ -516,6 +570,8 @@
           <button class="btn-soft wbtn" id="wGuideBtn" type="button">❓ إزاي أثبّته؟ خطوة بخطوة</button>
           <button class="btn-soft wbtn" id="wGuideIOS" type="button">🍎 اختصار للآيفون؟ الطريقة من سفاري</button>
           <button class="btn-soft wbtn" id="wBrowser" type="button">🌐 فتح في المتصفح</button>
+          <button class="btn-soft wbtn hidden" id="wSyncJoin" type="button">🔗 جهاز جديد؟ اربطوه بكود العيلة</button>
+          <div class="w-install-note hidden" id="wSyncNote">أي شورت كت أو رابط جديد بيفتح فاضي ونجوم البنات مش بتبان فيه — دوسوا الزر واكتبوا كود العيلة، وكل النتائج هترجع على الجهاز ده فورًا ⭐</div>
           <button class="btn-soft wbtn hidden" id="wSetupPin" type="button">🔐 للأهل: إنشاء الرقم السري (أول مرة)</button>
           <button class="w-never" id="wNever" type="button">متوريهاش الشاشة دي تاني</button>
         </div>
@@ -553,6 +609,11 @@
         <span class="txt">📲 ثبّت التطبيق على موبايلك — هيبقى بأيقونة على الشاشة ويفتح على طول</span>
         <button class="go" id="installBarBtn" type="button">تثبيت</button>
         <button class="x" id="installBarClose" type="button" aria-label="إخفاء شريط التثبيت">✕</button>
+      </div>
+
+      <div class="sync-banner off" id="syncBanner" role="status">
+        <span class="txt" id="syncBannerText"></span>
+        <button class="go" id="syncBannerBtn" type="button">🔗 ربط بكود العيلة</button>
       </div>
 
       <section class="girls" aria-label="اختيار البنت">
@@ -843,6 +904,29 @@
         <p id="gateText"></p>
         <input class="pin" type="text" id="gateInput" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="•••" aria-label="الرقم المفضل — ٣ أرقام" />
         <div class="err" id="gateError"></div>
+        <button class="forgot-link hidden" id="gateForgot" type="button">نسيت الرقم؟ اضغط هنا لاسترجاع الدخول</button>
+        <div class="recovery hidden" id="gateRecovery">
+          <h3>🔑 استرجاع الدخول</h3>
+          <p>الرقم نفسه مش مكتوب في أي مكان — هو محفوظ مشفّر على الجهاز ده بس. لكن لو معاك <b>كود عيلة</b> أو <b>كود نسخة احتياطية</b>، الرقم اللي اتسجّل بيهم محفوظ جواهم، وهنرجّعه منهم ونفتح لك قسم الأهل على طول.</p>
+          <label for="recFamilyCode">الطريقة الأولى: كود العيلة (٦ حروف وأرقام)</label>
+          <input type="text" id="recFamilyCode" maxlength="8" autocomplete="off" placeholder="ABC123" dir="ltr" aria-label="كود العيلة للاسترجاع" />
+          <button class="save-btn rec-btn" id="recFamilyBtn" type="button">🔗 استرجاع بكود العيلة</button>
+          <p class="rec-note">هنشيّك على الكود في السحابة، ولو وراه بيانات عيلة فيها رقم أهل محفوظ، الجهاز ده هيتربط بالعيلة وبياناتها هتنزل عليه، والرقم هيبقى هو رقم العيلة اللي على الأجهزة التانية.</p>
+          <label for="recBackupCode">الطريقة التانية: كود النسخة الاحتياطية (KAJU1...)</label>
+          <textarea id="recBackupCode" rows="4" placeholder="الصقوا كود النسخة الاحتياطية كله هنا..." aria-label="كود النسخة الاحتياطية للاسترجاع"></textarea>
+          <button class="save-btn rec-btn" id="recBackupBtn" type="button">💾 استرجاع بالنسخة الاحتياطية</button>
+          <p class="rec-note">الاسترجاع بالنسخة هيبدّل بيانات النسخة دي ببيانات النسخة الاحتياطية (النجوم والسجلات والتلوين والرقم السري) — زي الاسترجاع العادي بالظبط.</p>
+          <div class="rec-msg" id="recMsg" role="status"></div>
+          <div class="rec-last">
+            <b>معندكش لا كود عيلة ولا نسخة احتياطية؟</b>
+            <p>للأسف الرقم مش هيتسترجع — هو محفوظ على الجهاز ده بس ومش بيتبعت لأي مكان تاني. الحل الأخير هو تصفير الموقع من كروم والبدء من جديد:</p>
+            <ol>
+              <li>افتحوا كروم ⋮ ← «الإعدادات» ← «إعدادات المواقع» ← «كل المواقع»</li>
+              <li>اختاروا <b dir="ltr">adel20selim-droid.github.io</b> ← «مسح وإعادة تعيين»</li>
+              <li>افتحوا التطبيق من جديد واعملوا رقم أهل جديد — النسخة هتكون فاضية، وبعدها اربطوها بكود العيلة من جهاز تاني عشان بيانات العيلة ترجع عليها</li>
+            </ol>
+          </div>
+        </div>
         <button class="cta" id="gateOk" type="button">دخول</button>
         <button class="ghost" id="gateCancel" type="button">إلغاء</button>
       </div>
@@ -1347,7 +1431,7 @@
           b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl, true); });
         });
       }
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderSyncBanner(); }catch(e){} }
 
       GIRL_KEYS.forEach(function(g){
         $("card-" + g).addEventListener("click", function(){
@@ -1393,7 +1477,22 @@
         chg2:   ["تغيير الرقم المفضل 🔑", "اختاري رقمك المفضل الجديد — رقم من ٣ أرقام", "كمّلي"],
         chg3:   ["تأكيد الرقم الجديد", "اكتبي الرقم الجديد تاني للتأكيد", "حفظ الرقم الجديد"]
       };
+      /* The forgot-number link belongs only to the modes that VERIFY an
+         existing number (entry / change-current / locked deduction), and
+         only when a number is actually stored on this device. In the setup
+         modes there is nothing to recover yet, so it stays hidden. */
+      function isVerifyGateMode(m){ return m === "entry" || m === "chg1" || m === "deduct"; }
+      function refreshForgotLink(){
+        var b = $("gateForgot"); if(!b) return;
+        var show = isVerifyGateMode(gateMode) && !!storedPinHash();
+        b.classList.toggle("hidden", !show);
+        if(!show){ var p = $("gateRecovery"); if(p) p.classList.add("hidden"); }
+      }
       function startGate(mode, errMsg){
+        /* Setup is unreachable while a number exists on this device: a
+           stored (possibly stale) number must be verified — or explicitly
+           recovered below — never silently replaced by a fresh setup. */
+        if(mode === "setup1" && storedPinHash()) mode = "entry";
         gateMode = mode;
         var t = GATE_TEXT[mode];
         $("gateTitle").textContent = t[0];
@@ -1402,6 +1501,9 @@
         $("gateInput").value = "";
         var err = $("gateError");
         if(errMsg){ err.textContent = errMsg; err.classList.add("show"); } else { err.classList.remove("show"); }
+        var rec = $("gateRecovery"); if(rec) rec.classList.add("hidden");
+        var rm = $("recMsg"); if(rm){ rm.textContent = ""; rm.className = "rec-msg"; }
+        refreshForgotLink();
         $("gateOverlay").classList.add("open");
         setTimeout(function(){ $("gateInput").focus(); }, 60);
       }
@@ -1417,6 +1519,7 @@
         $("gateOverlay").classList.remove("open");
         $("parents").classList.add("open");
         renderAdmin();
+        try{ refreshSetupPinBtn(); }catch(e){}
         $("parents").scrollIntoView({ behavior:"smooth" });
       }
       function tryGate(){
@@ -1434,6 +1537,7 @@
           }
           sha256hex(v).then(function(h){
             try{ localStorage.setItem(PIN_KEY, h); }catch(e){}
+            try{ refreshSetupPinBtn(); }catch(e){}
             /* Push the new number to the family sync right away. Without
                this, the number existed only on this device until some
                unrelated edit happened to trigger a push — and any sync pull
@@ -1464,7 +1568,14 @@
         if(!isValidPin(v)){ gateFail("الرقم مش صح، حاولي تاني"); return; }
         sha256hex(v).then(function(h){
           if(h === storedPinHash()){
-            if(gateMode === "entry") unlockParents();
+            if(gateMode === "entry"){
+              unlockParents();
+              /* an action queued before the gate (e.g. "link this device"
+                 from the home sync banner) runs right after unlocking */
+              var pendingEntry = gateOnSuccess;
+              gateOnSuccess = null;
+              if(pendingEntry) pendingEntry();
+            }
             else if(gateMode === "deduct"){
               deductUnlocked = true;
               $("gateOverlay").classList.remove("open");
@@ -1490,6 +1601,107 @@
         if(v !== $("gateInput").value) $("gateInput").value = v;
       });
       $("gateCancel").addEventListener("click", function(){ gateOnSuccess = null; $("gateOverlay").classList.remove("open"); });
+
+      /* ================= Gate recovery: forgot the parents' number =================
+         The number itself is never stored or shown — only its SHA-256 hash
+         lives on this device. Recovery therefore never reveals or resets
+         it directly: the parent proves possession of something that already
+         carries the number's hash — the family's cloud state (via the
+         family code) or a backup code — and that hash is adopted here.
+         This is the one deliberate exception to "a sync pull never
+         overwrites a local number": it is an explicit, in-person recovery
+         action by the parent holding the family/backup code, not a pull. */
+      function recMsg(text, isErr){
+        var m = $("recMsg"); if(!m) return;
+        m.textContent = text;
+        m.className = "rec-msg" + (text ? (isErr ? " err" : " ok") : "");
+      }
+      function recoveryUnlock(){
+        var pending = gateOnSuccess;
+        gateOnSuccess = null;
+        parentsUnlocked = true;
+        deductUnlocked = true;
+        $("gateOverlay").classList.remove("open");
+        $("parents").classList.add("open");
+        try{ renderAdmin(); }catch(e){}
+        try{ refreshSetupPinBtn(); }catch(e){}
+        try{ renderAll(); }catch(e){}
+        $("parents").scrollIntoView({ behavior:"smooth" });
+        toast("🔑 اترجّع الدخول بنجاح!", "الرقم بقى هو الرقم اللي اتسجّل بيه الكود اللي استخدمتوه — وتقدروا تغيّروه من زرار «تغيير الرقم المفضل» فوق");
+        if(pending) pending();
+      }
+      $("gateForgot").addEventListener("click", function(){
+        var p = $("gateRecovery");
+        p.classList.toggle("hidden");
+        recMsg("", false);
+        if(!p.classList.contains("hidden")) setTimeout(function(){ $("recFamilyCode").focus(); }, 60);
+      });
+      $("recFamilyBtn").addEventListener("click", function(){
+        var code = normDigits($("recFamilyCode").value).toUpperCase().replace(/[^A-Z0-9]/g, "");
+        if(code.length !== 6){ recMsg("اكتبوا كود العيلة كامل — ٦ حروف وأرقام بالظبط زي ما هو على الجهاز التاني.", true); return; }
+        /* A device already linked to a family can only recover from ITS
+           family's code — anything else would silently move this device
+           (and its number) to a different family. An unlinked device may
+           recover from any family code: joining that family IS the
+           recovery, exactly like a normal family-code link. */
+        if(typeof syncCfg !== "undefined" && syncCfg && syncCfg.code && syncCfg.code !== code){
+          recMsg("الجهاز ده مربوط بعيلة تانية (كودها " + syncCfg.code + ") — كود الاسترجاع لازم يكون هو كود العيلة المربوط على الجهاز ده.", true);
+          return;
+        }
+        recMsg("بنشيّك على كود العيلة في السحابة...", false);
+        fetch(syncUrl(code)).then(function(r){
+          if(!r.ok) throw new Error("http " + r.status);
+          return r.json();
+        }).then(function(remote){
+          if(!remote || !remote.data){
+            recMsg("الكود ده مش موجود في السحابة — تأكدوا إنه مكتوب صح بالظبط زي ما هو على الجهاز التاني، وجرّبوا تاني.", true);
+            return;
+          }
+          if(!remote.pin){
+            recMsg("لقينا بيانات العيلة، بس مفيهاش رقم أهل محفوظ — الاسترجاع بكود العيلة مش هينفع هنا. جرّبوا الطريقة التانية: كود النسخة الاحتياطية.", true);
+            return;
+          }
+          /* Adopt the family's number hash (explicit recovery), then link
+             this device to the family and apply its state — the same
+             adoption the sync-join flow performs. */
+          try{ localStorage.setItem(PIN_KEY, remote.pin); }catch(e){}
+          var keepId = (typeof syncCfg !== "undefined" && syncCfg && syncCfg.deviceId) ? syncCfg.deviceId : uid("dev");
+          syncCfg = { code: code, deviceId: keepId, rev: remote.rev || 0, dirty: false };
+          syncSaveCfg();
+          syncActivate();
+          syncApplyRemote(remote);
+          recoveryUnlock();
+        }).catch(function(){
+          recMsg("مفيش نت — مش قادرين نوصل للسحابة دلوقتي. جرّبوا تاني وانتوا متصلين.", true);
+        });
+      });
+      $("recBackupBtn").addEventListener("click", function(){
+        var raw = $("recBackupCode").value;
+        if(!raw.trim()){ recMsg("الصقوا كود النسخة الاحتياطية الأول في المربع اللي فوق.", true); return; }
+        var payload = null;
+        try{ payload = parseBackupCode(raw); }catch(e){ payload = null; }
+        if(!payload){
+          recMsg("الكود ده مش صح أو ناقص — تأكدوا إنكم نسختوه كله من أوله لآخره من غير ما ينقص منه حاجة، وجرّبوا تاني.", true);
+          return;
+        }
+        if(!payload.pin){
+          recMsg("النسخة دي مفيهاش رقم أهل محفوظ — مش هتنفع للاسترجاع. جرّبوا كود العيلة.", true);
+          return;
+        }
+        /* Same restore as the parents-area backup restore: the backup's
+           state replaces this copy's state and its number hash is adopted. */
+        S = migrateBackupData(payload.data);
+        currentGirl = (S.selectedGirl === "karma" || S.selectedGirl === "judy") ? S.selectedGirl : "karma";
+        try{
+          localStorage.setItem(LS_KEY, JSON.stringify(S));
+          localStorage.setItem(PIN_KEY, payload.pin);
+          if(payload.welcome) localStorage.setItem(WELCOME_KEY, payload.welcome);
+        }catch(e){}
+        save();
+        try{ closeEditor(); }catch(e){}
+        $("recBackupCode").value = "";
+        recoveryUnlock();
+      });
 
       /* tabs */
       document.querySelectorAll(".tab").forEach(function(tab){
@@ -2663,7 +2875,10 @@
       }
       $("wSetupPin").addEventListener("click", function(){
         hideWelcome();
-        startGate("setup1");
+        /* Never offer first-time creation while a number already exists on
+           this device (e.g. a stale one surviving on a fresh shortcut) —
+           that path goes through verification/recovery instead. */
+        startGate(storedPinHash() ? "entry" : "setup1");
       });
 
       /* ----- persistent install bar inside the app ----- */
@@ -2847,7 +3062,63 @@
         }catch(e){}
       }
       function syncUrl(code){ return SYNC_DB + "/families/" + (code || syncCfg.code) + "/state.json"; }
-      function syncStatus(txt){ var el = $("syncStatus"); if(el) el.textContent = txt; }
+      function syncStatus(txt){
+        var el = $("syncStatus"); if(el) el.textContent = txt;
+        var b = $("syncBannerStatus"); if(b) b.textContent = txt ? " — " + txt : "";
+      }
+      /* "Pristine" = this copy has never recorded anything: no day events
+         and zero balances. A pristine copy that is not linked is almost
+         always a fresh shortcut/link that opened with empty storage. */
+      function isPristineState(){
+        try{
+          if(!S || !S.days) return true;
+          var has = false;
+          Object.keys(S.days).forEach(function(k){
+            GIRL_KEYS.forEach(function(g){
+              var r = S.days[k] && S.days[k][g];
+              if(r && r.events && r.events.length) has = true;
+            });
+          });
+          return !has && !(S.balances && (S.balances.judy || S.balances.karma));
+        }catch(e){ return false; }
+      }
+      function renderSyncBanner(){
+        var b = $("syncBanner"); if(!b) return;
+        var on = !!syncCfg;
+        b.classList.toggle("on", on);
+        b.classList.toggle("off", !on);
+        if(on){
+          $("syncBannerText").innerHTML = "🔄 <b>المزامنة مفعّلة</b> — كود العيلة: <b dir=\"ltr\">" + esc(syncCfg.code) + "</b><span class=\"sb-status\" id=\"syncBannerStatus\"></span>";
+          $("syncBannerBtn").textContent = "عرض الحالة";
+        } else if(isPristineState()){
+          $("syncBannerText").innerHTML = "⚠️ <b>النسخة دي جديدة ولسه مش مربوطة</b> — أي شورت كت أو رابط جديد بيفتح فاضي، ونجوم البنات ونتائجهم مش هتظهر هنا لحد ما تربطوا الجهاز بكود العيلة";
+          $("syncBannerBtn").textContent = "🔗 ربط بكود العيلة";
+        } else {
+          $("syncBannerText").innerHTML = "⚠️ <b>المزامنة مش مفعّلة على النسخة دي</b> — النجوم والتعديلات اللي هنا مش هتوصل لباقي أجهزة العيلة لحد ما تربطوها";
+          $("syncBannerBtn").textContent = "🔗 ربط بكود العيلة";
+        }
+        var wj = $("wSyncJoin"); if(wj) wj.classList.toggle("hidden", on);
+        var wn = $("wSyncNote"); if(wn) wn.classList.toggle("hidden", on);
+      }
+      /* One-tap path from the home screen / welcome screen into the sync
+         link flow: pass the parents gate first (same protection as the
+         sync panel itself), then land on the panel with the code box open. */
+      function openSyncJoin(){
+        function go(){
+          try{ renderAdmin(); }catch(e){}
+          $("parents").classList.add("open");
+          renderSyncPanel();
+          var panel = document.querySelector(".sync-panel");
+          if(panel) panel.scrollIntoView({ behavior:"smooth", block:"center" });
+          if(!syncCfg){
+            $("syncJoinBox").classList.remove("hidden");
+            setTimeout(function(){ $("syncCodeIn").focus(); }, 400);
+          }
+        }
+        if(parentsUnlocked){ go(); return; }
+        gateOnSuccess = go;
+        startGate(storedPinHash() ? "entry" : "setup1");
+      }
       function syncNowLabel(){ return fmtTime(nowTime()); }
       function genFamilyCode(){
         var abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", out = "";
@@ -2871,11 +3142,12 @@
         syncPushing = true;
         var genAtStart = syncGen;
         var newRev = (syncCfg.rev || 0) + 1;
+        var payload = syncPayload(newRev);
         syncStatus("🔄 بنزامن دلوقتي...");
         fetch(syncUrl(), {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(syncPayload(newRev))
+          body: JSON.stringify(payload)
         }).then(function(r){
           if(!r.ok) throw new Error("http " + r.status);
           return r.json();
@@ -2883,6 +3155,7 @@
           syncPushing = false;
           if(!syncCfg) return;
           syncCfg.rev = newRev;
+          syncCfg.updatedAt = payload.updatedAt;
           if(syncGen !== genAtStart){
             /* more edits landed while uploading — send them too */
             syncCfg.dirty = true; syncSaveCfg();
@@ -2910,6 +3183,7 @@
           if(remote.pin && !localStorage.getItem(PIN_KEY)) localStorage.setItem(PIN_KEY, remote.pin);
         }catch(e){}
         syncCfg.rev = remote.rev || syncCfg.rev;
+        syncCfg.updatedAt = remote.updatedAt || syncCfg.updatedAt;
         syncCfg.dirty = false; syncSaveCfg();
         syncApplying = false;
         closeEditor();
@@ -2940,6 +3214,14 @@
             if(syncPending || syncCfg.dirty){ syncPush(); return; } /* unsent local edits win */
             syncApplyRemote(remote);
             toast("🔄 وصل تحديث جديد", "بيانات العيلة اتحدّثت من جهاز تاني");
+          } else if(remote.rev === (syncCfg.rev || 0) && remote.by && remote.by !== syncCfg.deviceId && remote.updatedAt && (!syncCfg.updatedAt || remote.updatedAt > syncCfg.updatedAt)){
+            /* Same revision number written by ANOTHER device (both sides
+               pushed at the same moment): without this, each device keeps
+               its own copy forever and never sees the other's results.
+               The later write is the family's latest — adopt it. */
+            if(syncPending || syncCfg.dirty){ syncPush(); return; } /* unsent local edits win */
+            syncApplyRemote(remote);
+            toast("🔄 وصل تحديث جديد", "بيانات العيلة اتحدّثت من جهاز تاني");
           } else if(manual){
             syncStatus("✅ متزامن — مفيش تحديثات جديدة (آخر مزامنة " + syncNowLabel() + ")");
           }
@@ -2952,6 +3234,7 @@
         $("syncOff").classList.toggle("hidden", on);
         $("syncOn").classList.toggle("hidden", !on);
         if(on) $("syncCodeShow").textContent = syncCfg.code;
+        renderSyncBanner();
       }
       function syncStartLoops(){
         setInterval(function(){
@@ -2961,6 +3244,7 @@
         document.addEventListener("visibilitychange", function(){
           if(document.visibilityState === "visible") syncPull(false);
         });
+        window.addEventListener("focus", function(){ syncPull(false); });
         window.addEventListener("online", function(){
           if(syncPending) syncPush(); else syncPull(false);
         });
@@ -3001,7 +3285,7 @@
       });
       $("syncJoinBtn").addEventListener("click", function(){
         var msg = $("syncOffMsg");
-        var code = $("syncCodeIn").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        var code = normDigits($("syncCodeIn").value).toUpperCase().replace(/[^A-Z0-9]/g, "");
         if(code.length < 4){ msg.textContent = "اكتبوا كود العيلة كامل الأول (٦ حروف وأرقام)."; return; }
         msg.textContent = "بندور على كود العيلة...";
         fetch(syncUrl(code)).then(function(r){
@@ -3043,6 +3327,8 @@
       $("syncNowBtn").addEventListener("click", function(){
         if(syncPending) syncPush(); else syncPull(true);
       });
+      $("syncBannerBtn").addEventListener("click", openSyncJoin);
+      $("wSyncJoin").addEventListener("click", function(){ hideWelcome(); openSyncJoin(); });
       $("syncOffBtn").addEventListener("click", function(){
         showModal("🔌", "نفصل المزامنة من الجهاز ده؟",
           "الجهاز ده هيوقف المزامنة وبياناته هتفضل زي ما هي عليه دلوقتي، وبيانات العيلة هتفضل متزامنة على باقي الأجهزة. تقدروا تربطوه تاني بنفس الكود في أي وقت.",
