@@ -355,6 +355,12 @@
         margin-top:12px; border-radius:var(--radius); padding:12px 16px;
         text-align:center; background:var(--rose-light);
         border:2px solid var(--rose); box-shadow:var(--shadow);
+        cursor:pointer;
+      }
+      .mom-strip .ms-chip{
+        display:inline-block; margin-top:8px; margin-inline-start:6px; padding:3px 14px;
+        background:var(--card); border:2px solid var(--rose); border-radius:999px;
+        color:var(--rose-dark); font-weight:800; font-size:.9rem;
       }
       .mom-strip .ms-title{ font-size:1.3rem; font-weight:800; }
       .mom-strip .ms-points{ font-weight:800; font-size:1.1rem; margin-top:2px; }
@@ -568,6 +574,60 @@
       .mom-coupon-label{ font-weight:800; color:var(--gold-dark); font-size:.95rem; }
       .mom-coupon-text{ font-size:1.22rem; font-weight:800; line-height:1.55; margin-top:4px; }
       .mom-coupon-note{ margin-top:6px; font-weight:700; }
+      .mom-page-btn{
+        margin-top:12px; width:100%; min-height:50px; padding:12px;
+        border:2px solid var(--rose); border-radius:28px; background:var(--rose-light);
+        color:var(--rose-dark); font-size:1.08rem; font-weight:800; cursor:pointer;
+      }
+      .mom-page-btn:active{ background:var(--rose); color:#fff; }
+
+      /* ---------- Mama's own page ----------
+         Full-screen view opened from the top «💐 ماما» strip (or the card's
+         «صفحة ماما» button): her points, progress, today's rewards, the
+         tasks the girls finished for her, and this month's days. Rendered
+         fresh on every open by renderMomPage — nothing extra is stored. */
+      .mom-page{
+        position:fixed; inset:0; z-index:58; display:none; overflow-y:auto;
+        background:var(--cream);
+        padding:calc(14px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom));
+      }
+      .mom-page.open{ display:block; }
+      .mom-page-inner{ max-width:680px; margin:0 auto; }
+      .mom-back{
+        border:2px solid var(--gold-dark); background:var(--card); color:var(--gold-dark);
+        border-radius:28px; padding:10px 24px; min-height:48px;
+        font-size:1.05rem; font-weight:800; cursor:pointer; margin-bottom:14px;
+      }
+      .mom-back:active{ background:var(--gold-light); }
+      .mp-head{
+        text-align:center; background:var(--rose-light); border:2px solid var(--rose);
+        border-radius:var(--radius); padding:18px 14px; box-shadow:var(--shadow);
+      }
+      .mp-title{ font-size:1.7rem; font-weight:800; }
+      .mp-points{ font-weight:800; font-size:1.25rem; margin-top:4px; }
+      .mp-points b{ color:var(--rose-dark); font-size:1.9rem; }
+      .mp-date{ color:var(--gray); font-weight:700; margin-top:2px; }
+      .mp-sec{ font-size:1.25rem; font-weight:800; margin:22px 0 10px; }
+      .mp-prog{
+        background:var(--card); border:2px solid var(--line); border-radius:16px;
+        padding:12px 14px; margin-bottom:10px;
+      }
+      .mp-prog-top{ display:flex; justify-content:space-between; gap:10px; font-weight:800; }
+      .mp-bar{ height:12px; background:var(--cream-dark); border-radius:999px; overflow:hidden; margin-top:8px; }
+      .mp-bar i{ display:block; height:100%; background:var(--rose); border-radius:999px; }
+      .mp-prog-text{ margin-top:6px; font-weight:700; color:var(--gray); line-height:1.55; }
+      .mp-tasks{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+      .mp-task{
+        background:var(--card); border:2px solid var(--line); border-radius:999px;
+        padding:6px 12px; font-weight:700; line-height:1.4;
+      }
+      .mp-day{
+        display:flex; align-items:center; gap:10px; background:var(--card);
+        border:2px solid var(--line); border-radius:16px; padding:10px 14px;
+        margin-bottom:8px; font-weight:800;
+      }
+      .mp-day-date{ flex:1; line-height:1.45; }
+      .mp-day-pts{ color:var(--rose-dark); white-space:nowrap; }
 
       .hidden{ display:none !important; }
     </style>
@@ -974,6 +1034,17 @@
         </div>
         <button class="cta" id="gateOk" type="button">دخول</button>
         <button class="ghost" id="gateCancel" type="button">إلغاء</button>
+      </div>
+    </div>
+
+    <!-- Mama's own page: her points, rewards, the girls' tasks for her, and
+         this month's days. Opened from the top «💐 ماما» strip or the
+         «صفحة ماما» button on the «مكافأة ماما» card; filled fresh by
+         renderMomPage() on every open. -->
+    <div class="mom-page" id="momPage" role="dialog" aria-label="صفحة ماما">
+      <div class="mom-page-inner">
+        <button class="mom-back" id="momBackBtn" type="button">↩️ رجوع</button>
+        <div id="momPageBody"></div>
       </div>
     </div>
 
@@ -1554,6 +1625,7 @@
             '<div class="ms-points">نقاط ماما النهاردة: <b>' + x + '</b></div>' +
             '<div class="ms-sub">بتزيد مع كل مهمة البنات يخلّصوها ⭐</div>';
           if(x >= 30) sh += '<div class="ms-badge">ليها كوبون دلع النهاردة 🎁</div>';
+          sh += '<span class="ms-chip">التفاصيل ‹</span>';
           strip.innerHTML = sh;
         }
         var html = '<div class="mom-effort">جهد ماما النهاردة: <b>' + x + '</b> مهمة خلصت 💪</div>';
@@ -1570,8 +1642,96 @@
         } else {
           html += '<div class="mom-next">فاضل ' + (30 - x) + ' مهمة ويطلع لماما كوبون دلع 🎟️</div>';
         }
+        html += '<button class="mom-page-btn" id="momPageBtn" type="button">💐 صفحة ماما — كل مكافآتها ومهامها</button>';
         box.innerHTML = html;
+        var mpb = $("momPageBtn");
+        if(mpb) mpb.addEventListener("click", openMomPage);
       }
+      /* ================= Mama's own page =================
+         Everything on her page is derived on open from the same state the
+         strip and card already read — the days records (via momEffort) and
+         the `mom` message/coupon pools (via momPick). No new storage, no
+         change to the effort or unlock logic. */
+      function momProgress(x, goal, label, text){
+        var pct = Math.min(100, Math.round(x / goal * 100));
+        return '<div class="mp-prog"><div class="mp-prog-top"><span>' + label + '</span><span>' + x + ' / ' + goal + '</span></div>' +
+          '<div class="mp-bar"><i style="width:' + pct + '%"></i></div>' +
+          '<div class="mp-prog-text">' + text + '</div></div>';
+      }
+      function renderMomPage(){
+        var body = $("momPageBody"); if(!body) return;
+        ensureMom(S);
+        var key = todayKey();
+        var x = momEffort(key);
+        var html = '<div class="mp-head"><div class="mp-title">💐 ماما</div>' +
+          '<div class="mp-points">نقاط ماما النهاردة: <b>' + x + '</b></div>' +
+          '<div class="mp-date">' + esc(fmtDateAr(key)) + '</div></div>';
+
+        html += '<h2 class="mp-sec">📈 التقدم النهاردة</h2>';
+        html += momProgress(x, 10, "رسالة بابا 💌",
+          x >= 10 ? "رسالة بابا اتفتحت النهاردة 💌" : "فاضل " + (10 - x) + " وتفتح رسالة بابا");
+        html += momProgress(x, 30, "كوبون الدلع 🎟️",
+          x >= 30 ? "كوبون الدلع طلع النهاردة 🎁" : "فاضل " + (30 - x) + " ويطلع كوبون الدلع");
+
+        html += '<h2 class="mp-sec">🎁 مكافآت ماما النهاردة</h2>';
+        if(x >= 10){
+          html += '<div class="mom-msg"><div class="mom-msg-text" dir="rtl">' + esc(momPick(S.mom.messages, key)) + '</div>' +
+            '<div class="mom-sign">— من بابا</div></div>';
+        } else {
+          html += '<div class="mom-teaser">🔒 كمّلوا مهام وافتحوا رسالة بابا لماما 💌<br />فاضل ' + (10 - x) + ' مهمة وتتفتح الرسالة</div>';
+        }
+        if(x >= 30){
+          html += '<div class="mom-coupon"><div class="mom-coupon-label">🎟️ كوبون دلع لماما</div>' +
+            '<div class="mom-coupon-text" dir="rtl">' + esc(momPick(S.mom.coupons, key)) + '</div>' +
+            '<div class="mom-coupon-note">ابعتي الكوبون ده لبابا وهو ينفذه ❤️</div></div>';
+        } else {
+          html += '<div class="mom-next">فاضل ' + (30 - x) + ' مهمة ويطلع لماما كوبون دلع 🎟️</div>';
+        }
+
+        html += '<h2 class="mp-sec">📋 مهام النهاردة اللي عملتها البنات لماما</h2>';
+        var day = S.days[key];
+        GIRL_KEYS.forEach(function(g){
+          var r = day && day[g];
+          var cnt = r && r.done ? Object.keys(r.done).length : 0;
+          var doneList = r ? tasksFor(g).filter(function(t){ return !!r.done[t.id]; }) : [];
+          html += '<div class="girl-head ' + (g === "judy" ? "j" : "k") + '">' + GIRLS[g].emoji + " " + GIRLS[g].name +
+            " — خلصت " + cnt + " مهمة لماما</div>";
+          if(doneList.length){
+            html += '<div class="mp-tasks">' + doneList.map(function(t){
+              return '<span class="mp-task">' + t.emoji + " " + esc(t.name) + "</span>";
+            }).join("") + "</div>";
+          } else {
+            html += '<div class="empty-note">لسه مفيش مهام خلصت النهاردة</div>';
+          }
+        });
+
+        html += '<h2 class="mp-sec">🗓️ أيام الشهر ده</h2>';
+        var ym = key.slice(0, 7);
+        var keys = Object.keys(S.days).filter(function(k){ return k.slice(0, 7) === ym; }).sort().reverse();
+        var rows = "";
+        keys.forEach(function(k){
+          var e = momEffort(k);
+          if(e <= 0) return;
+          rows += '<div class="mp-day"><span class="mp-day-date">' + esc(fmtDateAr(k)) + '</span>' +
+            '<span class="mp-day-pts">' + e + ' نقطة</span>' +
+            (e >= 10 ? '<span aria-label="رسالة">💌</span>' : "") +
+            (e >= 30 ? '<span aria-label="كوبون">🎁</span>' : "") + "</div>";
+        });
+        html += rows || '<div class="empty-note">مفيش أيام بنقاط لماما في الشهر ده لسه</div>';
+        body.innerHTML = html;
+      }
+      function openMomPage(){
+        renderMomPage();
+        var p = $("momPage"); if(!p) return;
+        p.classList.add("open");
+        p.scrollTop = 0;
+        document.body.style.overflow = "hidden";
+      }
+      function closeMomPage(){
+        var p = $("momPage"); if(p) p.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+
       function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); }
 
       /* Names stay on ONE line: shrink the font just enough to fit the row.
@@ -1602,6 +1762,10 @@
           renderAll();
         });
       });
+      /* Tapping Mama's strip opens her own page; «رجوع» returns to the
+         main screen exactly as it was. */
+      $("momStrip").addEventListener("click", openMomPage);
+      $("momBackBtn").addEventListener("click", closeMomPage);
       $("rewardsBtn").addEventListener("click", function(){
         $("rewardsTitle").scrollIntoView({ behavior:"smooth" });
       });
