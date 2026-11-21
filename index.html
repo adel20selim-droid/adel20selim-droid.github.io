@@ -357,6 +357,24 @@
         border:2px solid var(--red); background:transparent; color:var(--red); border-radius:28px;
         padding:11px; font-weight:800; width:100%; cursor:pointer; font-size:1rem;
       }
+      /* ---------- Backup / restore (for updating the home-screen icon safely) ---------- */
+      .backup-panel{ border:3px solid var(--gold); background:var(--gold-light); }
+      .backup-panel p{ font-weight:700; line-height:1.65; margin:6px 0; color:var(--ink); }
+      .backup-panel ol{ margin:6px 0; padding-inline-start:22px; font-weight:700; line-height:1.75; }
+      .backup-actions{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+      .backup-actions button{ min-height:54px; font-size:1.05rem; }
+      .backup-box{ margin-top:12px; background:var(--card); border:2px solid var(--line); border-radius:16px; padding:12px; }
+      .backup-box label{ font-weight:800; display:block; margin-bottom:6px; }
+      .backup-box textarea{
+        width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:14px;
+        background:var(--card-soft); color:var(--ink); font-size:.82rem; font-weight:600;
+        font-family:ui-monospace,Menlo,Consolas,monospace; resize:vertical; min-height:110px;
+        word-break:break-all; direction:ltr; text-align:left;
+      }
+      .backup-box .row-btns{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+      .backup-box .row-btns button{ min-height:50px; }
+      .backup-ok{ color:var(--green); font-weight:800; min-height:1.3em; margin-top:6px; text-align:center; }
+      .backup-err{ color:var(--red); font-weight:800; min-height:1.3em; margin-top:6px; text-align:center; }
       .rep-controls{ display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end; margin-bottom:6px; }
       .rep-controls label{ font-weight:800; display:block; margin-bottom:4px; }
       .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0; }
@@ -584,6 +602,42 @@
           <button class="tab" data-tab="deduct" type="button">⭐ الخصومات</button>
         </div>
         <button class="change-pin" id="changePinBtn" type="button">🔑 تغيير الرقم المفضل</button>
+
+        <div class="panel backup-panel">
+          <h3>💾 نسخة احتياطية — لتحديث شكل الأيقونة من غير ما تضيع البيانات</h3>
+          <p>لو عايزين تمسحوا أيقونة التطبيق القديمة من الشاشة الرئيسية وتضيفوها من جديد عشان تظهر بالنجمة الذهبية والاسم الجديد <b>Ka ❤️ Ju</b>، اعملوا الخطوات دي <b>بالترتيب</b> — كده أسماء المكافآت اللي عدّلتوها ونجوم البنات والرقم السري هيرجعوا زي ما هم بالظبط:</p>
+          <ol>
+            <li>دوسوا «إنشاء نسخة احتياطية» وبعدين «نسخ الكود»، وابعتوا الكود لنفسكم واتساب (أو احفظوه في الملاحظات).</li>
+            <li>بس بعد ما تتأكدوا إن الكود اتنسخ واتبعت، امسحوا الأيقونة القديمة من الشاشة الرئيسية.</li>
+            <li>افتحوا التطبيق في سفاري من جديد واعملوا «إضافة إلى الشاشة الرئيسية» — هتظهر الأيقونة الجديدة بالنجمة الذهبية.</li>
+            <li>افتحوا النسخة الجديدة، ادخلوا منطقة الأهل، ودوسوا «استرجاع نسخة» والصقوا نفس الكود — كل حاجة هترجع فورًا.</li>
+          </ol>
+          <p>⚠️ <b>مهم:</b> متسمحوش الأيقونة قبل ما تعملوا النسخة الاحتياطية وتبعتوها لنفسكم، عشان البيانات محفوظة على الجهاز ده بس.</p>
+          <div class="backup-actions">
+            <button class="save-btn" id="backupCreateBtn" type="button">💾 إنشاء نسخة احتياطية</button>
+            <button class="btn-soft" id="backupRestoreToggle" type="button" style="height:auto">↩️ استرجاع نسخة</button>
+          </div>
+          <div class="backup-box hidden" id="backupOutBox">
+            <label for="backupCodeOut">كود النسخة الاحتياطية — انسخوه كله وابعتوه لنفسكم واتساب:</label>
+            <textarea id="backupCodeOut" readonly rows="6" aria-label="كود النسخة الاحتياطية"></textarea>
+            <div class="row-btns">
+              <button class="save-btn" id="backupCopyBtn" type="button">📋 نسخ الكود</button>
+              <button class="mini" id="backupSelectBtn" type="button">تحديد الكل</button>
+            </div>
+            <div class="backup-ok" id="backupCopyMsg" role="status"></div>
+            <p>بعد ما تبعتوا الكود لنفسكم، تقدروا تمسحوا الأيقونة القديمة وتضيفوها من جديد باطمئنان. الكود ده بيشتغل على نفس التطبيق بس، ولو اتلزق في «استرجاع نسخة» هيرجّع كل البيانات.</p>
+          </div>
+          <div class="backup-box hidden" id="restoreBox">
+            <label for="restoreCodeIn">الصقوا كود النسخة الاحتياطية هنا:</label>
+            <textarea id="restoreCodeIn" rows="6" placeholder="الصقوا الكود اللي نسختوه قبل مسح الأيقونة..." aria-label="الصق كود الاسترجاع هنا"></textarea>
+            <div class="row-btns">
+              <button class="save-btn" id="restoreApplyBtn" type="button">↩️ استرجاع البيانات</button>
+              <button class="mini" id="restoreCancelBtn" type="button">إلغاء</button>
+            </div>
+            <div class="backup-err" id="restoreMsg" role="status"></div>
+            <p>الاسترجاع هيبدّل بيانات النسخة دي بالبيانات اللي في الكود (النجوم والمكافآت والمهام والسجلات والتلوين والرقم السري). لو النسخة دي فاضية ولسه جديدة، ده بالظبط اللي عايزينه.</p>
+          </div>
+        </div>
 
         <div id="tab-tasks">
           <div class="panel">
@@ -2147,6 +2201,132 @@
       });
       $("installBarClose").addEventListener("click", function(){
         installBarDismissed = true; refreshInstallBar();
+      });
+
+      /* ================= Backup / restore =================
+         Lets the family move all data to a fresh home-screen install (e.g.
+         after deleting the old iPhone shortcut to get the new golden-star
+         icon) without losing edited reward names, stars, history or the
+         parents' secret number. The code is the full app state encoded as
+         text the parent sends to herself (WhatsApp / Notes) and pastes back.
+         Storage keys are unchanged — this only reads/writes the same keys. */
+      var BACKUP_PREFIX = "KAJU1:";
+      function makeBackupCode(){
+        var payload = {
+          v: 1,
+          at: new Date().toISOString(),
+          data: S,
+          pin: "",
+          welcome: ""
+        };
+        try{ payload.pin = localStorage.getItem(PIN_KEY) || ""; }catch(e){}
+        try{ payload.welcome = localStorage.getItem(WELCOME_KEY) || ""; }catch(e){}
+        var json = JSON.stringify(payload);
+        return BACKUP_PREFIX + btoa(encodeURIComponent(json));
+      }
+      function parseBackupCode(raw){
+        var code = String(raw || "").trim().replace(/\s+/g, "");
+        if(!code) return null;
+        if(code.indexOf(BACKUP_PREFIX) === 0) code = code.slice(BACKUP_PREFIX.length);
+        var json = decodeURIComponent(atob(code));
+        var payload = JSON.parse(json);
+        if(!payload || !payload.data) return null;
+        var d = payload.data;
+        if(!d.tasks || !d.rewards || !d.balances || !d.days) return null;
+        return payload;
+      }
+      function migrateBackupData(d){
+        if(!d.coloring) d.coloring = emptyColoring();
+        if(!d.deductions) d.deductions = defaultDeductions();
+        GIRL_KEYS.forEach(function(g){
+          if(!d.coloring[g]) d.coloring[g] = { unlocked:[], works:{} };
+          if(!d.coloring[g].unlocked) d.coloring[g].unlocked = [];
+          if(!d.coloring[g].works) d.coloring[g].works = {};
+          if(typeof d.balances[g] !== "number") d.balances[g] = 0;
+        });
+        return d;
+      }
+      $("backupCreateBtn").addEventListener("click", function(){
+        try{
+          var code = makeBackupCode();
+          $("backupCodeOut").value = code;
+          $("backupOutBox").classList.remove("hidden");
+          $("backupCopyMsg").textContent = "";
+          $("backupOutBox").scrollIntoView({ behavior:"smooth", block:"center" });
+          toast("اتعملت النسخة الاحتياطية 💾", "انسخوا الكود وابعتوه لنفسكم قبل مسح الأيقونة");
+        }catch(e){
+          showModal("⚠️", "معلش، حصلت مشكلة", "مقدرناش نعمل النسخة الاحتياطية دلوقتي. جرّبوا تاني، ومتسمحوش الأيقونة لحد ما النسخة تتعمل وتتنسخ.", "تمام");
+        }
+      });
+      $("backupSelectBtn").addEventListener("click", function(){
+        var ta = $("backupCodeOut");
+        ta.focus(); ta.select();
+        try{ ta.setSelectionRange(0, ta.value.length); }catch(e){}
+      });
+      $("backupCopyBtn").addEventListener("click", function(){
+        var ta = $("backupCodeOut");
+        var code = ta.value;
+        function copied(){
+          $("backupCopyMsg").textContent = "اتنسخ الكود ✓ — ابعتوه لنفسكم واتساب دلوقتي وخلوه محفوظ لحد ما ترجّعوا البيانات في النسخة الجديدة.";
+        }
+        function fallbackCopy(){
+          ta.focus(); ta.select();
+          try{ ta.setSelectionRange(0, ta.value.length); }catch(e){}
+          var ok = false;
+          try{ ok = document.execCommand("copy"); }catch(e){}
+          if(ok) copied();
+          else $("backupCopyMsg").textContent = "الكود متحدد دلوقتي — دوسوا «نسخ» من القائمة اللي هتظهر، وبعدين ابعتوه لنفسكم واتساب.";
+        }
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(code).then(copied).catch(fallbackCopy);
+        } else {
+          fallbackCopy();
+        }
+      });
+      $("backupRestoreToggle").addEventListener("click", function(){
+        $("restoreBox").classList.remove("hidden");
+        $("restoreMsg").textContent = "";
+        $("restoreBox").scrollIntoView({ behavior:"smooth", block:"center" });
+        setTimeout(function(){ $("restoreCodeIn").focus(); }, 80);
+      });
+      $("restoreCancelBtn").addEventListener("click", function(){
+        $("restoreBox").classList.add("hidden");
+      });
+      $("restoreApplyBtn").addEventListener("click", function(){
+        var raw = $("restoreCodeIn").value;
+        var msg = $("restoreMsg");
+        if(!raw.trim()){ msg.textContent = "الصقوا الكود الأول في المربع اللي فوق."; return; }
+        var payload = null;
+        try{ payload = parseBackupCode(raw); }catch(e){ payload = null; }
+        if(!payload){
+          msg.textContent = "الكود ده مش صح أو ناقص — تأكدوا إنكم نسختوه كله من أوله لآخره من غير ما ينقص منه حاجة، وجرّبوا تاني.";
+          return;
+        }
+        msg.textContent = "";
+        showModal("↩️", "نسترجع النسخة دي؟",
+          "بيانات النسخة الحالية هتتبدل بالبيانات اللي في الكود: نجوم كارما وجودي، وأسماء المهام والمكافآت، والسجلات، والتلوين، والرقم السري للأهل.<br />متأكدين؟",
+          "أيوه، استرجع ↩️",
+          function(){
+            S = migrateBackupData(payload.data);
+            currentGirl = (S.selectedGirl === "karma" || S.selectedGirl === "judy") ? S.selectedGirl : "karma";
+            try{
+              localStorage.setItem(LS_KEY, JSON.stringify(S));
+              if(payload.pin) localStorage.setItem(PIN_KEY, payload.pin);
+              if(payload.welcome) localStorage.setItem(WELCOME_KEY, payload.welcome);
+            }catch(e){}
+            save();
+            closeEditor();
+            editTaskId = null; editRewardId = null; editDeductId = null;
+            $("restoreBox").classList.add("hidden");
+            $("backupOutBox").classList.add("hidden");
+            $("restoreCodeIn").value = "";
+            renderAll();
+            renderReports();
+            refreshSetupPinBtn();
+            refreshInstallBar();
+            playHappy(true); confetti(60);
+            showModal("🎉", "رجعت كل حاجة!", "البيانات اترجّعت بنجاح — النجوم والمكافآت والسجلات زي ما كانت بالظبط. دلوقتي تقدروا تستخدموا الأيقونة الجديدة وانتوا مطمنين ⭐", "تمام 🎉");
+          }, true);
       });
 
       /* ================= Init ================= */
