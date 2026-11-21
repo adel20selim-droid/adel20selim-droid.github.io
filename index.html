@@ -388,6 +388,30 @@
       .note-saved{ color:var(--green); font-weight:800; font-size:.9rem; min-height:1.2em; margin-top:4px; }
       .note-show{ background:var(--gold-light); border-radius:12px; padding:8px 12px; font-weight:700; margin:2px 0 8px; }
 
+      /* ---------- Public deductions (outside parents area) ---------- */
+      .deduct-balance{
+        background:var(--card); border:2px solid var(--line); border-radius:16px;
+        padding:10px 14px; font-weight:800; text-align:center; margin-top:8px;
+      }
+      .deduct-row{
+        display:flex; align-items:center; gap:12px; background:var(--card);
+        border:2px solid #F3C2C0; border-radius:var(--radius);
+        padding:12px 14px; margin-top:10px;
+      }
+      .deduct-row .dic{
+        width:56px; height:56px; flex:0 0 56px; font-size:2.25rem;
+        display:flex; align-items:center; justify-content:center;
+      }
+      .deduct-row .mid{ flex:1; min-width:0; }
+      .deduct-row .dname{ font-weight:800; font-size:1.2rem; line-height:1.3; }
+      .deduct-row .dprice{ color:var(--red); font-weight:800; font-size:1rem; }
+      .deduct-apply{
+        flex:0 0 auto; height:54px; border:2px solid var(--red); border-radius:28px; padding:0 18px;
+        font-size:1rem; font-weight:800; background:var(--card); color:var(--red); cursor:pointer;
+        transition:transform .12s, background .15s, color .15s;
+      }
+      .deduct-apply:active{ background:var(--red); color:#fff; transform:scale(.96); }
+
       /* ---------- Coloring corner ---------- */
       .color-btn{ width:100%; margin-top:12px; }
       .color-sub{ color:var(--gray); font-weight:700; margin:2px 0 0; line-height:1.55; }
@@ -523,9 +547,15 @@
         <button class="btn-soft" id="parentsBtn" type="button">للأهل 🔒</button>
       </div>
       <button class="btn-gold color-btn" id="colorBtn" type="button">🎨 ركن التلوين</button>
+      <button class="btn-soft color-btn" id="deductBtn" type="button">⭐ الخصومات</button>
 
       <h2 class="section-title" id="rewardsTitle">🎁 المكافآت</h2>
       <div id="rewardList"></div>
+
+      <h2 class="section-title" id="deductPublicTitle">⭐ الخصومات</h2>
+      <p class="color-sub">لو حصلت حالة من دول، دوسوا «اخصم» وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
+      <div class="deduct-balance" id="deductPublicBalance"></div>
+      <div id="publicDeductList"></div>
 
       <h2 class="section-title" id="colorTitle">🎨 ركن التلوين</h2>
       <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — اختاري رسمة ولوّنيها، وشغلك بيتحفظ في معرضك. والرسومات الدهبية 👑 بتتفتح بالنجوم!</p>
@@ -624,7 +654,7 @@
             </div>
             <p class="guide-note" id="deductBalanceLine"></p>
             <div id="deductApplyList"></div>
-            <p class="guide-note">الخصم بيتنفذ من قسم الأهل بس، وبيتسجل في تقرير اليوم عشان يبقى واضح اتخصم إمتى وليه.</p>
+            <p class="guide-note">الخصم متاح كمان من قسم «الخصومات» في الشاشة الرئيسية، وبيتسجل في تقرير اليوم عشان يبقى واضح اتخصم إمتى وليه. من هنا تقدروا تضيفوا وتعدّلوا وتحذفوا الحالات نفسها.</p>
           </div>
           <div class="panel">
             <h3 id="deductFormTitle">➕ إضافة حالة خصم</h3>
@@ -1152,7 +1182,27 @@
           btn.addEventListener("click", function(){ buyReward(girl, btn.getAttribute("data-reward")); });
         });
       }
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); }
+      function renderPublicDeductions(){
+        var girl = currentGirl, bal = S.balances[girl];
+        var title = $("deductPublicTitle");
+        if(title) title.textContent = "⭐ خصومات " + GIRLS[girl].name + " " + GIRLS[girl].emoji;
+        var balEl = $("deductPublicBalance");
+        if(balEl) balEl.textContent = "رصيد " + GIRLS[girl].name + " الحالي: ⭐ " + bal + (bal <= 0 ? " — مفيش نجوم تتخصم دلوقتي" : "");
+        var box = $("publicDeductList");
+        if(!box) return;
+        if(!S.deductions.length){ box.innerHTML = '<div class="empty-note">مفيش حالات خصم — الأهل يقدروا يضيفوها من منطقة الأهل ⭐</div>'; return; }
+        box.innerHTML = S.deductions.map(function(d){
+          return '<div class="deduct-row">' +
+            '<span class="dic">' + d.emoji + '</span>' +
+            '<div class="mid"><div class="dname">' + esc(d.name) + '</div>' +
+            '<div class="dprice">الخصم: ⭐ ' + d.stars + '</div></div>' +
+            '<button class="deduct-apply" type="button" data-pub-ded="' + d.id + '">اخصم ⭐</button></div>';
+        }).join("");
+        box.querySelectorAll("[data-pub-ded]").forEach(function(b){
+          b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl); });
+        });
+      }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); }
 
       GIRL_KEYS.forEach(function(g){
         $("card-" + g).addEventListener("click", function(){
@@ -1165,6 +1215,10 @@
       });
       $("rewardsBtn").addEventListener("click", function(){
         $("rewardsTitle").scrollIntoView({ behavior:"smooth" });
+      });
+      var deductBtnEl = $("deductBtn");
+      if(deductBtnEl) deductBtnEl.addEventListener("click", function(){
+        $("deductPublicTitle").scrollIntoView({ behavior:"smooth" });
       });
 
       /* ================= Parents gate: fixed favorite number (Android v1.2) ================= */
@@ -1361,10 +1415,10 @@
           });
         });
       }
-      function applyDeduction(dedId){
+      function applyDeduction(dedId, girlOverride){
         var d = S.deductions.find(function(x){ return x.id === dedId; });
         if(!d) return;
-        var g = dedGirl, bal = S.balances[g];
+        var g = girlOverride || dedGirl, bal = S.balances[g];
         if(bal <= 0){
           showModal("⭐", "مفيش نجوم تتخصم", GIRLS[g].name + " رصيدها صفر دلوقتي، فمفيش نجوم يتخصم منها.", "تمام");
           return;
