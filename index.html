@@ -487,74 +487,6 @@
       .ctools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
       .ctools .mini{ flex:1; min-width:100px; min-height:48px; font-size:1rem; }
       .ctools .mini.on{ background:var(--gold); border-color:var(--gold); color:var(--ink); }
-
-      /* ---------- Dashboard + views ---------- */
-      .app-view{ display:none; }
-      .app-view.active{ display:block; animation:fadein .25s ease; }
-      #parents.app-view{ display:none; }
-      #parents.app-view.active.open{ display:block; }
-      .view-head{ display:flex; align-items:center; gap:10px; margin:4px 0 10px; }
-      .back-btn{
-        border:2px solid var(--gold-dark); background:var(--card); color:var(--gold-dark);
-        border-radius:999px; padding:9px 18px; font-weight:800; font-size:1.02rem; cursor:pointer; min-height:46px;
-      }
-      .back-btn:active{ background:var(--gold-light); transform:scale(.97); }
-      .view-head .vh-title{ font-weight:800; font-size:1.05rem; color:var(--gray); }
-      .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
-      .dash-card{
-        border-radius:var(--radius); padding:13px 14px; text-align:start; cursor:pointer; color:var(--ink);
-        display:flex; flex-direction:column; gap:4px; min-height:118px; width:100%;
-        transition:transform .15s ease, box-shadow .2s ease;
-      }
-      .dash-card:active{ transform:scale(.97); }
-      .dash-card .dc-icon{ font-size:1.3rem; line-height:1.15; }
-      .dash-card .dc-title{ font-size:1.22rem; font-weight:800; line-height:1.25; }
-      .dash-card .dc-meta{ color:var(--gray); font-weight:700; font-size:.94rem; line-height:1.45; flex:1; }
-      .dash-card .dc-go{ font-weight:800; font-size:.95rem; }
-      .dash-card .dc-bar{ display:block; height:10px; border-radius:6px; background:var(--cream-dark); overflow:hidden; }
-      .dash-card .dc-bar i{ display:block; height:100%; background:var(--gold); border-radius:6px; transition:width .5s ease; }
-      .dc-tasks{ background:var(--gold-light); border:2px solid var(--gold); }
-      .dc-tasks .dc-go{ color:var(--gold-dark); }
-      .dc-rewards{ background:var(--rose-light); border:2px solid var(--rose); }
-      .dc-rewards .dc-go{ color:var(--rose-dark); }
-      .dc-deduct{ background:#FDECEC; border:2px solid #F3C2C0; }
-      .dc-deduct .dc-go{ color:var(--red); }
-      .dc-color{ background:var(--violet-light); border:2px solid var(--violet); }
-      .dc-color .dc-go{ color:var(--violet-dark); }
-      .dc-note{ background:var(--green-light); border:2px solid var(--green); }
-      .dc-note .dc-go{ color:var(--green); }
-      .dc-parents{ background:var(--card); border:2px solid var(--gold-dark); }
-      .dc-parents .dc-go{ color:var(--gold-dark); }
-      @media (max-width:380px){ .dash-grid{ grid-template-columns:1fr; } .dash-card{ min-height:0; } }
-      /* ---------- Dashboard: كلها في شاشة واحدة من غير سكرول ---------- */
-      body:has(#view-home.active){ overflow:hidden; padding-bottom:0; }
-      body:has(#view-home.active) .wrap{ height:100dvh; height:100svh; display:flex; flex-direction:column; padding:10px 12px 10px; overflow:hidden; }
-      body:has(#view-home.active) .hero h1{ font-size:1.35rem; line-height:1.2; }
-      body:has(#view-home.active) .hero .dates{ font-size:.88rem; margin-top:0; }
-      body:has(#view-home.active) .install-bar{ margin-top:8px; padding:6px 10px; font-size:.88rem; }
-      #view-home.active{ display:flex; flex-direction:column; flex:1; min-height:0; }
-      #view-home .girls{ margin-top:10px; gap:8px; flex:0 0 auto; }
-      #view-home .girl{ padding:8px 8px 7px; border-radius:18px; }
-      #view-home .girl.judy.sel, #view-home .girl.karma.sel{ padding:6px 6px 5px; border-width:3px; transform:scale(1.01); }
-      #view-home .girl .gname{ font-size:1.15rem; }
-      #view-home .girl .today-line{ font-size:.84rem; margin-top:2px; }
-      #view-home .girl .bar{ height:9px; margin-top:4px; }
-      #view-home .girl .balance{ font-size:1rem; margin-top:3px; }
-      #view-home .girl .sel-badge{ font-size:.76rem; padding:1px 10px; top:-11px; }
-      #view-home .now-strip{ margin-top:8px; padding:5px 8px; font-size:.98rem; border-width:2px; border-radius:16px; flex:0 0 auto; }
-      #view-home .praise{ margin-top:6px; padding:6px; font-size:1rem; border-radius:16px; }
-      #view-home .dash-grid{ margin-top:8px; gap:8px; flex:1; min-height:0; grid-template-rows:repeat(3,1fr); grid-template-columns:1fr 1fr; }
-      #view-home .dash-card{ min-height:0; height:100%; padding:8px 10px; border-radius:18px; gap:1px; justify-content:center; }
-      #view-home .dash-card .dc-icon{ font-size:1.05rem; }
-      #view-home .dash-card .dc-title{ font-size:1.02rem; }
-      #view-home .dash-card .dc-meta{ font-size:.8rem; line-height:1.3; }
-      #view-home .dash-card .dc-go{ font-size:.82rem; }
-      #view-home .dash-card .dc-bar{ height:7px; }
-      @media (max-height:640px){
-        #view-home .girl .today-line{ display:none; }
-        #view-home .dash-card .dc-meta{ display:none; }
-        body:has(#view-home.active) .hero h1{ font-size:1.2rem; }
-      }
       .hidden{ display:none !important; }
     </style>
   </head>
@@ -613,7 +545,6 @@
         <button class="x" id="installBarClose" type="button" aria-label="إخفاء شريط التثبيت">✕</button>
       </div>
 
-      <div class="app-view active" id="view-home">
       <section class="girls" aria-label="اختيار البنت">
         <button class="girl karma" id="card-karma" type="button">
           <span class="sel-badge">✔ بنعلّم لها دلوقتي</span>
@@ -635,82 +566,30 @@
 
       <div class="praise" id="praiseBanner" role="status"></div>
 
-      <div class="dash-grid" aria-label="أقسام التطبيق">
-        <button class="dash-card dc-tasks" type="button" data-nav="tasks">
-          <span class="dc-icon">📋</span>
-          <span class="dc-title">مهام اليوم</span>
-          <span class="dc-meta" id="dashTasksMeta"></span>
-          <span class="dc-bar"><i id="dashTasksBar" style="width:0%"></i></span>
-          <span class="dc-go">افتحي المهام ←</span>
-        </button>
-        <button class="dash-card dc-rewards" type="button" data-nav="rewards">
-          <span class="dc-icon">🎁</span>
-          <span class="dc-title">المكافآت</span>
-          <span class="dc-meta" id="dashRewardsMeta"></span>
-          <span class="dc-go">افتحي المكافآت ←</span>
-        </button>
-        <button class="dash-card dc-deduct" type="button" data-nav="deduct">
-          <span class="dc-icon">⭐</span>
-          <span class="dc-title">الخصومات</span>
-          <span class="dc-meta" id="dashDeductMeta"></span>
-          <span class="dc-go">افتحي الخصومات ←</span>
-        </button>
-        <button class="dash-card dc-color" type="button" data-nav="color">
-          <span class="dc-icon">🎨</span>
-          <span class="dc-title">ركن التلوين</span>
-          <span class="dc-meta" id="dashColorMeta"></span>
-          <span class="dc-go">افتحي التلوين ←</span>
-        </button>
-        <button class="dash-card dc-note" type="button" data-nav="note">
-          <span class="dc-icon">📝</span>
-          <span class="dc-title">ملاحظتي عن اليوم</span>
-          <span class="dc-meta" id="dashNoteMeta"></span>
-          <span class="dc-go">افتحي الملاحظة ←</span>
-        </button>
-        <button class="dash-card dc-parents" type="button" data-nav="parents">
-          <span class="dc-icon">🔒</span>
-          <span class="dc-title">منطقة الأهل</span>
-          <span class="dc-meta">إدارة المهام والمكافآت والخصومات، التقارير، المزامنة والنسخة الاحتياطية</span>
-          <span class="dc-go">دخول الأهل ←</span>
-        </button>
-      </div>
-      </div>
-
-      <div class="app-view" id="view-tasks">
-      <div class="view-head"><button class="back-btn" type="button" data-back>🏠 رجوع للداش بورد</button></div>
       <h2 class="section-title" id="tasksTitle">مهام اليوم 📋</h2>
       <div id="taskList"></div>
 
-      </div>
-
-      <div class="app-view" id="view-note">
-      <div class="view-head"><button class="back-btn" type="button" data-back>🏠 رجوع للداش بورد</button></div>
       <div class="note-card">
         <div class="note-head" id="noteTitle">📝 ملاحظتي عن اليوم</div>
         <textarea id="dayNote" rows="2" maxlength="300" placeholder="اكتبي حاجة حلوة حصلت النهارده... ✏️" aria-label="ملاحظتي عن اليوم"></textarea>
         <div class="note-saved" id="noteSaved"></div>
       </div>
 
+      <div class="nav-btns">
+        <button class="btn-gold" id="rewardsBtn" type="button">المكافآت 🎁</button>
+        <button class="btn-soft" id="parentsBtn" type="button">للأهل 🔒</button>
       </div>
+      <button class="btn-gold color-btn" id="colorBtn" type="button">🎨 ركن التلوين</button>
+      <button class="btn-soft color-btn" id="deductBtn" type="button">⭐ الخصومات</button>
 
-      <div class="app-view" id="view-rewards">
-      <div class="view-head"><button class="back-btn" type="button" data-back>🏠 رجوع للداش بورد</button></div>
       <h2 class="section-title" id="rewardsTitle">🎁 المكافآت</h2>
       <div id="rewardList"></div>
 
-      </div>
-
-      <div class="app-view" id="view-deduct">
-      <div class="view-head"><button class="back-btn" type="button" data-back>🏠 رجوع للداش بورد</button></div>
       <h2 class="section-title" id="deductPublicTitle">⭐ الخصومات</h2>
       <p class="color-sub">لو حصلت حالة من دول، دوسوا «اخصم» وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
       <div class="deduct-balance" id="deductPublicBalance"></div>
       <div id="publicDeductList"></div>
 
-      </div>
-
-      <div class="app-view" id="view-color">
-      <div class="view-head"><button class="back-btn" type="button" data-back>🏠 رجوع للداش بورد</button></div>
       <h2 class="section-title" id="colorTitle">🎨 ركن التلوين</h2>
       <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — اختاري رسمة ولوّنيها، وشغلك بيتحفظ في معرضك. والرسومات الدهبية 👑 بتتفتح بالنجوم!</p>
       <div id="colorDaily"></div>
@@ -729,10 +608,7 @@
         <p class="guide-note" style="text-align:center">اختاري لون من فوق وبعدين دوسي على الجزء اللي عايزة تلوّنيه — شغلك بيتحفظ لوحده ⭐</p>
       </div>
 
-      </div>
-
-      <section id="parents" class="app-view">
-        <div class="view-head"><button class="back-btn" type="button" data-back>🏠 رجوع للداش بورد</button></div>
+      <section id="parents">
         <h2 class="section-title">منطقة الأهل 🔐</h2>
         <div class="tabs" role="tablist">
           <button class="tab on" data-tab="tasks" type="button">📋 المهام</button>
@@ -964,10 +840,20 @@
 
     <script>
       "use strict";
-      /* ================= Data (same storage key — existing data survives) ================= */
-      var LS_KEY = "njwm-jwdy-wkrm-v1";
+      /* ================= Data — fresh start (decided 2026-11-21) =================
+         All old progress data is wiped once and the app starts over: the data
+         key moves to v2 and the old data + old sync-link keys are removed on
+         first run, so nothing old (including the synced cloud copy) can flow
+         back in. The parents' favorite number is NOT data — it lives under
+         its own key, which is deliberately unchanged, so the number the
+         parents registered keeps working exactly as before. */
+      var LS_KEY = "njwm-jwdy-wkrm-v2";
       var PIN_KEY = "njwm-jwdy-wkrm-pin";
       var WELCOME_KEY = "njwm-jwdy-wkrm-welcome";
+      try{
+        localStorage.removeItem("njwm-jwdy-wkrm-v1");
+        localStorage.removeItem("njwm-jwdy-wkrm-sync");
+      }catch(e){}
       var GIRLS = {
         karma: { name: "كارما", emoji: "🦋" },
         judy:  { name: "جودي",  emoji: "🌸" }
@@ -1022,6 +908,24 @@
           selectedGirl: "karma"
         };
       }
+      /* Points integrity: every star a girl gains or loses is written to her
+         day log as an event with the exact delta (task, surprise, twin,
+         full-day, redeem, deduct, unlock, and every reversal). So a balance
+         must always equal the sum of her event deltas — recompute it from
+         the log and any drift heals itself instead of accumulating. A girl
+         with no logged events keeps her stored balance untouched. */
+      function reconcileBalances(s){
+        if(!s || !s.balances || !s.days) return s;
+        GIRL_KEYS.forEach(function(g){
+          var sum = 0, seen = false;
+          Object.keys(s.days).forEach(function(k){
+            var r = s.days[k] && s.days[k][g];
+            if(r && r.events) r.events.forEach(function(e){ seen = true; sum += (e.delta || 0); });
+          });
+          if(seen) s.balances[g] = sum;
+        });
+        return s;
+      }
       function load(){
         try{
           var raw = localStorage.getItem(LS_KEY);
@@ -1042,7 +946,7 @@
                 if(!s.coloring[g].unlocked) s.coloring[g].unlocked = [];
                 if(!s.coloring[g].works) s.coloring[g].works = {};
               });
-              return s;
+              return reconcileBalances(s);
             }
           }
         }catch(e){}
@@ -1250,11 +1154,16 @@
         var og = otherGirl(girl);
 
         if(r.done[taskId]){
-          /* ---- uncheck: reverse everything this completion caused ---- */
+          /* ---- uncheck: reverse everything this completion caused ----
+             Reverse the star count that was actually awarded at check time
+             (stored on the done record), not the task's current star count —
+             if a parent edited the task's stars in between, the balance
+             would otherwise gain or lose stars that were never awarded. */
           var info = r.done[taskId];
+          var awarded = (info && typeof info.stars === "number") ? info.stars : task.stars;
           delete r.done[taskId];
-          S.balances[girl] -= task.stars;
-          logEvent(key, girl, "uncheck", "اتشالت علامة: " + task.name, -task.stars);
+          S.balances[girl] -= awarded;
+          logEvent(key, girl, "uncheck", "اتشالت علامة: " + task.name, -awarded);
           if(info.surpriseStar){
             S.balances[girl] -= 1;
             logEvent(key, girl, "uncheck", "رجعت نجمة المفاجأة بتاعة: " + task.name, -1);
@@ -1281,7 +1190,7 @@
         if(Math.random() < 0.2){
           surpriseMsg = SECRET_MESSAGES[Math.floor(Math.random() * SECRET_MESSAGES.length)];
         }
-        r.done[taskId] = { time: nowTime(), surpriseStar: surpriseMsg ? 1 : 0 };
+        r.done[taskId] = { time: nowTime(), surpriseStar: surpriseMsg ? 1 : 0, stars: task.stars };
         S.balances[girl] += task.stars;
         logEvent(key, girl, "task", "خلصت: " + task.name, task.stars);
         playHappy(false);
@@ -1428,34 +1337,7 @@
           b.addEventListener("click", function(){ applyDeduction(b.getAttribute("data-pub-ded"), currentGirl); });
         });
       }
-      function renderDashboard(){
-        var key = todayKey(), g = currentGirl, cg = GIRLS[g];
-        var mine = tasksFor(g);
-        var r = S.days[key] && S.days[key][g];
-        var done = r ? mine.filter(function(t){ return !!r.done[t.id]; }).length : 0;
-        var tm = $("dashTasksMeta");
-        if(tm) tm.textContent = cg.name + " خلصت " + done + " من " + mine.length + " مهام النهارده";
-        var tb = $("dashTasksBar");
-        if(tb) tb.style.width = (mine.length ? Math.round(done / mine.length * 100) : 0) + "%";
-        var bal = S.balances[g];
-        var afford = S.rewards.filter(function(rw){ return rw.price <= bal; }).length;
-        var rm = $("dashRewardsMeta");
-        if(rm) rm.textContent = "رصيد " + cg.name + ": ⭐ " + bal + " — تقدر تشتري " + afford + " من " + S.rewards.length + " مكافآت";
-        var dm = $("dashDeductMeta");
-        if(dm) dm.textContent = S.deductions.length + " حالات خصم — الرصيد الحالي ⭐ " + bal;
-        var cm = $("dashColorMeta");
-        if(cm){
-          var dp = dailyPic();
-          var goldOpen = S.coloring[g].unlocked.length;
-          cm.textContent = "رسمة اليوم: " + dp.emoji + " " + dp.name + " — وفتحتي " + goldOpen + " من ٣ رسومات دهبية";
-        }
-        var nm = $("dashNoteMeta");
-        if(nm){
-          var note = r && r.note ? r.note : "";
-          nm.textContent = note ? ("«" + (note.length > 60 ? note.slice(0, 60) + "…" : note) + "»") : cg.name + " لسه مكتبتش ملاحظة النهارده";
-        }
-      }
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); renderDashboard(); if(parentsUnlocked) renderAdmin(); }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); }
 
       GIRL_KEYS.forEach(function(g){
         $("card-" + g).addEventListener("click", function(){
@@ -1466,27 +1348,25 @@
           renderAll();
         });
       });
-      /* ---- Dashboard navigation: home shows cards, each card opens its own view ---- */
-      function showView(name){
-        document.querySelectorAll(".app-view").forEach(function(v){ v.classList.remove("active"); });
-        var el = name === "parents" ? $("parents") : $("view-" + name);
-        if(el) el.classList.add("active");
-        window.scrollTo({ top:0, behavior:"smooth" });
-      }
-      function goHome(){ showView("home"); }
-      document.querySelectorAll("[data-back]").forEach(function(b){
-        b.addEventListener("click", goHome);
+      $("rewardsBtn").addEventListener("click", function(){
+        $("rewardsTitle").scrollIntoView({ behavior:"smooth" });
       });
-      document.querySelectorAll("[data-nav]").forEach(function(card){
-        card.addEventListener("click", function(){
-          var target = card.getAttribute("data-nav");
-          if(target === "parents"){ openParents(); return; }
-          showView(target);
-        });
+      var deductBtnEl = $("deductBtn");
+      if(deductBtnEl) deductBtnEl.addEventListener("click", function(){
+        $("deductPublicTitle").scrollIntoView({ behavior:"smooth" });
       });
 
       /* ================= Parents gate: fixed favorite number (Android v1.2) ================= */
       function storedPinHash(){ try{ return localStorage.getItem(PIN_KEY) || ""; }catch(e){ return ""; } }
+      /* Arabic keyboards type Arabic-Indic (٠١٢٣) or Persian (۰۱۲۳) digits.
+         Normalize them to 0-9 BEFORE validating or hashing — otherwise the
+         same number the parent registered is rejected (or silently stripped
+         by the input filter) whenever it is typed with an Arabic keyboard. */
+      function normDigits(v){
+        return String(v == null ? "" : v)
+          .replace(/[٠-٩]/g, function(c){ return String(c.charCodeAt(0) - 0x0660); })
+          .replace(/[۰-۹]/g, function(c){ return String(c.charCodeAt(0) - 0x06F0); });
+      }
       function isValidPin(v){ return /^[0-9]{3}$/.test(v); }
       var gateMode = "", gateTemp = "";
       var GATE_TEXT = {
@@ -1520,10 +1400,10 @@
         $("gateOverlay").classList.remove("open");
         $("parents").classList.add("open");
         renderAdmin();
-        showView("parents");
+        $("parents").scrollIntoView({ behavior:"smooth" });
       }
       function tryGate(){
-        var v = $("gateInput").value.trim();
+        var v = normDigits($("gateInput").value).trim();
         if(gateMode === "setup1" || gateMode === "chg2"){
           if(!isValidPin(v)){ gateFail("الرقم لازم يكون ٣ أرقام بالضبط"); return; }
           gateTemp = v;
@@ -1537,6 +1417,12 @@
           }
           sha256hex(v).then(function(h){
             try{ localStorage.setItem(PIN_KEY, h); }catch(e){}
+            /* Push the new number to the family sync right away. Without
+               this, the number existed only on this device until some
+               unrelated edit happened to trigger a push — and any sync pull
+               in between restored the older cloud number over it, so the
+               number the parent had just registered suddenly "was wrong". */
+            try{ save(); }catch(e){}
             if(gateMode === "setup2"){
               unlockParents();
             } else {
@@ -1557,15 +1443,15 @@
           }
         });
       }
-      function openParents(){
-        if(parentsUnlocked){ showView("parents"); return; }
+      $("parentsBtn").addEventListener("click", function(){
+        if(parentsUnlocked){ $("parents").scrollIntoView({ behavior:"smooth" }); return; }
         startGate(storedPinHash() ? "entry" : "setup1");
-      }
+      });
       $("changePinBtn").addEventListener("click", function(){ startGate("chg1"); });
       $("gateOk").addEventListener("click", tryGate);
       $("gateInput").addEventListener("keydown", function(e){ if(e.key === "Enter") tryGate(); });
       $("gateInput").addEventListener("input", function(){
-        var v = $("gateInput").value.replace(/[^0-9]/g, "").slice(0, 3);
+        var v = normDigits($("gateInput").value).replace(/[^0-9]/g, "").slice(0, 3);
         if(v !== $("gateInput").value) $("gateInput").value = v;
       });
       $("gateCancel").addEventListener("click", function(){ $("gateOverlay").classList.remove("open"); });
@@ -2211,8 +2097,9 @@
         toast("برافو يا فنانة! 🎨", "لوحتك اتحفظت في ركن التلوين");
         $("colorTitle").scrollIntoView({ behavior:"smooth" });
       });
-      var colorBtnEl = $("colorBtn");
-      if(colorBtnEl) colorBtnEl.addEventListener("click", function(){ showView("color"); });
+      $("colorBtn").addEventListener("click", function(){
+        $("colorTitle").scrollIntoView({ behavior:"smooth" });
+      });
 
       /* ================= Welcome / onboarding + install guide =================
          The welcome shows on EVERY browser open (it was hidden for a whole day
@@ -2453,7 +2340,7 @@
           if(!d.coloring[g].works) d.coloring[g].works = {};
           if(typeof d.balances[g] !== "number") d.balances[g] = 0;
         });
-        return d;
+        return reconcileBalances(d);
       }
       $("backupCreateBtn").addEventListener("click", function(){
         try{
@@ -2551,7 +2438,7 @@
          so every linked device opens the parents area with the same
          favorite number. Sync config lives under its own storage key —
          the app's data key is untouched. */
-      var SYNC_KEY = "njwm-jwdy-wkrm-sync";
+      var SYNC_KEY = "njwm-jwdy-wkrm-sync-v2";
       var SYNC_DB = "https://kaju-family-default-rtdb.europe-west1.firebasedatabase.app";
       var syncCfg = null; /* { code, deviceId, rev, dirty } */
       var syncPushing = false, syncPending = false, syncApplying = false;
@@ -2627,7 +2514,11 @@
         currentGirl = (S.selectedGirl === "karma" || S.selectedGirl === "judy") ? S.selectedGirl : "karma";
         try{
           localStorage.setItem(LS_KEY, JSON.stringify(S));
-          if(remote.pin) localStorage.setItem(PIN_KEY, remote.pin);
+          /* Adopt the family number ONLY on a device that has none yet
+             (first link). A number already registered on THIS device is
+             never overwritten by a sync pull — the parents' number must
+             keep working on the device where it was registered. */
+          if(remote.pin && !localStorage.getItem(PIN_KEY)) localStorage.setItem(PIN_KEY, remote.pin);
         }catch(e){}
         syncCfg.rev = remote.rev || syncCfg.rev;
         syncCfg.dirty = false; syncSaveCfg();
