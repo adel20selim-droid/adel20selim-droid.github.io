@@ -122,6 +122,12 @@
 
       /* ---------- Sections ---------- */
       .section-title{ margin:16px 0 4px; font-size:1.32rem; font-weight:800; }
+      /* Home-screen deductions fold: only the title shows until it is
+         tapped (see renderPublicDeductions / the title toggle). */
+      .section-title.foldable{ cursor:pointer; user-select:none; -webkit-user-select:none; }
+      .fold-arrow{ font-size:.92rem; color:var(--gold-dark); }
+      .mom-lock-err{ display:none; color:var(--red); font-weight:800; margin-top:4px; }
+      .mom-lock-err.show{ display:block; }
 
       /* ---------- Task rows (Android bg_card + round check) ---------- */
       .task{
@@ -733,10 +739,12 @@
       <h2 class="section-title">💐 مكافأة ماما</h2>
       <div class="mom-card" id="momCard"></div>
 
-      <h2 class="section-title" id="deductPublicTitle">⭐ الخصومات</h2>
-      <p class="color-sub">الخصم مقفول برقم الأهل 🔒 — لو حصلت حالة من دول، دوسوا «اخصم» واكتبوا الرقم المفضل، وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
-      <div class="deduct-balance" id="deductPublicBalance"></div>
-      <div id="publicDeductList"></div>
+      <h2 class="section-title foldable" id="deductPublicTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="deductPublicBody"><span id="deductPublicTitleText">⭐ الخصومات</span> <span class="fold-arrow" id="deductFoldArrow" aria-hidden="true">▸</span></h2>
+      <div id="deductPublicBody" class="hidden">
+        <p class="color-sub">الخصم مقفول برقم الأهل 🔒 — لو حصلت حالة من دول، دوسوا «اخصم» واكتبوا الرقم المفضل، وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
+        <div class="deduct-balance" id="deductPublicBalance"></div>
+        <div id="publicDeductList"></div>
+      </div>
 
       <h2 class="section-title" id="colorTitle">🎨 ركن التلوين</h2>
       <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — عندنا <b>٣٤ رسمة</b>: ٢٥ مجانية و٩ دهبية 👑 بتتفتح بالنجوم! اختاري رسمة ولوّنيها، وشغلك بيتحفظ في معرضك. و«رسمة اليوم» اللي فوق بتتغيّر لوحدها كل يوم من الرسومات المجانية 🌞</p>
@@ -933,29 +941,65 @@
         </div>
 
         <div id="tab-mom" class="hidden">
-          <div class="panel">
-            <h3>💌 رسايل التقدير لماما</h3>
-            <p class="guide-note">كل يوم بييجي دوره على رسالة من القايمة دي بالترتيب، وبتتفتح لماما لما مهام البنات اللي خلصت في اليوم توصل ١٠ مهام. الرسالة بتظهر في بطاقة «💐 مكافأة ماما» في الشاشة الرئيسية موقّعة «— من بابا».</p>
-            <form class="f" id="momMsgForm">
-              <div>
-                <label for="momMsgInput">رسالة جديدة</label>
-                <input type="text" id="momMsgInput" maxlength="200" placeholder="مثال: شكرًا يا حبيبتي على تعبك معانا ❤️" />
-              </div>
-              <button class="save-btn" type="submit">إضافة الرسالة 💌</button>
-            </form>
-            <div id="adminMomMsgList"></div>
+          <!-- Baba-only lock: the message/coupon editors live behind his own
+               3-digit code (state key `momLock`, a SHA-256 hash that syncs
+               with the rest of the state). Mama's strip, page and home card
+               stay visible to everyone — only these editors are locked. -->
+          <div class="panel" id="momLockPanel">
+            <div id="momLockSetup" class="hidden">
+              <h3>🔒 كود بابا السري لمكافآت ماما</h3>
+              <p class="guide-note">قوائم رسايل وكوبونات ماما هتبقى مقفولة بكود خاص ببابا بس — غير رقم الأهل — عشان تبقى مفاجأة لماما 🎁 اختاروا كود من ٣ أرقام واكتبوه مرتين، وهيتحفظ مشفّر وبيتزامن مع باقي أجهزة العيلة.</p>
+              <form class="f" id="momLockSetupForm">
+                <div>
+                  <label for="momLockNew1">كود بابا — ٣ أرقام</label>
+                  <input type="text" id="momLockNew1" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="•••" />
+                </div>
+                <div>
+                  <label for="momLockNew2">اكتبوا الكود تاني للتأكيد</label>
+                  <input type="text" id="momLockNew2" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="•••" />
+                </div>
+                <div class="mom-lock-err" id="momLockSetupErr"></div>
+                <button class="save-btn" type="submit">حفظ كود بابا وفتح القوائم 🔒</button>
+              </form>
+            </div>
+            <div id="momLockedBox" class="hidden">
+              <h3>🔒 قوائم مكافآت ماما مقفولة</h3>
+              <p class="guide-note">رسايل وكوبونات ماما الجاية سرية — بابا بس اللي يقدر يشوف القوائم ويعدّل عليها بكوده الخاص. رسالة وكوبون النهاردة ظاهرين لماما عادي في الشاشة الرئيسية وصفحة ماما 💐</p>
+              <button class="save-btn" id="momUnlockBtn" type="button">🔓 فتح بكود بابا</button>
+            </div>
           </div>
-          <div class="panel">
-            <h3>🎟️ كوبونات الدلع لماما</h3>
-            <p class="guide-note">كل يوم بييجي دوره على كوبون من القايمة دي بالترتيب، وبيطلع لماما لما مهام البنات اللي خلصت في اليوم توصل ٣٠ مهمة — تبعته لبابا وهو ينفذه ❤️</p>
-            <form class="f" id="momCouponForm">
-              <div>
-                <label for="momCouponInput">كوبون جديد</label>
-                <input type="text" id="momCouponInput" maxlength="200" placeholder="مثال: كوبون عشا بره على حسابي 🍽️" />
-              </div>
-              <button class="save-btn" type="submit">إضافة الكوبون 🎟️</button>
-            </form>
-            <div id="adminMomCouponList"></div>
+          <div id="momEditors" class="hidden">
+            <div class="panel">
+              <h3>💌 رسايل التقدير لماما</h3>
+              <p class="guide-note">كل يوم بييجي دوره على رسالة من القايمة دي بالترتيب، وبتتفتح لماما لما مهام البنات اللي خلصت في اليوم توصل ١٠ مهام. الرسالة بتظهر في بطاقة «💐 مكافأة ماما» في الشاشة الرئيسية موقّعة «— من بابا».</p>
+              <form class="f" id="momMsgForm">
+                <div>
+                  <label for="momMsgInput" id="momMsgLabel">رسالة جديدة</label>
+                  <input type="text" id="momMsgInput" maxlength="200" placeholder="مثال: شكرًا يا حبيبتي على تعبك معانا ❤️" />
+                </div>
+                <button class="save-btn" type="submit" id="momMsgSaveBtn">إضافة الرسالة 💌</button>
+                <button class="mini hidden" type="button" id="momMsgCancelEdit">إلغاء التعديل</button>
+              </form>
+              <div id="adminMomMsgList"></div>
+            </div>
+            <div class="panel">
+              <h3>🎟️ كوبونات الدلع لماما</h3>
+              <p class="guide-note">كل يوم بييجي دوره على كوبون من القايمة دي بالترتيب، وبيطلع لماما لما مهام البنات اللي خلصت في اليوم توصل ٣٠ مهمة — تبعته لبابا وهو ينفذه ❤️</p>
+              <form class="f" id="momCouponForm">
+                <div>
+                  <label for="momCouponInput" id="momCouponLabel">كوبون جديد</label>
+                  <input type="text" id="momCouponInput" maxlength="200" placeholder="مثال: كوبون عشا بره على حسابي 🍽️" />
+                </div>
+                <button class="save-btn" type="submit" id="momCouponSaveBtn">إضافة الكوبون 🎟️</button>
+                <button class="mini hidden" type="button" id="momCouponCancelEdit">إلغاء التعديل</button>
+              </form>
+              <div id="adminMomCouponList"></div>
+            </div>
+            <div class="panel">
+              <h3>🔑 كود بابا</h3>
+              <p class="guide-note">الكود ده بيقفل قوائم رسايل وكوبونات ماما في التبويب ده بس، وبيتطلب عند كل فتح للتبويب.</p>
+              <button class="change-pin" id="changeMomLockBtn" type="button">🔑 تغيير كود بابا</button>
+            </div>
           </div>
         </div>
 
@@ -1097,7 +1141,14 @@
         "أنا بعيد بس شايف تعبك كل يوم، ربنا يخليكي لينا",
         "البنات محظوظة إنك أمهم… وأنا محظوظ إنك مراتي",
         "كل مهمة خلصت النهاردة كانت بإيدك وقلبك، شكرًا يا حبيبتي",
-        "يوم تقيل وعدّى بفضلك… ارتاحي شوية، انتي تستاهلي"
+        "يوم تقيل وعدّى بفضلك… ارتاحي شوية، انتي تستاهلي",
+        "مهما الدنيا بعّدت بينا، قلبي معاكي في كل لحظة ❤️",
+        "تعبك النهاردة ما راحش هدر… البنات بتكبر على إيدك وبحبك",
+        "انتي مش بس أم البنات، انتي بيتنا كله",
+        "ربنا يقويكي ويعوضك عن كل تعب… أنا فخور بيكي",
+        "كل يوم بتعدّيه مع البنات بيقرّبنا من بعض أكتر",
+        "لو النجوم بتتحسب على التعب، كنتي أغنى واحدة فينا ⭐",
+        "نامي مرتاحة النهاردة… عملتي اللي عليكي وزيادة"
       ];
       var DEFAULT_MOM_COUPONS = [
         "كوبون مشروبك المفضل على حسابي ☕",
@@ -1105,18 +1156,50 @@
         "كوبون ١٠٠ ريال دلع — اختاري اللي نفسك فيه 🎁",
         "كوبون مكالمة طويلة الليلة من غير مقاطعة 📞",
         "كوبون يوم راحة من الطبيخ — الأكل جاهز علىّ 🍲",
+        "كوبون حضن كبير مؤجل لأول ما أرجع 🤗",
+        "كوبون حلوى بتحبيها تجيلك لحد الباب 🍰",
+        "كوبون ٢٠٠ ريال دلع — يومك النهاردة 🎁",
+        "كوبون سهرة فيلم مع بعض على التليفون 🎬",
+        "كوبون فطار في السرير يوم إجازة 🥐"
+      ];
+      /* The previous, smaller default pools (the first 5 messages and first
+         6 coupons above, exactly). A stored pool still equal to these —
+         same items, same order — was never edited by the family, so it is
+         upgraded to the bigger pool; any edited pool differs and is left
+         exactly as it is. The check is deterministic and idempotent (the
+         new pools never equal the old ones), so every device reaches the
+         same result on its own. */
+      var OLD_DEFAULT_MOM_MESSAGES = [
+        "شكرًا يا بطلة… كل نجمة للبنات وراها تعبك ❤️",
+        "أنا بعيد بس شايف تعبك كل يوم، ربنا يخليكي لينا",
+        "البنات محظوظة إنك أمهم… وأنا محظوظ إنك مراتي",
+        "كل مهمة خلصت النهاردة كانت بإيدك وقلبك، شكرًا يا حبيبتي",
+        "يوم تقيل وعدّى بفضلك… ارتاحي شوية، انتي تستاهلي"
+      ];
+      var OLD_DEFAULT_MOM_COUPONS = [
+        "كوبون مشروبك المفضل على حسابي ☕",
+        "كوبون أكلة بتحبيها — اطلبيها النهاردة 🍽️",
+        "كوبون ١٠٠ ريال دلع — اختاري اللي نفسك فيه 🎁",
+        "كوبون مكالمة طويلة الليلة من غير مقاطعة 📞",
+        "كوبون يوم راحة من الطبيخ — الأكل جاهز علىّ 🍲",
         "كوبون حضن كبير مؤجل لأول ما أرجع 🤗"
       ];
+      function sameStrList(a, b){
+        return Array.isArray(a) && a.length === b.length && a.every(function(x, i){ return x === b[i]; });
+      }
       function defaultMom(){
         return { messages: DEFAULT_MOM_MESSAGES.slice(), coupons: DEFAULT_MOM_COUPONS.slice() };
       }
       /* Seed the mom pools whenever they are missing or emptied (old saves,
-         old backups, old cloud copies) — every other key stays untouched. */
+         old backups, old cloud copies) — every other key stays untouched —
+         and upgrade a pool still holding exactly the old defaults. */
       function ensureMom(s){
         if(!s) return s;
         if(!s.mom || typeof s.mom !== "object") s.mom = defaultMom();
         if(!Array.isArray(s.mom.messages) || !s.mom.messages.length) s.mom.messages = DEFAULT_MOM_MESSAGES.slice();
         if(!Array.isArray(s.mom.coupons) || !s.mom.coupons.length) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
+        if(sameStrList(s.mom.messages, OLD_DEFAULT_MOM_MESSAGES)) s.mom.messages = DEFAULT_MOM_MESSAGES.slice();
+        if(sameStrList(s.mom.coupons, OLD_DEFAULT_MOM_COUPONS)) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
         return s;
       }
       var EMOJIS = ["🕌","🛏️","🪥","🎒","📚","📖","🧸","🤝","👯","🤲","🌙","🍦","🎮","🎨","🎬","🍕","🌳","🧩","⭐","🚿","👕","🧹","🍽️","✏️","🦷","🛁","🐱","🌸","🦋","🏃","🎵","🧁","🍎","📝","🧼","🌞","😤","🙊","🤥","😭","💥","✋","📱","📢"];
@@ -1570,8 +1653,18 @@
       }
       function renderPublicDeductions(){
         var girl = currentGirl, bal = S.balances[girl];
-        var title = $("deductPublicTitle");
-        if(title) title.textContent = "⭐ خصومات " + GIRLS[girl].name + " " + GIRLS[girl].emoji;
+        var titleText = $("deductPublicTitleText");
+        if(titleText) titleText.textContent = "⭐ خصومات " + GIRLS[girl].name + " " + GIRLS[girl].emoji;
+        /* The home-screen deductions section always renders folded: only
+           its title shows, and tapping the title unfolds it. The open
+           state lives only in the DOM for this session — it is never
+           stored, so every fresh load and every render starts folded. */
+        var foldBody = $("deductPublicBody");
+        if(foldBody) foldBody.classList.add("hidden");
+        var foldArrow = $("deductFoldArrow");
+        if(foldArrow) foldArrow.textContent = "▸";
+        var foldTitle = $("deductPublicTitle");
+        if(foldTitle) foldTitle.setAttribute("aria-expanded", "false");
         var balEl = $("deductPublicBalance");
         if(balEl) balEl.textContent = "رصيد " + GIRLS[girl].name + " الحالي: ⭐ " + bal + (bal <= 0 ? " — مفيش نجوم تتخصم دلوقتي" : "");
         var box = $("publicDeductList");
@@ -1773,6 +1866,24 @@
       if(deductBtnEl) deductBtnEl.addEventListener("click", function(){
         $("deductPublicTitle").scrollIntoView({ behavior:"smooth" });
       });
+      /* Fold/unfold the home-screen deductions by tapping their title.
+         Purely a DOM toggle for this session — nothing is persisted, and
+         renderPublicDeductions folds the section again on every render. */
+      function togglePublicDeductions(){
+        var body = $("deductPublicBody"); if(!body) return;
+        var nowHidden = body.classList.toggle("hidden");
+        var arrow = $("deductFoldArrow");
+        if(arrow) arrow.textContent = nowHidden ? "▸" : "▾";
+        var t = $("deductPublicTitle");
+        if(t) t.setAttribute("aria-expanded", nowHidden ? "false" : "true");
+      }
+      var deductTitleEl = $("deductPublicTitle");
+      if(deductTitleEl){
+        deductTitleEl.addEventListener("click", togglePublicDeductions);
+        deductTitleEl.addEventListener("keydown", function(e){
+          if(e.key === "Enter" || e.key === " "){ e.preventDefault(); togglePublicDeductions(); }
+        });
+      }
 
       /* ================= Parents gate: fixed favorite number (Android v1.2) ================= */
       function storedPinHash(){ try{ return localStorage.getItem(PIN_KEY) || ""; }catch(e){ return ""; } }
@@ -1800,7 +1911,11 @@
         buy: ["شراء المكافآت للأهل بس 🔒", "اكتبوا الرقم المفضل (٣ أرقام) عشان تكملوا الشراء", "دخول"],
         chg1:   ["تغيير الرقم المفضل 🔑", "اكتبي رقمك المفضل الحالي الأول", "كمّلي"],
         chg2:   ["تغيير الرقم المفضل 🔑", "اختاري رقمك المفضل الجديد — رقم من ٣ أرقام", "كمّلي"],
-        chg3:   ["تأكيد الرقم الجديد", "اكتبي الرقم الجديد تاني للتأكيد", "حفظ الرقم الجديد"]
+        chg3:   ["تأكيد الرقم الجديد", "اكتبي الرقم الجديد تاني للتأكيد", "حفظ الرقم الجديد"],
+        mom:    ["دي مكافآت ماما — كود بابا بس 🔒", "اكتبوا كود بابا (٣ أرقام) عشان تفتحوا قوائم رسايل وكوبونات ماما", "دخول"],
+        momchg1:["تغيير كود بابا 🔑", "اكتبوا كود بابا الحالي الأول", "كمّلي"],
+        momchg2:["تغيير كود بابا 🔑", "اختاروا كود بابا الجديد — رقم من ٣ أرقام", "كمّلي"],
+        momchg3:["تأكيد كود بابا الجديد", "اكتبوا الكود الجديد تاني للتأكيد", "حفظ الكود الجديد"]
       };
       /* The forgot-number link belongs only to the modes that VERIFY an
          existing number (entry / change-current / locked deduction), and
@@ -1849,15 +1964,26 @@
       }
       function tryGate(){
         var v = normDigits($("gateInput").value).trim();
-        if(gateMode === "setup1" || gateMode === "chg2"){
+        if(gateMode === "setup1" || gateMode === "chg2" || gateMode === "momchg2"){
           if(!isValidPin(v)){ gateFail("الرقم لازم يكون ٣ أرقام بالضبط"); return; }
           gateTemp = v;
-          startGate(gateMode === "setup1" ? "setup2" : "chg3");
+          startGate(gateMode === "setup1" ? "setup2" : (gateMode === "chg2" ? "chg3" : "momchg3"));
           return;
         }
-        if(gateMode === "setup2" || gateMode === "chg3"){
+        if(gateMode === "setup2" || gateMode === "chg3" || gateMode === "momchg3"){
           if(v !== gateTemp){
-            startGate(gateMode === "setup2" ? "setup1" : "chg2", "الرقمين مش زي بعض — عيدي من الأول");
+            startGate(gateMode === "setup2" ? "setup1" : (gateMode === "chg3" ? "chg2" : "momchg2"), "الرقمين مش زي بعض — عيدي من الأول");
+            return;
+          }
+          if(gateMode === "momchg3"){
+            /* Baba's code lives in the synced state as `momLock` (hash
+               only) — never in the parents'-number key. */
+            sha256hex(v).then(function(h){
+              S.momLock = h;
+              save();
+              $("gateOverlay").classList.remove("open");
+              toast("اتغيّر كود بابا 🔑", "المرة الجاية افتحوا قوائم ماما بالكود الجديد");
+            });
             return;
           }
           sha256hex(v).then(function(h){
@@ -1885,6 +2011,28 @@
             } else {
               $("gateOverlay").classList.remove("open");
               toast("اتغيّر الرقم المفضل 🔑", "المرة الجاية ادخلي بالرقم الجديد");
+            }
+          });
+          return;
+        }
+        /* mom / momchg1: verify against Baba's code hash in the state
+           (`momLock`), not the parents' number. A correct code opens the
+           mom tab's editors for this visit only — the tab asks again on
+           every open. Wrong code or cancel leaves the editors hidden. */
+        if(gateMode === "mom" || gateMode === "momchg1"){
+          if(!isValidPin(v)){ gateFail("الكود مش صح، حاولوا تاني"); return; }
+          sha256hex(v).then(function(h){
+            if(S.momLock && h === S.momLock){
+              if(gateMode === "mom"){
+                momTabUnlocked = true;
+                $("gateOverlay").classList.remove("open");
+                refreshMomTabLock();
+                var ed = $("momEditors");
+                if(ed) ed.scrollIntoView({ behavior:"smooth", block:"start" });
+              }
+              else startGate("momchg2");
+            } else {
+              gateFail("الكود مش صح، حاولوا تاني");
             }
           });
           return;
@@ -2043,6 +2191,9 @@
             $("tab-" + name).classList.toggle("hidden", name !== tab.getAttribute("data-tab"));
           });
           if(tab.getAttribute("data-tab") === "reports") renderReports();
+          /* The mom tab's editors sit behind Baba's own code: every open
+             of the tab starts locked again (no lasting session). */
+          if(tab.getAttribute("data-tab") === "mom"){ momTabUnlocked = false; refreshMomTabLock(); }
         });
       });
 
@@ -2110,7 +2261,27 @@
         renderMomAdmin();
       }
 
-      /* ================= Parents: mom's reward pools ================= */
+      /* ================= Parents: mom's reward pools =================
+         The editors in this tab are locked behind Baba's own code: the
+         hash lives in the synced state as `momLock` (next to `mom`), and
+         the tab asks for the code on every open — `momTabUnlocked` is a
+         plain in-memory flag for the current visit, never stored. */
+      var momTabUnlocked = false;
+      var editMomMsgIndex = null, editMomCouponIndex = null;
+      function refreshMomTabLock(){
+        var panel = $("momLockPanel"), editors = $("momEditors");
+        if(!panel || !editors) return;
+        var has = !!(S && S.momLock);
+        if(has && momTabUnlocked){
+          panel.classList.add("hidden");
+          editors.classList.remove("hidden");
+        } else {
+          editors.classList.add("hidden");
+          panel.classList.remove("hidden");
+          $("momLockSetup").classList.toggle("hidden", has);
+          $("momLockedBox").classList.toggle("hidden", !has);
+        }
+      }
       function renderMomAdmin(){
         ensureMom(S);
         function bindDeletes(listEl, poolName, noun){
@@ -2120,9 +2291,23 @@
               var txt = S.mom[poolName][i];
               showModal("🗑️", "نحذف " + noun + " دي؟", "«" + esc(txt) + "» هتتشال من القايمة.", "أيوه، احذف", function(){
                 S.mom[poolName].splice(i, 1);
+                /* keep a pending edit pointed at the same item */
+                if(poolName === "messages" && editMomMsgIndex != null){
+                  if(i === editMomMsgIndex) cancelEditMomMsg();
+                  else if(i < editMomMsgIndex) editMomMsgIndex--;
+                }
+                if(poolName === "coupons" && editMomCouponIndex != null){
+                  if(i === editMomCouponIndex) cancelEditMomCoupon();
+                  else if(i < editMomCouponIndex) editMomCouponIndex--;
+                }
                 save(); renderAll();
               }, true);
             });
+          });
+        }
+        function bindEdits(listEl, poolName){
+          listEl.querySelectorAll("[data-mom-edit]").forEach(function(b){
+            b.addEventListener("click", function(){ startEditMomItem(poolName, +b.getAttribute("data-mom-edit")); });
           });
         }
         var msgList = $("adminMomMsgList"), cpList = $("adminMomCouponList");
@@ -2130,16 +2315,61 @@
         msgList.innerHTML = S.mom.messages.length ? S.mom.messages.map(function(m, i){
           return '<div class="row-item"><span class="e">💌</span>' +
             '<span class="n">' + esc(m) + '</span>' +
+            '<button class="mini" type="button" data-mom-edit="' + i + '">تعديل</button>' +
             '<button class="mini del" type="button" data-mom-del="' + i + '">حذف</button></div>';
         }).join("") : '<div class="empty-note">مفيش رسايل</div>';
         cpList.innerHTML = S.mom.coupons.length ? S.mom.coupons.map(function(c, i){
           return '<div class="row-item"><span class="e">🎟️</span>' +
             '<span class="n">' + esc(c) + '</span>' +
+            '<button class="mini" type="button" data-mom-edit="' + i + '">تعديل</button>' +
             '<button class="mini del" type="button" data-mom-del="' + i + '">حذف</button></div>';
         }).join("") : '<div class="empty-note">مفيش كوبونات</div>';
         bindDeletes(msgList, "messages", "الرسالة");
         bindDeletes(cpList, "coupons", "الكوبون");
+        bindEdits(msgList, "messages");
+        bindEdits(cpList, "coupons");
       }
+      /* Same add/edit form pattern as the kids' tasks and rewards: the
+         form fills with the current text, saving updates the item in
+         place in its pool (no delete + re-add). */
+      function startEditMomItem(poolName, i){
+        ensureMom(S);
+        var txt = S.mom[poolName][i];
+        if(txt == null) return;
+        if(poolName === "messages"){
+          editMomMsgIndex = i;
+          $("momMsgInput").value = txt;
+          $("momMsgLabel").textContent = "✏️ تعديل الرسالة";
+          $("momMsgSaveBtn").textContent = "حفظ التعديل ✅";
+          $("momMsgCancelEdit").classList.remove("hidden");
+          $("momMsgForm").scrollIntoView({ behavior:"smooth", block:"center" });
+          $("momMsgInput").focus();
+        } else {
+          editMomCouponIndex = i;
+          $("momCouponInput").value = txt;
+          $("momCouponLabel").textContent = "✏️ تعديل الكوبون";
+          $("momCouponSaveBtn").textContent = "حفظ التعديل ✅";
+          $("momCouponCancelEdit").classList.remove("hidden");
+          $("momCouponForm").scrollIntoView({ behavior:"smooth", block:"center" });
+          $("momCouponInput").focus();
+        }
+      }
+      function cancelEditMomMsg(){
+        editMomMsgIndex = null;
+        $("momMsgInput").value = "";
+        $("momMsgLabel").textContent = "رسالة جديدة";
+        $("momMsgSaveBtn").textContent = "إضافة الرسالة 💌";
+        $("momMsgCancelEdit").classList.add("hidden");
+      }
+      function cancelEditMomCoupon(){
+        editMomCouponIndex = null;
+        $("momCouponInput").value = "";
+        $("momCouponLabel").textContent = "كوبون جديد";
+        $("momCouponSaveBtn").textContent = "إضافة الكوبون 🎟️";
+        $("momCouponCancelEdit").classList.add("hidden");
+      }
+      $("momMsgCancelEdit").addEventListener("click", cancelEditMomMsg);
+      $("momCouponCancelEdit").addEventListener("click", cancelEditMomCoupon);
 
       /* ================= Parents: star deductions ================= */
       function renderDeductions(){
@@ -2321,6 +2551,13 @@
         e.preventDefault();
         var v = $("momMsgInput").value.trim(); if(!v) return;
         ensureMom(S);
+        if(editMomMsgIndex != null && S.mom.messages[editMomMsgIndex] != null){
+          S.mom.messages[editMomMsgIndex] = v;
+          cancelEditMomMsg();
+          save(); renderAll();
+          toast("اتعدّلت الرسالة 💌", "");
+          return;
+        }
         S.mom.messages.push(v);
         $("momMsgInput").value = "";
         save(); renderAll();
@@ -2330,17 +2567,59 @@
         e.preventDefault();
         var v = $("momCouponInput").value.trim(); if(!v) return;
         ensureMom(S);
+        if(editMomCouponIndex != null && S.mom.coupons[editMomCouponIndex] != null){
+          S.mom.coupons[editMomCouponIndex] = v;
+          cancelEditMomCoupon();
+          save(); renderAll();
+          toast("اتعدّل الكوبون 🎟️", "");
+          return;
+        }
         S.mom.coupons.push(v);
         $("momCouponInput").value = "";
         save(); renderAll();
         toast("اتضاف كوبون لماما 🎟️", "");
       });
 
+      /* ================= Baba's code for the mom tab =================
+         First open of the tab (no `momLock` in the state yet) shows the
+         setup form: the code is entered twice, normalized and hashed
+         exactly like the parents' number, and only the SHA-256 hash is
+         stored — in the synced state, so it follows the family. Later
+         opens go through the shared gate (mode "mom"); changing the code
+         goes through the gate too (modes "momchg1/2/3"). */
+      ["momLockNew1", "momLockNew2"].forEach(function(id){
+        var el = $(id); if(!el) return;
+        el.addEventListener("input", function(){
+          var v = normDigits(el.value).replace(/[^0-9]/g, "").slice(0, 3);
+          if(v !== el.value) el.value = v;
+        });
+      });
+      $("momLockSetupForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        var err = $("momLockSetupErr");
+        function fail(m){ err.textContent = m; err.classList.add("show"); }
+        err.classList.remove("show"); err.textContent = "";
+        var a = normDigits($("momLockNew1").value).trim();
+        var b = normDigits($("momLockNew2").value).trim();
+        if(!isValidPin(a)){ fail("الكود لازم يكون ٣ أرقام بالضبط"); return; }
+        if(a !== b){ fail("الكودين مش زي بعض — عيدوا من الأول"); return; }
+        sha256hex(a).then(function(h){
+          S.momLock = h;
+          save();
+          momTabUnlocked = true;
+          $("momLockNew1").value = ""; $("momLockNew2").value = "";
+          refreshMomTabLock();
+          toast("اتحفظ كود بابا 🔒", "قوائم مكافآت ماما بقت مقفولة بالكود ده");
+        });
+      });
+      $("momUnlockBtn").addEventListener("click", function(){ startGate("mom"); });
+      $("changeMomLockBtn").addEventListener("click", function(){ startGate("momchg1"); });
+
       $("resetBtn").addEventListener("click", function(){
         showModal("⚠️", "مسح كل البيانات؟", "كل النجوم والسجلات والتقارير هتتمسح، والمهام والمكافآت هترجع للافتراضية. ده مش هيترجع فيه!", "أيوه، امسح الكل", function(){
           S = seed(); save(); currentGirl = "karma";
           closeEditor();
-          cancelEditTask(); cancelEditReward(); renderAll(); renderReports();
+          cancelEditTask(); cancelEditReward(); cancelEditMomMsg(); cancelEditMomCoupon(); renderAll(); renderReports();
           toast("بدأنا من جديد ⭐", "");
         }, true);
       });
