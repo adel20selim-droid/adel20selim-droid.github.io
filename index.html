@@ -1141,7 +1141,7 @@
          when today's points reach a tier she has not been shown yet — the
          content is a surprise until this moment. Shown by
          checkMomSurprise(); closing it records the tier as revealed in
-         mom.tierSeen. -->
+         this device's local tierSeen store. -->
     <div class="overlay mom-surprise" id="momSurprise" role="dialog" aria-label="مكافأة ماما النهاردة">
       <div class="modal">
         <div class="big-emoji" id="momSurpriseEmoji">🎁</div>
@@ -1167,6 +1167,25 @@
         localStorage.removeItem("njwm-jwdy-wkrm-v1");
         localStorage.removeItem("njwm-jwdy-wkrm-sync");
       }catch(e){}
+      /* Mama's tier-reveal state: LOCAL to this device only. It lives under
+         its own key, outside the state object — never synced, never in KAJU1
+         backups, and deliberately untouched by the fresh-start wipe above
+         and by clear-all. Each device remembers independently which of
+         today's tiers it has already revealed ({date, idx}), so the
+         surprise popup fires once per tier per day on EVERY device: if
+         Baba opens the app on his phone first and sees/closes the popup,
+         Mama's phone still shows it on her next open. */
+      var TIER_SEEN_KEY = "njwm-jwdy-wkrm-tierseen";
+      function localTierSeen(){
+        try{
+          var ts = JSON.parse(localStorage.getItem(TIER_SEEN_KEY) || "null");
+          if(ts && typeof ts === "object" && typeof ts.date === "string" && Number.isInteger(ts.idx)) return ts;
+        }catch(e){}
+        return null;
+      }
+      function setLocalTierSeen(date, idx){
+        try{ localStorage.setItem(TIER_SEEN_KEY, JSON.stringify({ date: date, idx: idx })); }catch(e){}
+      }
       var GIRLS = {
         karma: { name: "كارما", emoji: "🦋" },
         judy:  { name: "جودي",  emoji: "🌸" }
@@ -1202,8 +1221,10 @@
          reward CONTENT is always a surprise: picked deterministically
          from the tier type's pool by (daysSince2026-01-01 + tierIndex)
          mod pool.length, and revealed only by the full-screen popup;
-         `mom.tierSeen` remembers the highest tier index already revealed
-         for its date. The pools and tiers live in the synced state under
+         the highest tier index already revealed for its date is
+         remembered per-device in the local tierSeen store (see
+         TIER_SEEN_KEY), never in the synced state. The pools and tiers
+         live in the synced state under
          `mom`; points are always derived from the days records, so no
          points counter is ever stored. */
       var DEFAULT_MOM_TIERS = [
@@ -1316,7 +1337,9 @@
          Coupons are flattened back to plain strings (any stored price is
          dropped). `tiers` is validated and sorted; an empty result seeds
          the default tiers. `tierSeen` (the highest tier index already
-         revealed for its date) is kept only when well-formed. The
+         revealed for its date) used to live in the synced state; it is
+         now per-device (see TIER_SEEN_KEY) and is always deleted from
+         state here, so it never reaches storage, sync or backups. The
          previous model's keys — the surprise interval, the coupon
          threshold, the claim history and the milestone counter — are
          obsolete: they are deleted here and never written again. */
@@ -1331,10 +1354,7 @@
         if(!s.mom.coupons.length) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
         s.mom.tiers = validateMomTiers(s.mom.tiers);
         if(!s.mom.tiers.length) s.mom.tiers = defaultMomTiers();
-        var ts = s.mom.tierSeen;
-        if(!(ts && typeof ts === "object" && typeof ts.date === "string" && Number.isInteger(ts.idx))){
-          delete s.mom.tierSeen;
-        }
+        delete s.mom.tierSeen;
         delete s.mom.msgAt;
         delete s.mom.couponAt;
         delete s.mom.redeemed;
@@ -1875,11 +1895,13 @@
         var i = ((daysSince2026(key) + tierIdx) % pool.length + pool.length) % pool.length;
         return { type: tier.type, text: pool[i] };
       }
-      /* The highest tier index already revealed to her for a date:
-         tierSeen only counts when its date matches; anything else is -1. */
+      /* The highest tier index already revealed to her for a date, read
+         from THIS device's local tierSeen store: it only counts when its
+         date matches; anything else is -1. Each device tracks its own
+         reveals, so one phone revealing a tier never consumes another's. */
       function momRevealedIdx(key){
-        var ts = S.mom && S.mom.tierSeen;
-        return (ts && ts.date === key && Number.isInteger(ts.idx)) ? ts.idx : -1;
+        var ts = localTierSeen();
+        return (ts && ts.date === key) ? ts.idx : -1;
       }
       /* Shared rendering for a revealed reward's content: a message is
          shown signed by Baba; a coupon is a ticket she sends to Baba. */
@@ -1927,7 +1949,7 @@
          Everything on her page is derived on open from the same state the
          strip and card already read — the days records (via mamaPoints)
          and the `mom` tiers/pools. Reward CONTENTS appear here only for
-         tiers already revealed to her today (mom.tierSeen); an
+         tiers already revealed to her today (the local tierSeen); an
          unrevealed reached tier shows only a "waiting on the main
          screen" note, never its content. */
       function renderMomPage(){
@@ -2012,14 +2034,16 @@
       }
       /* ================= Mama's surprise reveal =================
          When today's tier index exceeds the tier index already revealed
-         for today (mom.tierSeen), the CURRENT tier's content pops up
-         full-screen on the main screen — on app load, and again after
-         any render that changed today's points. She never knows it is
-         coming, and the content is shown nowhere before this moment.
-         The popup waits while another full-screen view is up (welcome,
-         PIN gate, a modal, or Mama's own page) and is retried when those
-         close. One popup per open; closing it records the revealed tier
-         in mom.tierSeen, saved + synced. */
+         for today (this device's local tierSeen), the CURRENT tier's
+         content pops up full-screen on the main screen — on app load,
+         and again after any render that changed today's points. She
+         never knows it is coming, and the content is shown nowhere
+         before this moment. The popup waits while another full-screen
+         view is up (welcome, PIN gate, a modal, or Mama's own page) and
+         is retried when those close. One popup per open; closing it
+         records the revealed tier in the LOCAL tierSeen store only —
+         never in the synced state — so every device reveals each tier
+         independently and no phone can consume another phone's reveal. */
       var momSurpriseOpen = false;
       var momSurpriseTier = -1;
       function checkMomSurprise(){
@@ -2047,11 +2071,9 @@
       function closeMomSurprise(){
         var ov = $("momSurprise"); if(ov) ov.classList.remove("open");
         momSurpriseOpen = false;
-        ensureMom(S);
         if(momSurpriseTier >= 0){
-          S.mom.tierSeen = { date: todayKey(), idx: momSurpriseTier };
+          setLocalTierSeen(todayKey(), momSurpriseTier);
           momSurpriseTier = -1;
-          save();
         }
         renderAll();
       }
