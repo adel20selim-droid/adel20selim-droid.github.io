@@ -373,6 +373,21 @@
       }
       .backup-box .row-btns{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
       .backup-box .row-btns button{ min-height:50px; }
+      /* ---------- Live family sync ---------- */
+      .sync-panel{ border:3px solid var(--violet); background:var(--violet-light); }
+      .sync-panel p{ font-weight:700; line-height:1.65; margin:6px 0; color:var(--ink); }
+      .sync-status{ font-weight:800; margin-top:8px; min-height:1.4em; color:var(--violet-dark); }
+      .sync-code-big{
+        font-size:2rem; font-weight:800; letter-spacing:.18em; text-align:center;
+        background:var(--card); border:2px dashed var(--violet-dark); border-radius:16px;
+        padding:10px; direction:ltr; color:var(--violet-dark);
+      }
+      .sync-join{ display:grid; grid-template-columns:1fr auto; gap:10px; margin-top:10px; }
+      .sync-join input{
+        width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:14px;
+        background:var(--card); color:var(--ink); font-size:1.3rem; font-weight:800;
+        text-align:center; letter-spacing:.2em; text-transform:uppercase; min-height:52px;
+      }
       .backup-ok{ color:var(--green); font-weight:800; min-height:1.3em; margin-top:6px; text-align:center; }
       .backup-err{ color:var(--red); font-weight:800; min-height:1.3em; margin-top:6px; text-align:center; }
       .rep-controls{ display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end; margin-bottom:6px; }
@@ -639,6 +654,39 @@
           </div>
         </div>
 
+        <div class="panel sync-panel">
+          <h3>🔄 مزامنة حية بين الأجهزة</h3>
+          <div id="syncOff">
+            <p>فعّلوا المزامنة عشان نجوم البنات والتقارير يوصلوا لكل أجهزة العيلة <b>لحظيًا</b> — أي نجمة أو خصم أو تعديل يتسجل على جهاز يظهر على باقي الأجهزة في ثواني، من غير أكواد نسخ احتياطي.</p>
+            <p><b>أول جهاز</b> (اللي عليه البيانات الحالية) يدوس «إنشاء كود عيلة» — هيتولد كود من ٦ حروف وأرقام. <b>وباقي الأجهزة</b> تدخّل نفس الكود من «ربط جهاز بكود عيلة».</p>
+            <div class="backup-actions">
+              <button class="save-btn" id="syncCreateBtn" type="button">✨ إنشاء كود عيلة</button>
+              <button class="btn-soft" id="syncJoinToggle" type="button" style="height:auto">🔗 ربط جهاز بكود عيلة</button>
+            </div>
+            <div class="backup-box hidden" id="syncJoinBox">
+              <label for="syncCodeIn">اكتبوا كود العيلة (٦ حروف وأرقام):</label>
+              <div class="sync-join">
+                <input type="text" id="syncCodeIn" maxlength="8" autocomplete="off" placeholder="ABC123" dir="ltr" aria-label="كود العيلة" />
+                <button class="save-btn" id="syncJoinBtn" type="button">ربط 🔗</button>
+              </div>
+              <p>⚠️ الربط هيبدّل بيانات الجهاز ده ببيانات العيلة اللي في الكود — لو الجهاز ده فاضي أو معمول للمتابعة بس، ده بالظبط المطلوب.</p>
+            </div>
+            <div class="backup-err" id="syncOffMsg" role="status"></div>
+          </div>
+          <div id="syncOn" class="hidden">
+            <p>المزامنة شغالة على الجهاز ده ✅ — أي تغيير هنا أو على أي جهاز تاني في العيلة هيوصل للكل لحظيًا.</p>
+            <label style="font-weight:800;display:block;margin-bottom:6px" for="syncCodeShow">كود العيلة — ادّوه لأي جهاز عايزين تربطوه:</label>
+            <div class="sync-code-big" id="syncCodeShow">------</div>
+            <div class="backup-actions">
+              <button class="save-btn" id="syncCopyBtn" type="button">📋 نسخ الكود</button>
+              <button class="btn-soft" id="syncNowBtn" type="button" style="height:auto">🔄 مزامنة دلوقتي</button>
+            </div>
+            <div class="sync-status" id="syncStatus" role="status"></div>
+            <button class="danger-btn" id="syncOffBtn" type="button" style="margin-top:10px">فصل المزامنة من الجهاز ده</button>
+            <p>الفصل بيوقف المزامنة على الجهاز ده بس، وبيانات العيلة بتفضل محفوظة ومتزامنة على باقي الأجهزة.</p>
+          </div>
+        </div>
+
         <div id="tab-tasks">
           <div class="panel">
             <h3 id="taskFormTitle">➕ إضافة مهمة</h3>
@@ -876,7 +924,7 @@
         }catch(e){}
         var s = seed(); save(s); return s;
       }
-      function save(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s || S)); }catch(e){} }
+      function save(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s || S)); }catch(e){} try{ scheduleSyncPush(); }catch(e){} }
       var S = load();
       var currentGirl = (S.selectedGirl === "karma" || S.selectedGirl === "judy") ? S.selectedGirl : "karma";
       var parentsUnlocked = false;
@@ -2329,7 +2377,253 @@
           }, true);
       });
 
+      /* ================= Live family sync =================
+         Automatic two-way sync through the family's Firebase Realtime
+         Database (project "kaju-family", rules already published: only
+         families/<code> is readable/writable). Plain REST fetch — no SDK.
+         Model: the whole app state lives at families/<code>/state with a
+         revision counter. Every local save() schedules a debounced push
+         (rev+1); a poll every 20s (and on focus/online) pulls a newer rev
+         and applies it. Last write wins; unsent local changes win over a
+         pull so nothing typed here is ever clobbered mid-edit. The
+         parents' PIN hash travels with the state, like the backup code,
+         so every linked device opens the parents area with the same
+         favorite number. Sync config lives under its own storage key —
+         the app's data key is untouched. */
+      var SYNC_KEY = "njwm-jwdy-wkrm-sync";
+      var SYNC_DB = "https://kaju-family-default-rtdb.europe-west1.firebasedatabase.app";
+      var syncCfg = null; /* { code, deviceId, rev, dirty } */
+      var syncPushing = false, syncPending = false, syncApplying = false;
+      var syncTimer = null, syncGen = 0;
+
+      function syncLoadCfg(){
+        try{
+          var c = JSON.parse(localStorage.getItem(SYNC_KEY) || "null");
+          if(c && c.code && c.deviceId) return c;
+        }catch(e){}
+        return null;
+      }
+      function syncSaveCfg(){
+        try{
+          if(syncCfg) localStorage.setItem(SYNC_KEY, JSON.stringify(syncCfg));
+          else localStorage.removeItem(SYNC_KEY);
+        }catch(e){}
+      }
+      function syncUrl(code){ return SYNC_DB + "/families/" + (code || syncCfg.code) + "/state.json"; }
+      function syncStatus(txt){ var el = $("syncStatus"); if(el) el.textContent = txt; }
+      function syncNowLabel(){ return fmtTime(nowTime()); }
+      function genFamilyCode(){
+        var abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", out = "";
+        for(var i = 0; i < 6; i++) out += abc.charAt(Math.floor(Math.random() * abc.length));
+        return out;
+      }
+      function syncPayload(rev){
+        var pin = "";
+        try{ pin = localStorage.getItem(PIN_KEY) || ""; }catch(e){}
+        return { v:1, rev:rev, updatedAt:new Date().toISOString(), by:syncCfg.deviceId, data:S, pin:pin };
+      }
+      function scheduleSyncPush(){
+        if(!syncCfg || syncApplying) return;
+        syncPending = true; syncGen++;
+        syncCfg.dirty = true; syncSaveCfg();
+        clearTimeout(syncTimer);
+        syncTimer = setTimeout(syncPush, 1200);
+      }
+      function syncPush(){
+        if(!syncCfg || syncPushing || !syncPending) return;
+        syncPushing = true;
+        var genAtStart = syncGen;
+        var newRev = (syncCfg.rev || 0) + 1;
+        syncStatus("🔄 بنزامن دلوقتي...");
+        fetch(syncUrl(), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(syncPayload(newRev))
+        }).then(function(r){
+          if(!r.ok) throw new Error("http " + r.status);
+          return r.json();
+        }).then(function(){
+          syncPushing = false;
+          if(!syncCfg) return;
+          syncCfg.rev = newRev;
+          if(syncGen !== genAtStart){
+            /* more edits landed while uploading — send them too */
+            syncCfg.dirty = true; syncSaveCfg();
+            syncPush();
+            return;
+          }
+          syncPending = false;
+          syncCfg.dirty = false; syncSaveCfg();
+          syncStatus("✅ متزامن — آخر مزامنة " + syncNowLabel());
+        }).catch(function(){
+          syncPushing = false;
+          syncStatus("⚠️ مفيش نت دلوقتي — التغييرات محفوظة على الجهاز، والمزامنة هتكمل لوحدها أول ما النت يرجع");
+        });
+      }
+      function syncApplyRemote(remote){
+        syncApplying = true;
+        S = migrateBackupData(remote.data);
+        currentGirl = (S.selectedGirl === "karma" || S.selectedGirl === "judy") ? S.selectedGirl : "karma";
+        try{
+          localStorage.setItem(LS_KEY, JSON.stringify(S));
+          if(remote.pin) localStorage.setItem(PIN_KEY, remote.pin);
+        }catch(e){}
+        syncCfg.rev = remote.rev || syncCfg.rev;
+        syncCfg.dirty = false; syncSaveCfg();
+        syncApplying = false;
+        closeEditor();
+        renderAll();
+        if(parentsUnlocked) renderReports();
+        refreshSetupPinBtn();
+        syncStatus("✅ وصل تحديث من جهاز تاني — آخر مزامنة " + syncNowLabel());
+      }
+      function syncPull(manual){
+        if(!syncCfg || syncPushing) return;
+        fetch(syncUrl()).then(function(r){
+          if(!r.ok) throw new Error("http " + r.status);
+          return r.json();
+        }).then(function(remote){
+          if(!syncCfg) return;
+          if(!remote || !remote.data){
+            /* cloud copy is empty (e.g. first upload failed) — send ours */
+            if((syncCfg.rev || 0) === 0 || syncCfg.dirty){ syncPending = true; syncPush(); }
+            else if(manual) syncStatus("لسه مفيش بيانات متزامنة في السحابة");
+            return;
+          }
+          if(remote.rev > (syncCfg.rev || 0)){
+            if(remote.by === syncCfg.deviceId){
+              /* our own write seen from the cloud — just adopt the rev */
+              syncCfg.rev = remote.rev; syncSaveCfg();
+              return;
+            }
+            if(syncPending || syncCfg.dirty){ syncPush(); return; } /* unsent local edits win */
+            syncApplyRemote(remote);
+            toast("🔄 وصل تحديث جديد", "بيانات العيلة اتحدّثت من جهاز تاني");
+          } else if(manual){
+            syncStatus("✅ متزامن — مفيش تحديثات جديدة (آخر مزامنة " + syncNowLabel() + ")");
+          }
+        }).catch(function(){
+          if(manual) syncStatus("⚠️ مفيش نت — مش قادرين نوصل للسحابة دلوقتي، جرّبوا تاني وانتوا متصلين");
+        });
+      }
+      function renderSyncPanel(){
+        var on = !!syncCfg;
+        $("syncOff").classList.toggle("hidden", on);
+        $("syncOn").classList.toggle("hidden", !on);
+        if(on) $("syncCodeShow").textContent = syncCfg.code;
+      }
+      function syncStartLoops(){
+        setInterval(function(){
+          if(document.visibilityState !== "visible") return;
+          if(syncPending) syncPush(); else syncPull(false);
+        }, 20000);
+        document.addEventListener("visibilitychange", function(){
+          if(document.visibilityState === "visible") syncPull(false);
+        });
+        window.addEventListener("online", function(){
+          if(syncPending) syncPush(); else syncPull(false);
+        });
+      }
+      var syncLoopsStarted = false;
+      function syncActivate(){
+        renderSyncPanel();
+        if(!syncLoopsStarted){ syncLoopsStarted = true; syncStartLoops(); }
+      }
+
+      $("syncCreateBtn").addEventListener("click", function(){
+        var msg = $("syncOffMsg");
+        msg.textContent = "بنجهّز كود العيلة...";
+        function attempt(tries){
+          var code = genFamilyCode();
+          fetch(syncUrl(code)).then(function(r){ return r.json(); }).then(function(existing){
+            if(existing && existing.data && tries < 4){ attempt(tries + 1); return; }
+            syncCfg = { code: code, deviceId: uid("dev"), rev: 0, dirty: true };
+            syncSaveCfg();
+            syncActivate();
+            msg.textContent = "";
+            syncPending = true; syncGen++;
+            syncPush();
+            showModal("🎉", "اتفعّلت المزامنة!",
+              "كود العيلة بتاعكم هو: <b style='font-size:1.35em;letter-spacing:.15em'>" + code + "</b><br />" +
+              "افتحوا التطبيق على الجهاز التاني، ادخلوا منطقة الأهل ← «مزامنة حية بين الأجهزة» ← «ربط جهاز بكود عيلة»، واكتبوا نفس الكود — ومن بعدها أي نجمة تتسجل هنا أو هناك هتوصل للجهاز التاني في ثواني ⭐",
+              "تمام 🎉");
+          }).catch(function(){
+            msg.textContent = "مفيش نت — مش قادرين نوصل للسحابة دلوقتي، جرّبوا تاني وانتوا متصلين.";
+          });
+        }
+        attempt(0);
+      });
+      $("syncJoinToggle").addEventListener("click", function(){
+        $("syncJoinBox").classList.remove("hidden");
+        $("syncJoinBox").scrollIntoView({ behavior:"smooth", block:"center" });
+        setTimeout(function(){ $("syncCodeIn").focus(); }, 80);
+      });
+      $("syncJoinBtn").addEventListener("click", function(){
+        var msg = $("syncOffMsg");
+        var code = $("syncCodeIn").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        if(code.length < 4){ msg.textContent = "اكتبوا كود العيلة كامل الأول (٦ حروف وأرقام)."; return; }
+        msg.textContent = "بندور على كود العيلة...";
+        fetch(syncUrl(code)).then(function(r){
+          if(!r.ok) throw new Error("http " + r.status);
+          return r.json();
+        }).then(function(remote){
+          if(!remote || !remote.data){
+            msg.textContent = "الكود ده مش موجود — تأكدوا إنه مكتوب صح بالظبط زي ما هو على الجهاز التاني، وجرّبوا تاني.";
+            return;
+          }
+          showModal("🔗", "نربط الجهاز ده بعيلة «" + code + "»؟",
+            "بيانات الجهاز ده هتتبدل ببيانات العيلة المتزامنة (نجوم كارما وجودي والمهام والمكافآت والسجلات والتلوين والرقم السري)، ومن بعدها الجهازين هيتزامنوا لحظيًا.<br />متأكدين؟",
+            "أيوه، اربط 🔗",
+            function(){
+              syncCfg = { code: code, deviceId: uid("dev"), rev: remote.rev || 0, dirty: false };
+              syncSaveCfg();
+              syncActivate();
+              syncApplyRemote(remote);
+              $("syncJoinBox").classList.add("hidden");
+              $("syncCodeIn").value = "";
+              msg.textContent = "";
+              playHappy(true); confetti(60);
+              showModal("🎉", "اتربط الجهاز!", "دلوقتي الجهاز ده متزامن مع العيلة — أي نجمة أو خصم أو تعديل على أي جهاز هيوصل هنا في ثواني ⭐", "تمام 🎉");
+            }, true);
+        }).catch(function(){
+          msg.textContent = "مفيش نت — مش قادرين نوصل للسحابة دلوقتي، جرّبوا تاني وانتوا متصلين.";
+        });
+      });
+      $("syncCopyBtn").addEventListener("click", function(){
+        if(!syncCfg) return;
+        var code = syncCfg.code;
+        function copied(){ toast("اتنسخ كود العيلة 📋", "ابعتوه للجهاز التاني واكتبوه هناك في «ربط جهاز بكود عيلة»"); }
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(code).then(copied).catch(function(){ syncStatus("كود العيلة هو: " + code); });
+        } else {
+          syncStatus("كود العيلة هو: " + code);
+        }
+      });
+      $("syncNowBtn").addEventListener("click", function(){
+        if(syncPending) syncPush(); else syncPull(true);
+      });
+      $("syncOffBtn").addEventListener("click", function(){
+        showModal("🔌", "نفصل المزامنة من الجهاز ده؟",
+          "الجهاز ده هيوقف المزامنة وبياناته هتفضل زي ما هي عليه دلوقتي، وبيانات العيلة هتفضل متزامنة على باقي الأجهزة. تقدروا تربطوه تاني بنفس الكود في أي وقت.",
+          "أيوه، افصل",
+          function(){
+            syncCfg = null; syncPending = false;
+            syncSaveCfg();
+            renderSyncPanel();
+            $("syncOffMsg").textContent = "";
+            toast("اتفصلت المزامنة من الجهاز ده 🔌", "البيانات اللي عليه فضلت زي ما هي");
+          }, true);
+      });
+
       /* ================= Init ================= */
+      syncCfg = syncLoadCfg();
+      renderSyncPanel();
+      if(syncCfg){
+        syncActivate();
+        syncStatus("🔄 بنشيّك على آخر تحديثات العيلة...");
+        if(syncCfg.dirty){ syncPending = true; syncPush(); }
+        syncPull(false);
+      }
       buildPicker("tfEmoji", tfEmojiSel, function(e){ tfEmojiSel = e; });
       buildPicker("rfEmoji", rfEmojiSel, function(e){ rfEmojiSel = e; });
       buildPicker("dfEmoji", dfEmojiSel, function(e){ dfEmojiSel = e; });
