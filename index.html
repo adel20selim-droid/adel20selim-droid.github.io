@@ -100,14 +100,14 @@
       }
       .now-strip.judy{ background:var(--rose-light); border-color:var(--rose-dark); color:var(--rose-dark); }
       .now-strip.karma{ background:var(--violet-light); border-color:var(--violet-dark); color:var(--violet-dark); }
-      .girl .gname{ display:block; font-size:1.4rem; font-weight:800; line-height:1.25; }
+      .girl .gname{ display:flex; align-items:center; justify-content:center; gap:10px; font-size:1.4rem; font-weight:800; line-height:1.25; }
       .girl.judy .gname{ color:var(--rose-dark); }
       .girl.karma .gname{ color:var(--violet-dark); }
       .girl .today-line{ display:block; color:var(--ink); font-weight:600; font-size:.95rem; margin-top:6px; }
       .girl .stars-today{ display:block; color:var(--gold-dark); font-weight:800; font-size:.95rem; margin-top:2px; direction:rtl; text-align:right; }
       .girl .bar{ display:block; height:14px; border-radius:8px; background:var(--cream-dark); margin-top:6px; overflow:hidden; }
       .girl .bar i{ display:block; height:100%; border-radius:8px; background:var(--gold); transition:width .5s ease; }
-      .girl .balance{ display:block; font-size:1.15rem; font-weight:800; color:var(--gold-dark); margin-top:6px; }
+      .girl .balance{ font-size:1.25rem; font-weight:800; color:var(--gold-dark); }
       .girl .balance .st{ display:inline-block; }
       .girl .balance.bump .st{ animation:bump .6s ease; }
       @keyframes bump{ 0%{transform:scale(1)} 35%{transform:scale(1.7) rotate(18deg)} 100%{transform:scale(1)} }
@@ -729,19 +729,17 @@
       <section class="girls" aria-label="اختيار البنت">
         <button class="girl karma" id="card-karma" type="button">
           <span class="sel-badge">✔ بنعلّم لها دلوقتي</span>
-          <span class="gname">🦋 كارما</span>
+          <span class="gname">🦋 كارما <span class="balance" id="bal-karma">⭐ <span class="st" id="balNum-karma">0</span></span></span>
           <span class="today-line" id="today-karma"></span>
           <span class="stars-today" id="starsToday-karma"></span>
           <span class="bar"><i id="bar-karma" style="width:0%"></i></span>
-          <span class="balance" id="bal-karma">⭐ <span class="st" id="balNum-karma">0</span></span>
         </button>
         <button class="girl judy" id="card-judy" type="button">
           <span class="sel-badge">✔ بنعلّم لها دلوقتي</span>
-          <span class="gname">🌸 جودي</span>
+          <span class="gname">🌸 جودي <span class="balance" id="bal-judy">⭐ <span class="st" id="balNum-judy">0</span></span></span>
           <span class="today-line" id="today-judy"></span>
           <span class="stars-today" id="starsToday-judy"></span>
           <span class="bar"><i id="bar-judy" style="width:0%"></i></span>
-          <span class="balance" id="bal-judy">⭐ <span class="st" id="balNum-judy">0</span></span>
         </button>
       </section>
 
