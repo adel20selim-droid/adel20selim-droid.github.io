@@ -104,6 +104,7 @@
       .girl.judy .gname{ color:var(--rose-dark); }
       .girl.karma .gname{ color:var(--violet-dark); }
       .girl .today-line{ display:block; color:var(--ink); font-weight:600; font-size:.95rem; margin-top:6px; }
+      .girl .stars-today{ display:block; color:var(--gold-dark); font-weight:800; font-size:.95rem; margin-top:2px; direction:rtl; text-align:right; }
       .girl .bar{ display:block; height:14px; border-radius:8px; background:var(--cream-dark); margin-top:6px; overflow:hidden; }
       .girl .bar i{ display:block; height:100%; border-radius:8px; background:var(--gold); transition:width .5s ease; }
       .girl .balance{ display:block; font-size:1.15rem; font-weight:800; color:var(--gold-dark); margin-top:6px; }
@@ -729,6 +730,7 @@
           <span class="sel-badge">✔ بنعلّم لها دلوقتي</span>
           <span class="gname">🦋 كارما</span>
           <span class="today-line" id="today-karma"></span>
+          <span class="stars-today" id="starsToday-karma"></span>
           <span class="bar"><i id="bar-karma" style="width:0%"></i></span>
           <span class="balance" id="bal-karma">⭐ <span class="st" id="balNum-karma">0</span></span>
         </button>
@@ -736,6 +738,7 @@
           <span class="sel-badge">✔ بنعلّم لها دلوقتي</span>
           <span class="gname">🌸 جودي</span>
           <span class="today-line" id="today-judy"></span>
+          <span class="stars-today" id="starsToday-judy"></span>
           <span class="bar"><i id="bar-judy" style="width:0%"></i></span>
           <span class="balance" id="bal-judy">⭐ <span class="st" id="balNum-judy">0</span></span>
         </button>
@@ -1495,7 +1498,8 @@
       function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
       function pad(n){ return (n<10?"0":"")+n; }
       function dateKey(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
-      function todayKey(){ return dateKey(new Date()); }
+      function appToday(){ var d = new Date(); if(d.getHours() < 3) d.setDate(d.getDate() - 1); return dateKey(d); }
+      function todayKey(){ return appToday(); }
       function nowTime(){ var d=new Date(); return pad(d.getHours())+":"+pad(d.getMinutes()); }
       function fmtTime(t){
         var p = t.split(":"); var h = parseInt(p[0],10); var m = p[1];
@@ -1795,9 +1799,7 @@
 
       /* ================= Rendering ================= */
       function renderDates(){
-        var now = new Date();
-        var greg = new Intl.DateTimeFormat("ar-EG", { weekday:"long", day:"numeric", month:"long", year:"numeric" }).format(now);
-        $("dateLine").textContent = greg;
+        $("dateLine").textContent = fmtDateAr(todayKey());
       }
       function renderGirls(){
         var key = todayKey();
@@ -1807,6 +1809,7 @@
           var r = S.days[key] && S.days[key][g];
           var done = r ? mine.filter(function(t){ return !!r.done[t.id]; }).length : 0;
           $("today-" + g).textContent = "خلصت " + done + " من " + mine.length + " مهام";
+          $("starsToday-" + g).textContent = "نجوم النهاردة: +" + earnedOn(key, g);
           $("bar-" + g).style.width = (mine.length ? Math.round(done / mine.length * 100) : 0) + "%";
           $("card-" + g).classList.toggle("sel", currentGirl === g);
         });
@@ -3103,7 +3106,7 @@
       }
       function renderReports(){
         if(!$("repDay").value) $("repDay").value = todayKey();
-        if(!$("repMonth").value){ var d = new Date(); $("repMonth").value = d.getFullYear() + "-" + pad(d.getMonth() + 1); }
+        if(!$("repMonth").value){ $("repMonth").value = todayKey().slice(0, 7); }
         renderDayReport($("repDay").value);
         renderMonthReport($("repMonth").value);
       }
@@ -3561,7 +3564,8 @@
       }
       function dailyPic(){
         var free = DRAWINGS.filter(function(p){ return !p.gold; });
-        var n = Math.floor(Date.now() / 86400000);
+        var p = todayKey().split("-");
+        var n = Math.floor(Date.UTC(+p[0], +p[1] - 1, +p[2]) / 86400000);
         return free[n % free.length];
       }
       function renderColoring(){
