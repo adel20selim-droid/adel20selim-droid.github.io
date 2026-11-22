@@ -469,6 +469,13 @@
         background:var(--card); color:var(--ink); font-size:1.3rem; font-weight:800;
         text-align:center; letter-spacing:.2em; text-transform:uppercase; min-height:52px;
       }
+      /* Home-screen link card: shown only while this copy is NOT linked
+         to the family, so a fresh copy (new browser, in-app webview, new
+         shortcut) can pull the real results with the family code alone —
+         no parents' number, no digging through the parents area. */
+      .home-join{ margin:14px 0 4px; }
+      .home-join h2{ font-size:1.15rem; font-weight:800; color:var(--violet-dark); margin:0 0 4px; }
+      .home-join .sync-join button{ min-height:52px; font-size:1.05rem; }
       .backup-ok{ color:var(--green); font-weight:800; min-height:1.3em; margin-top:6px; text-align:center; }
       .backup-err{ color:var(--red); font-weight:800; min-height:1.3em; margin-top:6px; text-align:center; }
       .rep-controls{ display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end; margin-bottom:6px; }
@@ -746,6 +753,16 @@
 
       <div class="manual-update-wrap">
         <button id="manualUpdateBtn" type="button" onclick="manualUpdate()">🔄 تحديث التطبيق</button>
+      </div>
+
+      <div class="panel sync-panel home-join hidden" id="homeJoinCard">
+        <h2>🔗 النسخة دي لسه مش مربوطة بالعيلة</h2>
+        <p>عشان كده النجوم اللي شايفينها أصفار والمهام ١٦ بس — دي نسخة جديدة فاضية، ونتائج البنات الحقيقية محفوظة ومتزامنة عند العيلة. اكتبوا <b>كود العيلة</b> هنا وهننزّل كل النتائج على النسخة دي على طول — من غير رقم أهل ولا دخول لقسم الأهل:</p>
+        <div class="sync-join">
+          <input type="text" id="homeJoinCode" maxlength="8" autocomplete="off" placeholder="ABC123" dir="ltr" aria-label="كود العيلة" />
+          <button class="save-btn" id="homeJoinBtn" type="button">اربط وهات النتائج 🔗</button>
+        </div>
+        <div class="backup-err" id="homeJoinMsg" role="status"></div>
       </div>
 
       <section class="girls" aria-label="اختيار البنت">
@@ -1189,7 +1206,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.22-5";
+      const BUILD_ID = "2026.11.22-6";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -4148,30 +4165,60 @@
         var el = $("syncStatus"); if(el) el.textContent = txt;
       }
       /* The welcome screen offers a one-tap "link this device" path only
-         while the device is not linked yet; hide it once sync is on. */
+         while the device is not linked yet; hide it once sync is on.
+         The home-screen link card follows the same rule. */
       function renderWelcomeSync(){
         var on = !!syncCfg;
         var wj = $("wSyncJoin"); if(wj) wj.classList.toggle("hidden", on);
         var wn = $("wSyncNote"); if(wn) wn.classList.toggle("hidden", on);
+        var hj = $("homeJoinCard"); if(hj) hj.classList.toggle("hidden", on);
       }
-      /* One-tap path from the welcome screen into the sync link flow:
-         pass the parents gate first (same protection as the sync panel
-         itself), then land on the panel with the code box open. */
+      /* One-tap path from the welcome screen into the link flow: land
+         right on the home-screen link card and focus its code box.
+         Deliberately NO parents gate here: joining only downloads the
+         family's data onto this copy (the family's own number arrives
+         with it), and on a fresh copy the gate used to demand creating
+         a brand-new parents' number first — a dead end that left the
+         user staring at a number pad with no way to reach the code box. */
       function openSyncJoin(){
-        function go(){
-          try{ renderAdmin(); }catch(e){}
-          $("parents").classList.add("open");
-          renderSyncPanel();
-          var panel = document.querySelector(".sync-panel");
-          if(panel) panel.scrollIntoView({ behavior:"smooth", block:"center" });
-          if(!syncCfg){
-            $("syncJoinBox").classList.remove("hidden");
-            setTimeout(function(){ $("syncCodeIn").focus(); }, 400);
-          }
+        var card = $("homeJoinCard");
+        if(card){
+          card.scrollIntoView({ behavior:"smooth", block:"center" });
+          setTimeout(function(){ var inp = $("homeJoinCode"); if(inp) inp.focus(); }, 400);
         }
-        if(parentsUnlocked){ go(); return; }
-        gateOnSuccess = go;
-        startGate(storedPinHash() ? "entry" : "setup1");
+      }
+      /* The one join implementation, shared by the home-screen link
+         card and the parents-area sync panel: look the code up in the
+         family cloud, confirm, then adopt the family's data wholesale
+         and start live sync. */
+      function joinWithCode(rawCode, msgEl, onDone){
+        var code = normDigits(String(rawCode || "")).toUpperCase().replace(/[^A-Z0-9]/g, "");
+        if(code.length < 4){ if(msgEl) msgEl.textContent = "اكتبوا كود العيلة كامل الأول (٦ حروف وأرقام)."; return; }
+        if(msgEl) msgEl.textContent = "بندور على كود العيلة...";
+        fetch(syncUrl(code)).then(function(r){
+          if(!r.ok) throw new Error("http " + r.status);
+          return r.json();
+        }).then(function(remote){
+          if(!remote || !remote.data){
+            if(msgEl) msgEl.textContent = "الكود ده مش موجود — تأكدوا إنه مكتوب صح بالظبط زي ما هو على الجهاز التاني، وجرّبوا تاني.";
+            return;
+          }
+          showModal("🔗", "نربط الجهاز ده بعيلة «" + code + "»؟",
+            "بيانات الجهاز ده هتتبدل ببيانات العيلة المتزامنة (نجوم كارما وجودي والمهام والمكافآت والسجلات والتلوين والرقم السري)، ومن بعدها الجهازين هيتزامنوا لحظيًا.<br />متأكدين؟",
+            "أيوه، اربط 🔗",
+            function(){
+              syncCfg = { code: code, deviceId: uid("dev"), rev: remote.rev || 0, dirty: false };
+              syncSaveCfg();
+              syncActivate();
+              syncApplyRemote(remote);
+              if(msgEl) msgEl.textContent = "";
+              if(onDone) onDone();
+              playHappy(true); confetti(60);
+              showModal("🎉", "اتربط الجهاز!", "دلوقتي الجهاز ده متزامن مع العيلة — أي نجمة أو خصم أو تعديل على أي جهاز هيوصل هنا في ثواني ⭐", "تمام 🎉");
+            }, true);
+        }).catch(function(){
+          if(msgEl) msgEl.textContent = "مفيش نت — مش قادرين نوصل للسحابة دلوقتي، جرّبوا تاني وانتوا متصلين.";
+        });
       }
       function syncNowLabel(){ return fmtTime(nowTime()); }
       function genFamilyCode(){
@@ -4338,35 +4385,21 @@
         setTimeout(function(){ $("syncCodeIn").focus(); }, 80);
       });
       $("syncJoinBtn").addEventListener("click", function(){
-        var msg = $("syncOffMsg");
-        var code = normDigits($("syncCodeIn").value).toUpperCase().replace(/[^A-Z0-9]/g, "");
-        if(code.length < 4){ msg.textContent = "اكتبوا كود العيلة كامل الأول (٦ حروف وأرقام)."; return; }
-        msg.textContent = "بندور على كود العيلة...";
-        fetch(syncUrl(code)).then(function(r){
-          if(!r.ok) throw new Error("http " + r.status);
-          return r.json();
-        }).then(function(remote){
-          if(!remote || !remote.data){
-            msg.textContent = "الكود ده مش موجود — تأكدوا إنه مكتوب صح بالظبط زي ما هو على الجهاز التاني، وجرّبوا تاني.";
-            return;
-          }
-          showModal("🔗", "نربط الجهاز ده بعيلة «" + code + "»؟",
-            "بيانات الجهاز ده هتتبدل ببيانات العيلة المتزامنة (نجوم كارما وجودي والمهام والمكافآت والسجلات والتلوين والرقم السري)، ومن بعدها الجهازين هيتزامنوا لحظيًا.<br />متأكدين؟",
-            "أيوه، اربط 🔗",
-            function(){
-              syncCfg = { code: code, deviceId: uid("dev"), rev: remote.rev || 0, dirty: false };
-              syncSaveCfg();
-              syncActivate();
-              syncApplyRemote(remote);
-              $("syncJoinBox").classList.add("hidden");
-              $("syncCodeIn").value = "";
-              msg.textContent = "";
-              playHappy(true); confetti(60);
-              showModal("🎉", "اتربط الجهاز!", "دلوقتي الجهاز ده متزامن مع العيلة — أي نجمة أو خصم أو تعديل على أي جهاز هيوصل هنا في ثواني ⭐", "تمام 🎉");
-            }, true);
-        }).catch(function(){
-          msg.textContent = "مفيش نت — مش قادرين نوصل للسحابة دلوقتي، جرّبوا تاني وانتوا متصلين.";
+        joinWithCode($("syncCodeIn").value, $("syncOffMsg"), function(){
+          $("syncJoinBox").classList.add("hidden");
+          $("syncCodeIn").value = "";
         });
+      });
+      /* Home-screen link card: same join, no parents gate — this is the
+         front door for any fresh copy that opens showing zeros. */
+      $("homeJoinBtn").addEventListener("click", function(){
+        joinWithCode($("homeJoinCode").value, $("homeJoinMsg"), function(){
+          $("homeJoinCode").value = "";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+      $("homeJoinCode").addEventListener("keydown", function(e){
+        if(e.key === "Enter"){ e.preventDefault(); $("homeJoinBtn").click(); }
       });
       $("syncCopyBtn").addEventListener("click", function(){
         if(!syncCfg) return;
@@ -4477,7 +4510,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.22-5", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.22-6", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
