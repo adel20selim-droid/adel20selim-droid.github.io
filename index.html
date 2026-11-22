@@ -374,6 +374,7 @@
       .mom-strip .ms-points{ font-weight:800; font-size:1.1rem; margin-top:2px; }
       .mom-strip .ms-points b{ color:var(--rose-dark); font-size:1.4rem; }
       .mom-strip .ms-sub{ color:var(--gray); font-weight:700; font-size:.93rem; margin-top:2px; }
+      .mom-today{ display:block; color:var(--gold-dark); font-weight:800; font-size:.95rem; margin-top:2px; direction:rtl; text-align:right; }
       .mom-strip .ms-badge{
         display:inline-block; margin-top:8px; padding:4px 14px;
         background:var(--gold-light); border:2px dashed var(--gold-dark);
@@ -1972,6 +1973,7 @@
         var x = mamaPoints();
         var idx = momTierIndexForPoints(x);
         var breakdown = 'كارما ' + (S.balances.karma || 0) + ' + جودي ' + (S.balances.judy || 0);
+        var momToday = earnedOn(todayKey(), "judy") + earnedOn(todayKey(), "karma");
         /* Top-of-screen Mom strip: her points (the live sum of the
            girls' card numbers) with its breakdown and, when a tier is
            reached, a small badge naming only its type — never the
@@ -1980,12 +1982,14 @@
         if(strip){
           var sh = '<div class="ms-title">💐 ماما</div>' +
             '<div class="ms-points">نقاط ماما: <b>' + x + '</b></div>' +
+            '<div class="mom-today">نقاط ماما النهاردة: ‎+' + momToday + '</div>' +
             '<div class="ms-sub">' + breakdown + '</div>';
           if(idx >= 0) sh += '<div class="ms-badge">' + momTierIcon(S.mom.tiers[idx].type) + (S.mom.tiers[idx].type === "fixed" ? " " + esc(momFixedLabel(S.mom.tiers[idx].text)) : "") + '</div>';
           sh += '<span class="ms-chip">التفاصيل ‹</span>';
           strip.innerHTML = sh;
         }
         var html = '<div class="mom-effort">نقاط ماما: <b>' + x + '</b> ⭐</div>';
+        html += '<div class="mom-today">نقاط ماما النهاردة: ‎+' + momToday + '</div>';
         html += '<div class="mom-breakdown">' + breakdown + '</div>';
         html += '<div class="mom-chips">' + S.mom.tiers.map(function(t, i){
           return '<span class="mom-chip' + (i === idx ? " on" : "") + '">' + esc(momTierChipText(t)) + '</span>';
@@ -2018,6 +2022,7 @@
         var revealed = momRevealedIdx();
         var html = '<div class="mp-head"><div class="mp-title">💐 ماما</div>' +
           '<div class="mp-points">نقاط ماما: <b>' + x + '</b> ⭐</div>' +
+          '<div class="mom-today">نقاط ماما النهاردة: ‎+' + (earnedOn(key, "judy") + earnedOn(key, "karma")) + '</div>' +
           '<div class="mp-breakdown">كارما ' + (S.balances.karma || 0) + ' + جودي ' + (S.balances.judy || 0) + '</div>' +
           '<div class="mp-date">' + esc(fmtDateAr(key)) + '</div></div>';
 
