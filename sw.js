@@ -8,8 +8,12 @@
    (the in-app update check) is never cached.
    v3 (2026-11-22): self-healing — on activate it wipes old caches and
    force-reloads open windows into the fresh build, so a stuck open
-   app can never keep running its old page after an update. */
-var CACHE = "judy-karma-v3";
+   app can never keep running its old page after an update.
+   v4 (2026-11-22): cache name bumped for build 2026.11.22-4; the
+   page now registers this worker via a versioned URL with
+   updateViaCache:'none', so the worker script itself is always
+   revalidated against the network. */
+var CACHE = "judy-karma-v4";
 var SHELL = [
   "./",
   "./index.html",
@@ -47,7 +51,7 @@ self.addEventListener("activate", function (e) {
           try {
             if (typeof c.navigate === "function") {
               var u = new URL(c.url);
-              u.searchParams.set("u", "2026.11.22-3");
+              u.searchParams.set("u", "2026.11.22-4");
               return c.navigate(u.toString()).catch(function () {});
             }
           } catch (err) {}

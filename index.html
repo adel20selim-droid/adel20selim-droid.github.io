@@ -380,6 +380,16 @@
         background:var(--gold-light); border:2px dashed var(--gold-dark);
         border-radius:999px; color:var(--gold-dark); font-weight:800; font-size:.97rem;
       }
+      /* small permanent manual-update button under the Mom strip */
+      .manual-update-wrap{ text-align:center; margin-top:10px; }
+      #manualUpdateBtn{
+        background:transparent; border:2px solid var(--gold-dark); color:var(--gold-dark);
+        border-radius:999px; padding:5px 18px; font-family:inherit;
+        font-size:.9rem; font-weight:800; cursor:pointer;
+      }
+      #manualUpdateBtn:disabled{ opacity:.55; cursor:default; }
+      /* tiny version stamp at the very bottom of the page */
+      .version-stamp{ text-align:center; font-size:.72rem; color:var(--gray); margin:20px 0 8px; }
 
       /* ---------- Parents ---------- */
       #parents{ display:none; margin-top:8px; }
@@ -733,6 +743,10 @@
       </div>
 
       <div class="mom-strip" id="momStrip" role="status"></div>
+
+      <div class="manual-update-wrap">
+        <button id="manualUpdateBtn" type="button" onclick="manualUpdate()">🔄 تحديث التطبيق</button>
+      </div>
 
       <section class="girls" aria-label="اختيار البنت">
         <button class="girl karma" id="card-karma" type="button">
@@ -1096,6 +1110,8 @@
           </div>
         </div>
       </section>
+
+      <div class="version-stamp" id="versionStamp"></div>
     </main>
 
     <!-- Celebration / info modal -->
@@ -1173,7 +1189,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.22-3";
+      const BUILD_ID = "2026.11.22-4";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -4418,6 +4434,38 @@
       var updateBannerEl = document.getElementById("updateBanner");
       if(updateBannerEl) updateBannerEl.addEventListener("click", applyUpdate);
 
+      /* Manual update check behind the permanent «🔄 تحديث التطبيق»
+         button: same version.json probe as checkForUpdate, but with
+         feedback — a newer build goes through the same forced-update
+         path as the banner; an equal build confirms «أنت على أحدث
+         نسخة ✓»; any failure silently restores the button. */
+      function manualUpdate(){
+        var btn = document.getElementById("manualUpdateBtn");
+        if(!btn || btn.disabled) return;
+        var oldLabel = btn.textContent;
+        function restore(){ btn.textContent = oldLabel; btn.disabled = false; }
+        btn.textContent = "جارٍ الفحص…";
+        btn.disabled = true;
+        try{
+          fetch("version.json", {cache:"no-store"}).then(function(r){ return r && r.ok ? r.json() : null; }).then(function(d){
+            if(d && updateAvailable(BUILD_ID, d.build)){
+              serverBuildId = d.build;
+              applyUpdate();
+              return;
+            }
+            if(d){
+              try{
+                if("serviceWorker" in navigator && navigator.serviceWorker.getRegistration){
+                  navigator.serviceWorker.getRegistration().then(function(r){ if(r) r.update(); }).catch(function(){});
+                }
+              }catch(e){}
+              try{ toast("أنت على أحدث نسخة ✓"); }catch(e){}
+            }
+            restore();
+          }).catch(function(){ restore(); });
+        }catch(e){ restore(); }
+      }
+
       /* ================= Init ================= */
       /* Service worker: it sits next to this page on the live site, and
          registering it is part of what makes Chrome offer a REAL install
@@ -4429,7 +4477,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js").catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.22-4", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
@@ -4453,12 +4501,17 @@
       refreshInstallBar();
       refreshInstallUI();
 
+      /* Version stamp at the bottom of the page, rendered from the
+         build constant so it can never drift from the running build. */
+      var versionStampEl = document.getElementById("versionStamp");
+      if(versionStampEl) versionStampEl.textContent = "إصدار التطبيق: " + BUILD_ID;
+
       /* Update check: once at start, again whenever the app comes back
          to the foreground, and every 5 minutes while it stays open. */
       checkForUpdate();
       document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible") checkForUpdate(); });
       window.addEventListener("focus", checkForUpdate);
-      setInterval(checkForUpdate, 300000);
+      setInterval(checkForUpdate, 30000);
     </script>
   </body>
 </html>
