@@ -1,19 +1,12 @@
 /* Judy & Karma — service worker.
-   Keeps the app opening offline and enables a real "Install" on
-   Android. Network-first: updates arrive whenever there is a
-   connection; the cache is only a fallback for offline opens.
-   v2 (2026-11-22): cache name bumped so every device drops the old
-   shell; document navigations are fetched with cache:"no-store" so a
-   new build can never stick behind an HTTP-cached page; version.json
-   (the in-app update check) is never cached.
-   v3 (2026-11-22): self-healing — on activate it wipes old caches and
-   force-reloads open windows into the fresh build, so a stuck open
-   app can never keep running its old page after an update.
-   v4 (2026-11-22): cache name bumped for build 2026.11.22-4; the
-   page now registers this worker via a versioned URL with
-   updateViaCache:'none', so the worker script itself is always
-   revalidated against the network. */
-var CACHE = "judy-karma-v4";
+   v5 (2026-11-22): instant opens. Navigations are served from the
+   cached shell immediately (stale-while-revalidate) and refreshed
+   from the network in the background, so the app opens at once even
+   on a very slow connection; new builds are announced by the in-app
+   update banner (version.json, never cached) and applied on tap.
+   On activate the worker still wipes old caches and force-reloads
+   open windows once, into the freshly precached shell. */
+var CACHE = "judy-karma-v5";
 var SHELL = [
   "./",
   "./index.html",
@@ -43,18 +36,15 @@ self.addEventListener("activate", function (e) {
         if (k !== CACHE) return caches.delete(k);
       }));
     }).then(function () { return self.clients.claim(); }).then(function () {
-      // Self-healing: force every open window onto the fresh build.
-      // Runs once per SW version activation, so there is no reload
-      // loop: the navigated page is served by this same worker.
+      // Self-healing: push every open window into the fresh shell once.
       return self.clients.matchAll({ type: "window" }).then(function (list) {
         return Promise.all(list.map(function (c) {
           try {
-            if (typeof c.navigate === "function") {
-              var u = new URL(c.url);
-              u.searchParams.set("u", "2026.11.22-4");
-              return c.navigate(u.toString()).catch(function () {});
-            }
-          } catch (err) {}
+            if (typeof c.navigate !== "function") return null;
+            var u = new URL(c.url);
+            u.searchParams.set("u", "2026.11.22-5");
+            return c.navigate(u.toString()).catch(function () {});
+          } catch (err) { return null; }
         }));
       });
     })
@@ -71,18 +61,22 @@ self.addEventListener("fetch", function (e) {
     }));
     return;
   }
-  // Documents: network-first, bypassing the HTTP cache entirely, so a
-  // freshly published build lands on the next open. Cache is only the
-  // offline fallback.
+  // Documents: instant from cache, refreshed in the background.
   if (e.request.mode === "navigate") {
     e.respondWith(
-      fetch(url, { cache: "no-store", credentials: "same-origin" }).then(function (res) {
-        var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put("./index.html", copy); });
-        return res;
-      }).catch(function () {
-        return caches.match("./index.html", { ignoreSearch: true }).then(function (m) {
-          return m || caches.match("./", { ignoreSearch: true });
+      caches.match("./index.html", { ignoreSearch: true }).then(function (cached) {
+        var network = fetch(url, { cache: "no-store", credentials: "same-origin" }).then(function (res) {
+          var copy = res.clone();
+          caches.open(CACHE).then(function (c) { c.put("./index.html", copy); });
+          return res;
+        });
+        if (cached) {
+          // Background refresh; errors are fine, the cache stays.
+          network.catch(function () {});
+          return cached;
+        }
+        return network.catch(function () {
+          return caches.match("./", { ignoreSearch: true });
         });
       })
     );
