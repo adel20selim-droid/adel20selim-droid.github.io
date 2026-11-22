@@ -665,10 +665,18 @@
       .mom-surprise{ z-index:64; }
       #momSurpriseBody .mom-msg-text, #momSurpriseBody .mom-coupon-text{ font-size:1.35rem; }
 
+      /* Update notice strip: sits above every overlay in the app */
+      #updateBanner{
+        position:sticky; top:0; z-index:9999; background:#f6b73c; color:#3a2703;
+        font-weight:800; font-size:1.02rem; text-align:center; padding:12px 10px;
+        cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.18);
+      }
+
       .hidden{ display:none !important; }
     </style>
   </head>
   <body data-girl="karma">
+    <div id="updateBanner" dir="rtl" role="button" style="display:none">🔄 في تحديث جديد — اضغط هنا للتحديث</div>
     <div id="confetti" aria-hidden="true"></div>
     <div class="toast" id="toast" role="status"></div>
 
@@ -1165,6 +1173,7 @@
 
     <script>
       "use strict";
+      const BUILD_ID = "2026.11.22-1";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -4370,6 +4379,45 @@
           }, true);
       });
 
+      /* ================= Update notice =================
+         The live site publishes a tiny version.json next to this page.
+         When its build differs from the one baked into this copy, the
+         sticky banner at the top offers a one-tap forced refresh past
+         all caches. Checking is silent and offline-safe, and applying
+         the update never touches localStorage or any app data. */
+      function updateAvailable(localId, serverId){ return !!serverId && !!localId && serverId !== localId; }
+      var serverBuildId = null;
+      function checkForUpdate(){
+        if(!window.fetch) return;
+        fetch("version.json", {cache:"no-store"}).then(function(r){ return r && r.ok ? r.json() : null; }).then(function(d){
+          if(d && updateAvailable(BUILD_ID, d.build)){ serverBuildId = d.build; var b = document.getElementById("updateBanner"); if(b) b.style.display = "block"; }
+        }).catch(function(){});
+      }
+      var updateNavStarted = false;
+      function applyUpdate(){
+        var id = serverBuildId || BUILD_ID;
+        function go(){
+          if(updateNavStarted) return; updateNavStarted = true;
+          try{ location.replace(location.pathname + "?u=" + encodeURIComponent(id)); }
+          catch(e){ try{ location.reload(); }catch(e2){} }
+        }
+        var steps = [];
+        try{
+          if("serviceWorker" in navigator && navigator.serviceWorker.getRegistrations){
+            steps.push(navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); }));
+          }
+        }catch(e){}
+        try{
+          if(window.caches && caches.keys){
+            steps.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); }));
+          }
+        }catch(e){}
+        try{ Promise.all(steps).then(go, go); }catch(e){ go(); }
+        setTimeout(go, 2500);
+      }
+      var updateBannerEl = document.getElementById("updateBanner");
+      if(updateBannerEl) updateBannerEl.addEventListener("click", applyUpdate);
+
       /* ================= Init ================= */
       /* Service worker: it sits next to this page on the live site, and
          registering it is part of what makes Chrome offer a REAL install
@@ -4404,6 +4452,13 @@
       refreshSetupPinBtn();
       refreshInstallBar();
       refreshInstallUI();
+
+      /* Update check: once at start, again whenever the app comes back
+         to the foreground, and every 5 minutes while it stays open. */
+      checkForUpdate();
+      document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible") checkForUpdate(); });
+      window.addEventListener("focus", checkForUpdate);
+      setInterval(checkForUpdate, 300000);
     </script>
   </body>
 </html>

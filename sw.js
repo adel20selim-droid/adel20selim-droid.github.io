@@ -1,8 +1,12 @@
 /* Judy & Karma — service worker.
    Keeps the app opening offline and enables a real "Install" on
    Android. Network-first: updates arrive whenever there is a
-   connection; the cache is only a fallback for offline opens. */
-var CACHE = "judy-karma-v1";
+   connection; the cache is only a fallback for offline opens.
+   v2 (2026-11-22): cache name bumped so every device drops the old
+   shell; document navigations are fetched with cache:"no-store" so a
+   new build can never stick behind an HTTP-cached page; version.json
+   (the in-app update check) is never cached. */
+var CACHE = "judy-karma-v2";
 var SHELL = [
   "./",
   "./index.html",
@@ -37,6 +41,31 @@ self.addEventListener("activate", function (e) {
 
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
+  var url = e.request.url;
+  // The update check must always hit the network and never be cached.
+  if (url.indexOf("version.json") !== -1) {
+    e.respondWith(fetch(e.request, { cache: "no-store" }).catch(function () {
+      return new Response("{}", { headers: { "Content-Type": "application/json" } });
+    }));
+    return;
+  }
+  // Documents: network-first, bypassing the HTTP cache entirely, so a
+  // freshly published build lands on the next open. Cache is only the
+  // offline fallback.
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      fetch(url, { cache: "no-store", credentials: "same-origin" }).then(function (res) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put("./index.html", copy); });
+        return res;
+      }).catch(function () {
+        return caches.match("./index.html", { ignoreSearch: true }).then(function (m) {
+          return m || caches.match("./", { ignoreSearch: true });
+        });
+      })
+    );
+    return;
+  }
   e.respondWith(
     fetch(e.request).then(function (res) {
       var copy = res.clone();
