@@ -1206,7 +1206,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.22-6";
+      const BUILD_ID = "2026.11.22-7";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -1500,6 +1500,36 @@
         });
         return s;
       }
+      /* Cloud round-trip healing: Firebase RTDB does not store empty
+         objects or arrays — it prunes them. A day nobody has touched yet
+         therefore downloads as { judy:{ fullDay:false }, karma:{ fullDay:false } }
+         with `done`, `events` and `twin` MISSING, while the renderers and
+         the task toggling read them unconditionally (r.done[id],
+         r.events.reduce, day.twin[id]). On a fresh device the first render
+         after a sync pull threw on exactly that and aborted renderAll
+         mid-way: Karma's number (first in the render loop) appeared,
+         Judy's never did, and the tasks list, the Mama card and the
+         strips all stayed empty — the broken Messenger screenshots.
+         Fill the missing pieces back in so any adopted day record
+         (sync pull, backup restore, an already-saved local copy) always
+         has the full local shape. */
+      function normalizeDay(day){
+        if(!day || typeof day !== "object") return day;
+        GIRL_KEYS.forEach(function(g){
+          var r = day[g];
+          if(!r || typeof r !== "object"){ day[g] = { done:{}, events:[], fullDay:false }; return; }
+          if(!r.done || typeof r.done !== "object" || Array.isArray(r.done)) r.done = {};
+          if(!Array.isArray(r.events)) r.events = [];
+          if(typeof r.fullDay !== "boolean") r.fullDay = !!r.fullDay;
+        });
+        if(!day.twin || typeof day.twin !== "object" || Array.isArray(day.twin)) day.twin = {};
+        return day;
+      }
+      function normalizeDays(s){
+        if(!s || !s.days || typeof s.days !== "object") return s;
+        Object.keys(s.days).forEach(function(k){ normalizeDay(s.days[k]); });
+        return s;
+      }
       function load(){
         try{
           var raw = localStorage.getItem(LS_KEY);
@@ -1522,7 +1552,7 @@
                 if(!s.coloring[g].unlocked) s.coloring[g].unlocked = [];
                 if(!s.coloring[g].works) s.coloring[g].works = {};
               });
-              return reconcileBalances(s);
+              return reconcileBalances(normalizeDays(s));
             }
           }
         }catch(e){}
@@ -1554,7 +1584,7 @@
       function tasksFor(girl){ return S.tasks.filter(function(t){ return t.girl==="both" || t.girl===girl; }); }
       function dayObj(key){
         if(!S.days[key]) S.days[key] = { judy:{ done:{}, events:[], fullDay:false }, karma:{ done:{}, events:[], fullDay:false }, twin:{} };
-        return S.days[key];
+        return normalizeDay(S.days[key]);
       }
       function rec(key, girl){ return dayObj(key)[girl]; }
       function logEvent(key, girl, type, text, delta){
@@ -4036,6 +4066,7 @@
       function migrateBackupData(d){
         if(!d.coloring) d.coloring = emptyColoring();
         if(!d.deductions) d.deductions = defaultDeductions();
+        if(!d.balances || typeof d.balances !== "object") d.balances = { judy:0, karma:0 };
         ensureMom(d);
         GIRL_KEYS.forEach(function(g){
           if(!d.coloring[g]) d.coloring[g] = { unlocked:[], works:{} };
@@ -4043,7 +4074,7 @@
           if(!d.coloring[g].works) d.coloring[g].works = {};
           if(typeof d.balances[g] !== "number") d.balances[g] = 0;
         });
-        return reconcileBalances(d);
+        return reconcileBalances(normalizeDays(d));
       }
       $("backupCreateBtn").addEventListener("click", function(){
         try{
@@ -4510,7 +4541,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.22-6", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.22-7", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
