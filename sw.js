@@ -5,8 +5,11 @@
    v2 (2026-11-22): cache name bumped so every device drops the old
    shell; document navigations are fetched with cache:"no-store" so a
    new build can never stick behind an HTTP-cached page; version.json
-   (the in-app update check) is never cached. */
-var CACHE = "judy-karma-v2";
+   (the in-app update check) is never cached.
+   v3 (2026-11-22): self-healing — on activate it wipes old caches and
+   force-reloads open windows into the fresh build, so a stuck open
+   app can never keep running its old page after an update. */
+var CACHE = "judy-karma-v3";
 var SHELL = [
   "./",
   "./index.html",
@@ -35,7 +38,22 @@ self.addEventListener("activate", function (e) {
       return Promise.all(keys.map(function (k) {
         if (k !== CACHE) return caches.delete(k);
       }));
-    }).then(function () { return self.clients.claim(); })
+    }).then(function () { return self.clients.claim(); }).then(function () {
+      // Self-healing: force every open window onto the fresh build.
+      // Runs once per SW version activation, so there is no reload
+      // loop: the navigated page is served by this same worker.
+      return self.clients.matchAll({ type: "window" }).then(function (list) {
+        return Promise.all(list.map(function (c) {
+          try {
+            if (typeof c.navigate === "function") {
+              var u = new URL(c.url);
+              u.searchParams.set("u", "2026.11.22-3");
+              return c.navigate(u.toString()).catch(function () {});
+            }
+          } catch (err) {}
+        }));
+      });
+    })
   );
 });
 
