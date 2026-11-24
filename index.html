@@ -130,6 +130,33 @@
          tapped (see renderPublicDeductions / the title toggle). */
       .section-title.foldable{ cursor:pointer; user-select:none; -webkit-user-select:none; }
       .fold-arrow{ font-size:.92rem; color:var(--gold-dark); }
+      /* Foldable titles styled as real full-width buttons (same family as
+         .btn-soft: card face, gold border, 28px radius; the 3D bottom edge,
+         shadow and press feel come from the theme block below, which lists
+         .fold-btn with the other soft buttons). A gold circular chip holds
+         the open/close arrow at the far end so it is obvious the bar can be
+         tapped to unfold/fold its section. */
+      .fold-btn{
+        display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+        width:100%; box-sizing:border-box; min-height:64px;
+        padding:8px 16px; margin-bottom:10px;
+        background:var(--card); color:var(--ink);
+        border:2px solid var(--gold-dark); border-radius:28px;
+        cursor:pointer; user-select:none; -webkit-user-select:none;
+        -webkit-tap-highlight-color:transparent;
+      }
+      .fold-btn .fold-arrow{
+        margin-inline-start:auto; flex:0 0 auto;
+        width:38px; height:38px; border-radius:50%;
+        display:flex; align-items:center; justify-content:center;
+        background:var(--gold); color:var(--ink);
+        font-size:1.05rem; font-weight:800; line-height:1;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.65),
+          0 3px 0 var(--gold-dark),
+          0 5px 9px rgba(160,110,0,.28);
+      }
+      .fold-btn:focus-visible{ outline:3px solid var(--gold-dark); outline-offset:2px; }
       .mom-lock-err{ display:none; color:var(--red); font-weight:800; margin-top:4px; }
       .mom-lock-err.show{ display:block; }
 
@@ -940,7 +967,7 @@
 
       /* ----- Soft / white buttons: cream bottom edge ----- */
       .btn-soft, .mini, .change-pin, .tab, .mom-back, #manualUpdateBtn,
-      .emoji-pick button, .day-row{
+      .emoji-pick button, .day-row, .fold-btn{
         background-image:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 60%);
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.9),
@@ -950,7 +977,7 @@
       }
       .btn-soft:active, .mini:active, .change-pin:active, .tab:active,
       .mom-back:active, #manualUpdateBtn:active,
-      .emoji-pick button:active, .day-row:active{
+      .emoji-pick button:active, .day-row:active, .fold-btn:active{
         transform:translateY(3px);
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.7),
@@ -1188,7 +1215,7 @@
       @media (hover:hover) and (pointer:fine){
         .btn-gold:hover, .buy:hover:not(:disabled), .save-btn:hover,
         .btn-soft:hover, .mini:hover, .tab:hover, .install-pill:hover,
-        .mom-req-btn:hover{
+        .mom-req-btn:hover, .fold-btn:hover{
           transform:translateY(-1px);
           filter:brightness(1.03);
         }
@@ -1201,7 +1228,7 @@
         }
       }
       @media (prefers-reduced-motion: reduce){
-        .btn-gold, .btn-soft, .buy, .save-btn, .mini, .tab, .check,
+        .btn-gold, .btn-soft, .buy, .save-btn, .mini, .tab, .check, .fold-btn,
         .mom-req-btn, .install-pill, .deduct-apply,
         .mom-strip, .pic-card, .daily-card, .swatch{
           transition-duration:.001s !important;
@@ -1316,14 +1343,14 @@
       <h2 class="section-title" id="rewardsTitle">🎁 المكافآت</h2>
       <div id="rewardList"></div>
 
-      <h2 class="section-title foldable" id="deductPublicTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="deductPublicBody"><span id="deductPublicTitleText">⭐ الخصومات</span> <span class="fold-arrow" id="deductFoldArrow" aria-hidden="true">▸</span></h2>
+      <h2 class="section-title foldable fold-btn" id="deductPublicTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="deductPublicBody"><span id="deductPublicTitleText">⭐ الخصومات</span> <span class="fold-arrow" id="deductFoldArrow" aria-hidden="true">▸</span></h2>
       <div id="deductPublicBody" class="hidden">
         <p class="color-sub">الخصم مقفول برقم الأهل 🔒 — لو حصلت حالة من دول، دوسوا «اخصم» واكتبوا الرقم المفضل، وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
         <div class="deduct-balance" id="deductPublicBalance"></div>
         <div id="publicDeductList"></div>
       </div>
 
-      <h2 class="section-title foldable" id="colorTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="colorBody"><span id="colorTitleText">🎨 ركن التلوين</span> <span class="color-thumbs" id="colorThumbs" aria-hidden="true"></span> <span class="fold-arrow" id="colorFoldArrow" aria-hidden="true">▸</span></h2>
+      <h2 class="section-title foldable fold-btn" id="colorTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="colorBody"><span id="colorTitleText">🎨 ركن التلوين</span> <span class="color-thumbs" id="colorThumbs" aria-hidden="true"></span> <span class="fold-arrow" id="colorFoldArrow" aria-hidden="true">▸</span></h2>
       <div id="colorBody" class="hidden">
       <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — عندنا <b>٣٤ رسمة وكلها مفتوحة</b> 🎉 من غير قفل ومن غير شرا بالنجوم! اختاري أي رسمة ولوّنيها على طول، وشغلك بيتحفظ في معرضك. و«رسمة اليوم» اللي فوق بتتغيّر لوحدها كل يوم 🌞</p>
       <div id="colorDaily"></div>
@@ -1362,7 +1389,7 @@
         <button class="change-pin" id="changePinBtn" type="button">🔑 تغيير الرقم المفضل</button>
 
         <div class="panel backup-panel">
-          <h3 class="foldable" id="backupFoldTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="backupBody" style="margin-bottom:0">💾 نسخة احتياطية / استرجاع <span class="fold-arrow" id="backupFoldArrow" aria-hidden="true">▸</span></h3>
+          <h3 class="foldable fold-btn" id="backupFoldTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="backupBody" style="margin-bottom:0">💾 نسخة احتياطية / استرجاع <span class="fold-arrow" id="backupFoldArrow" aria-hidden="true">▸</span></h3>
           <div id="backupBody" class="hidden">
           <p style="margin-top:10px"><b>لتحديث شكل الأيقونة من غير ما تضيع البيانات:</b> لو عايزين تمسحوا أيقونة التطبيق القديمة من الشاشة الرئيسية وتضيفوها من جديد عشان تظهر بالنجمة الذهبية والاسم الجديد <b>Ka ❤️ Ju</b>، اعملوا الخطوات دي <b>بالترتيب</b> — كده أسماء المكافآت اللي عدّلتوها ونجوم البنات والرقم السري هيرجعوا زي ما هم بالظبط:</p>
           <ol>
@@ -1780,7 +1807,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-10";
+      const BUILD_ID = "2026.11.24-11";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -5766,7 +5793,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-10", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-11", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
