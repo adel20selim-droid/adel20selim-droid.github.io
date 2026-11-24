@@ -356,9 +356,8 @@
       .install-ready{ animation:hotPulse 1.2s ease infinite; }
       /* ---------- Home-screen Mom strip ----------
          Sits at the top of the main screen, above the girl cards: Mom's
-         name and her points — the live sum of the girls' card numbers
-         (the same number the «مكافأة ماما» card below shows — see
-         renderMom). */
+         name and her points — her lifetime earned total (the same
+         number the «مكافأة ماما» card below shows — see renderMom). */
       .mom-strip{
         margin-top:12px; border-radius:var(--radius); padding:12px 16px;
         text-align:center; background:var(--rose-light);
@@ -816,7 +815,7 @@
       </div>
 
       <h2 class="section-title" id="colorTitle">🎨 ركن التلوين</h2>
-      <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — عندنا <b>٣٤ رسمة</b>: ٢٥ مجانية و٩ دهبية 👑 بتتفتح بالنجوم! اختاري رسمة ولوّنيها، وشغلك بيتحفظ في معرضك. و«رسمة اليوم» اللي فوق بتتغيّر لوحدها كل يوم من الرسومات المجانية 🌞</p>
+      <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — عندنا <b>٣٤ رسمة وكلها مفتوحة</b> 🎉 من غير قفل ومن غير شرا بالنجوم! اختاري أي رسمة ولوّنيها على طول، وشغلك بيتحفظ في معرضك. و«رسمة اليوم» اللي فوق بتتغيّر لوحدها كل يوم 🌞</p>
       <div id="colorDaily"></div>
       <div class="color-grid" id="colorGrid"></div>
 
@@ -1040,7 +1039,7 @@
           <div id="momEditors" class="hidden">
             <div class="panel">
               <h3>🎁 باقات مكافآت ماما</h3>
-              <p class="guide-note">نقاط ماما هي مجموع الرقمين اللي على كروت البنات: رصيد كارما + رصيد جودي الحاليين — كل ما أرقام البنات تزيد نقاطها تزيد معاهم. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁 أو كوبون مخصوص 💰 بنص ثابت زي «كوبون ٢٠ ريال»)، وماما بتاخد أعلى باقة وصلت لها أو عدّتها — وبين باقتين بتاخد الأقل. محتوى مكافآت الرسايل والكوبونات مفاجأة: بيظهر لها بس لما توصل للباقة أول مرة، وهي شايفة أرقام الباقات وأنواعها — وقيمة الكوبون المخصوص بس — بس.</p>
+              <p class="guide-note">نقاط ماما نظام محاسبي دقيق: هي <b>إجمالي كل اللي كسبته البنات من أول يوم</b> (من سجل الأحداث نفسه) — بتزيد بس، ومبتقلش لما بنت تشتري مكافأة أو يتخصم منها، ومفيش عدّ من الأول أبدًا. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁 أو كوبون مخصوص 💰 بنص ثابت زي «كوبون ٢٠ ريال»). أول ما نقاطها توصل لباقة بتتسجل لها في <b>سجل مكافآت ماما</b> المتزامن على كل الأجهزة — مرة واحدة بس ومبتتكررش؛ ولو عدّت باقة في قفزة واحدة من غير ما تاخدها، بتتسجل «اتفوّتت» ومتتاخدش بعدين بنفس النقاط، فالأحسن لها دايمًا تكمّل للباقة الأعلى. وبين باقتين بتاخد الأقل. محتوى مكافآت الرسايل والكوبونات مفاجأة: بيظهر لها بس لما توصل للباقة أول مرة، وهي شايفة أرقام الباقات وأنواعها — وقيمة الكوبون المخصوص بس — بس.</p>
               <form class="f" id="momTierForm">
                 <div>
                   <label for="momTierPointsInput" id="momTierLabel">باقة جديدة — عدد النقاط</label>
@@ -1178,7 +1177,7 @@
       </div>
     </div>
 
-    <!-- Mama's own page: her points (the sum of the girls' card numbers),
+    <!-- Mama's own page: her points (the girls' lifetime earned total),
          her tier ladder and revealed rewards, and the girls' tasks for
          her. Opened from the top «💐 ماما» strip or the «صفحة ماما»
          button on the «مكافأة ماما» card; filled fresh by
@@ -1206,7 +1205,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.22-7";
+      const BUILD_ID = "2026.11.24-1";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -1268,25 +1267,40 @@
         ["اتخانقت مع أختي","😤",2],["ما سمعتش كلام ماما أو بابا","🔇",2],["كدبت","🤥",3],
         ["لعبت بالموبايل من غير إذن","📱",3],["عليت صوتي أو صرخت","📢",1],["سبت أوضتي مش مترتبة","🧺",1]
       ];
-      /* Mom's reward — TIERS (باقات). Mama's points are the SUM OF THE
-         GIRLS' CARD NUMBERS: mamaPoints = balances.karma + balances.judy
-         (the same reconciled balances shown on the girl cards) — a live
-         sum, not daily and not completion-only, so as the girls' numbers
-         grow her points grow with them. `mom.tiers` is a list of
-         {points, type} ("message" 💌 / "coupon" 🎁 / "fixed" 💰) sorted
-         ascending; a "fixed" tier carries an extra `text` — its reward
-         is exactly that text (a specific cash coupon), with no pool
-         pick. She earns the HIGHEST tier whose points are ≤ her points
-         (floor rule), or no tier below the lowest one. The reward
-         CONTENT is always a surprise: for message/coupon tiers it is
-         picked deterministically from the tier type's pool by
-         tierIndex mod pool.length (each tier is revealed once ever, so
-         one pick per tier, identical on all devices), and revealed only
-         by the full-screen popup; the highest tier index already
-         revealed is remembered per-device in the local tierSeen store
-         (see TIER_SEEN_KEY), never in the synced state. The pools and
-         tiers live in the synced state under `mom`; points are always
-         derived from the balances, so no points counter is ever stored. */
+      /* Mom's reward — TIERS (باقات) on a strict ledger (نظام محاسبي
+         دقيق, decided 2026-11-24). Mama's points are her LIFETIME
+         EARNED total, derived from the girls' event logs — never from
+         their spendable balances:
+           girlLifetime(g) = balances[g] + everything she ever spent or
+           had deducted (redeem + unlock + deduct events added back).
+         So Mama's points ONLY grow: a girl buying a reward, opening a
+         drawing (free now, but old unlock events count) or getting a
+         deduction never lowers them, and un-completing a task lowers
+         them by exactly that task's stars (its reversal is a negative
+         event, not an expense). There is NO reset and NO recount from
+         zero: the count is the full history, recomputed from the log
+         every time, so it cannot be restarted or double-counted.
+         `mom.tiers` is a list of {points, type} ("message" 💌 /
+         "coupon" 🎁 / "fixed" 💰) sorted ascending; a "fixed" tier
+         carries an extra `text` — its reward is exactly that text (a
+         specific cash coupon), with no pool pick. She earns the
+         HIGHEST tier whose points are ≤ her lifetime points (floor
+         rule), or no tier below the lowest one. Every tier she reaches
+         is written ONCE into the synced ledger `mom.grants`
+         ({key, points, type, status, date}): the tier she lands on is
+         "granted", and any lower tier she jumped over in the same leap
+         is "skipped" — recorded as passed, never claimable later with
+         the same points. Because the ledger syncs with the family
+         state, no device can re-grant a tier and clearing a device
+         cannot erase it. The reward CONTENT is always a surprise: for
+         message/coupon tiers it is picked deterministically from the
+         tier type's pool by tierIndex mod pool.length (one pick per
+         tier, identical on all devices), and revealed only by the
+         full-screen popup; the highest tier index already revealed is
+         remembered per-device in the local tierSeen store (see
+         TIER_SEEN_KEY), so each device still gets its own reveal. The
+         pools, tiers and grants live in the synced state under `mom`;
+         points themselves are always derived, never stored. */
       var DEFAULT_MOM_TIERS = [
         { points: 50, type: "message" },
         { points: 100, type: "coupon" },
@@ -1358,8 +1372,76 @@
         return {
           messages: DEFAULT_MOM_MESSAGES.slice(),
           coupons: DEFAULT_MOM_COUPONS.slice(),
-          tiers: defaultMomTiers()
+          tiers: defaultMomTiers(),
+          grants: []
         };
+      }
+      /* A tier's stable identity in the grants ledger: its points, its
+         type, and — for fixed tiers — its exact text. If Baba edits a
+         tier's points or text it becomes a different tier; the old
+         grant stays in the ledger as history. */
+      function momTierKey(t){
+        if(!t) return "";
+        return t.points + "|" + t.type + (t.type === "fixed" ? "|" + (t.text || "") : "");
+      }
+      /* Grants validation: keep only well-formed ledger entries
+         ({key, points, type, status}) deduped by key — first entry
+         wins, so a grant can never be recorded twice. A "date" string
+         (the app day the tier was recorded) is kept when present.
+         Deterministic and idempotent, like validateMomTiers. */
+      function validateMomGrants(list){
+        var out = [], seen = {};
+        (Array.isArray(list) ? list : []).forEach(function(g){
+          if(!g || typeof g !== "object") return;
+          var p = Number(g.points);
+          if(!Number.isInteger(p) || p < 1 || p > 100000) return;
+          if(g.type !== "message" && g.type !== "coupon" && g.type !== "fixed") return;
+          if(g.status !== "granted" && g.status !== "skipped") return;
+          var key = (g.key == null ? "" : String(g.key)).trim();
+          if(!key || seen[key]) return;
+          seen[key] = true;
+          var o = { key: key, points: p, type: g.type, status: g.status };
+          if(g.date != null && String(g.date).trim()) o.date = String(g.date).trim();
+          out.push(o);
+        });
+        return out;
+      }
+      function momGrantFor(tier){
+        var key = momTierKey(tier);
+        var grants = (S.mom && S.mom.grants) || [];
+        for(var i = 0; i < grants.length; i++) if(grants[i].key === key) return grants[i];
+        return null;
+      }
+      /* Write tiers 0..idx into the synced grants ledger: tier idx is
+         "granted"; any lower tier not yet in the ledger was jumped over
+         and is recorded "skipped" (passed — never claimable later),
+         unless allGranted is set (seeding from this device's older
+         reveals, where every tier up to idx was shown one by one).
+         Entries already in the ledger are never rewritten. Returns
+         true when the ledger changed (the caller then saves). */
+      function recordMomGrants(idx, allGranted){
+        ensureMom(S);
+        if(idx == null || idx < 0) return false;
+        var changed = false;
+        for(var i = 0; i <= idx && i < S.mom.tiers.length; i++){
+          var t = S.mom.tiers[i];
+          if(momGrantFor(t)) continue;
+          S.mom.grants.push({
+            key: momTierKey(t), points: t.points, type: t.type,
+            status: (i === idx || allGranted) ? "granted" : "skipped",
+            date: todayKey()
+          });
+          changed = true;
+        }
+        return changed;
+      }
+      /* One-time seeding: tiers this device already revealed under the
+         old balance-sum model (its local tierSeen marker) were earned
+         and shown one by one, so they enter the ledger as "granted".
+         Idempotent — once the ledger covers them this is a no-op. */
+      function seedMomGrantsFromLocal(){
+        var r = momRevealedIdx();
+        if(r >= 0 && recordMomGrants(r, true)) save();
       }
       /* A coupon's text: coupons are plain strings now; a stored
          {text, price} object (from the previous shop model) reads as its
@@ -1444,6 +1526,11 @@
         if(!s.mom.coupons.length) s.mom.coupons = DEFAULT_MOM_COUPONS.slice();
         s.mom.tiers = validateMomTiers(s.mom.tiers);
         if(!s.mom.tiers.length) s.mom.tiers = defaultMomTiers();
+        /* The grants ledger (tiers Mama already received or passed) is
+           part of the synced state from 2026-11-24 on; older states
+           simply start with an empty ledger and get seeded from this
+           device's local reveal marker (see seedMomGrantsFromLocal). */
+        s.mom.grants = validateMomGrants(s.mom.grants);
         delete s.mom.tierSeen;
         delete s.mom.msgAt;
         delete s.mom.couponAt;
@@ -1961,16 +2048,19 @@
         });
       }
       /* ================= Mom's reward — tiers =================
-         Mama's points = the SUM OF THE GIRLS' CARD NUMBERS: the two
-         current star balances (the same reconciled balances renderGirls
-         shows on the cards). Not daily, not completion-only — the sum
-         is live, so her points grow as the girls' numbers grow, and the
-         ladder is judged on this sum. Her tier is the HIGHEST tier
-         whose points are ≤ the sum (floor rule); below the lowest tier
-         there is no reward. The reward content is a surprise, picked
-         deterministically from the tier type's pool: tierIndex mod
-         pool — each tier is revealed once ever, so one pick per tier
-         and every linked device reveals the same content. */
+         Mama's points = the girls' LIFETIME earned total (see
+         girlLifetime): balances plus all stars ever spent or deducted,
+         recomputed from the full event history. The ladder is judged
+         on this total, which only grows — spending never lowers it and
+         there is no recount from zero. Her tier is the HIGHEST tier
+         whose points are ≤ the total (floor rule); below the lowest
+         tier there is no reward. Reached tiers are written once into
+         the synced grants ledger (recordMomGrants): the tier landed on
+         is granted, tiers jumped over in the same leap are recorded
+         skipped and can never be claimed later. The reward content is
+         a surprise, picked deterministically from the tier type's
+         pool: tierIndex mod pool — one pick per tier and every linked
+         device reveals the same content. */
       function girlStarsOn(key, girl){
         var day = S.days[key]; if(!day) return 0;
         var r = day[girl]; if(!r || !r.done) return 0;
@@ -1983,8 +2073,32 @@
         });
         return n;
       }
+      /* Mama's points — the strict ledger: a girl's LIFETIME earned is
+         her current balance plus everything she ever spent or had
+         deducted (redeem / unlock / deduct events are expenses, added
+         back in full). Un-completing a task is a reversal, not an
+         expense, so it lowers the lifetime by exactly the task's
+         stars. The total therefore only grows with real achievements
+         and can never be reset or recounted from zero. */
+      function girlSpent(g){
+        var s = 0;
+        Object.keys(S.days || {}).forEach(function(k){
+          var r = S.days[k] && S.days[k][g];
+          if(!r || !r.events) return;
+          r.events.forEach(function(e){
+            if((e.type === "redeem" || e.type === "unlock" || e.type === "deduct") && e.delta < 0) s += -e.delta;
+          });
+        });
+        return s;
+      }
+      function girlLifetime(g){
+        return (S.balances[g] || 0) + girlSpent(g);
+      }
       function mamaPoints(){
-        return (S.balances.karma || 0) + (S.balances.judy || 0);
+        return girlLifetime("karma") + girlLifetime("judy");
+      }
+      function momLifetimeBreakdown(){
+        return 'من أول يوم: كارما كسبت ' + girlLifetime("karma") + ' + جودي كسبت ' + girlLifetime("judy");
       }
       function momTierIcon(type){ return type === "message" ? "💌" : type === "fixed" ? "💰" : "🎁"; }
       /* Ladder label for one tier: points + icon everywhere, plus the
@@ -2040,12 +2154,13 @@
       function renderMom(){
         var box = $("momCard"); if(!box) return;
         ensureMom(S);
+        seedMomGrantsFromLocal();
         var x = mamaPoints();
         var idx = momTierIndexForPoints(x);
-        var breakdown = 'كارما ' + (S.balances.karma || 0) + ' + جودي ' + (S.balances.judy || 0);
+        var breakdown = momLifetimeBreakdown();
         var momToday = earnedOn(todayKey(), "judy") + earnedOn(todayKey(), "karma");
-        /* Top-of-screen Mom strip: her points (the live sum of the
-           girls' card numbers) with its breakdown and, when a tier is
+        /* Top-of-screen Mom strip: her points (the lifetime earned
+           total) with its per-girl breakdown and, when a tier is
            reached, a small badge naming only its type — never the
            content. */
         var strip = $("momStrip");
@@ -2060,6 +2175,7 @@
         }
         var html = '<div class="mom-effort">نقاط ماما: <b>' + x + '</b> ⭐</div>';
         html += '<div class="mom-breakdown">' + breakdown + '</div>';
+        html += '<div class="mom-breakdown">نقاط ماما بتتحسب من كل اللي كسبته البنات من أول يوم — بتزيد بس، ومبتقلش لما البنات تشتري مكافآت أو يتخصم منها ⭐</div>';
         html += '<div class="mom-today">نقاط ماما النهاردة: ‎+' + momToday + '</div>';
         html += '<div class="mom-chips">' + S.mom.tiers.map(function(t, i){
           return '<span class="mom-chip' + (i === idx ? " on" : "") + '">' + esc(momTierChipText(t)) + '</span>';
@@ -2077,44 +2193,68 @@
       }
       /* ================= Mama's own page =================
          Everything on her page is derived on open from the same state the
-         strip and card already read — the balances (via mamaPoints) and
-         the `mom` tiers/pools. Reward CONTENTS appear here only for
-         tiers already revealed to her on this device (the local
-         tierSeen marker, no date scoping); an unrevealed reached tier
-         shows only a "waiting on the main screen" note, never its
+         strip and card already read — the lifetime points (via
+         mamaPoints), the `mom` tiers/pools and the synced grants ledger.
+         Reward CONTENTS appear here for tiers recorded "granted" in the
+         ledger, plus tiers already revealed to her on this device (the
+         local tierSeen marker, no date scoping); an unrevealed reached
+         tier shows only a "waiting on the main screen" note, never its
          content. */
       function renderMomPage(){
         var body = $("momPageBody"); if(!body) return;
         ensureMom(S);
+        seedMomGrantsFromLocal();
         var key = todayKey();
         var x = mamaPoints();
         var idx = momTierIndexForPoints(x);
         var revealed = momRevealedIdx();
         var html = '<div class="mp-head"><div class="mp-title">💐 ماما</div>' +
           '<div class="mp-points">نقاط ماما: <b>' + x + '</b> ⭐</div>' +
-          '<div class="mp-breakdown">كارما ' + (S.balances.karma || 0) + ' + جودي ' + (S.balances.judy || 0) + '</div>' +
+          '<div class="mp-breakdown">' + momLifetimeBreakdown() + '</div>' +
+          '<div class="mp-breakdown">بتزيد بس — مبتقلش بصرف البنات أو الخصومات ⭐</div>' +
           '<div class="mom-today">نقاط ماما النهاردة: ‎+' + (earnedOn(key, "judy") + earnedOn(key, "karma")) + '</div>' +
           '<div class="mp-date">' + esc(fmtDateAr(key)) + '</div></div>';
 
         html += '<h2 class="mp-sec">🎁 الباقات</h2>';
         html += S.mom.tiers.map(function(t, i){
-          var reached = i <= idx;
+          var grant = momGrantFor(t);
+          var status;
+          if(grant && grant.status === "granted") status = '<span class="mp-tier-status ok">استلمتها ✓</span>';
+          else if(grant && grant.status === "skipped") status = '<span class="mp-tier-status wait">عدّتيها — اتفوّتت</span>';
+          else if(i <= idx) status = '<span class="mp-tier-status ok">وصلتلها ✓</span>';
+          else status = '<span class="mp-tier-status wait">فاضل ' + (t.points - x) + ' نقطة</span>';
           return '<div class="mp-day"><span class="mp-day-date">' + momTierIcon(t.type) + ' باقة ' + t.points + ' نقطة' + (t.type === "fixed" ? ' — ' + esc(momFixedLabel(t.text)) : '') + '</span>' +
-            (reached
-              ? '<span class="mp-tier-status ok">وصلتلها ✓</span>'
-              : '<span class="mp-tier-status wait">فاضل ' + (t.points - x) + ' نقطة</span>') +
+            status +
             '</div>';
         }).join("");
+
+        html += '<h2 class="mp-sec">🧾 سجل مكافآت ماما</h2>';
+        if(S.mom.grants.length){
+          html += S.mom.grants.map(function(g){
+            var label = momTierIcon(g.type) + ' باقة ' + g.points + ' نقطة';
+            return '<div class="mp-day"><span class="mp-day-date">' + label + (g.date ? '<small>' + esc(fmtDateAr(g.date)) + '</small>' : '') + '</span>' +
+              (g.status === "granted"
+                ? '<span class="mp-tier-status ok">اتسجلت ليها ✓</span>'
+                : '<span class="mp-tier-status wait">اتعدّت — اتفوّتت</span>') +
+              '</div>';
+          }).join("");
+          html += '<div class="mp-prog-text">كل باقة بتتسجل في السجل ده مرة واحدة بس وبتتزامن على كل أجهزة العيلة — مفيش عدّ من الأول ولا باقة بتتاخد مرتين، والباقة اللي بتتعدى في قفزة واحدة بتتفوّت ومتتاخدش بعدين بنفس النقاط. كمّلي للباقة الأعلى 💪</div>';
+        } else {
+          html += '<div class="empty-note">لسه مفيش باقات اتسجلت في السجل — أول باقة توصليلها هتتسجل هنا على طول 🧾</div>';
+        }
 
         html += '<h2 class="mp-sec">🎁 مكافآت ماما</h2>';
         if(idx > revealed){
           html += '<div class="mom-teaser">في مفاجأة جديدة مستنياكي على الشاشة الرئيسية 🎁</div>';
         }
         var shown = "";
-        for(var ti = 0; ti <= revealed; ti++){
+        S.mom.tiers.forEach(function(t, ti){
+          var grant = momGrantFor(t);
+          var isGranted = grant && grant.status === "granted";
+          if(ti > revealed && !isGranted) return;
           var c = momContentFor(ti);
           if(c) shown += momRewardHtml(c);
-        }
+        });
         html += shown || (idx > revealed ? "" : '<div class="empty-note">لسه مفيش مكافأة اتكشفت — أول ما توصلي لباقة هتظهر لك مفاجأة 🎁</div>');
 
         html += '<h2 class="mp-sec">📋 مهام النهاردة اللي عملتها البنات لماما</h2>';
@@ -2152,8 +2292,8 @@
         try{ checkMomSurprise(); }catch(e){}
       }
       /* ================= Mama's surprise reveal =================
-         When the CURRENT tier index (from the live balance sum) exceeds
-         the tier index already revealed on this device (the local
+         When the CURRENT tier index (from the lifetime points total)
+         exceeds the tier index already revealed on this device (the local
          tierSeen marker, persistent — no date), the CURRENT tier's
          content pops up full-screen on the main screen — on app load,
          and again after any render that changed the points. Crossing
@@ -2193,8 +2333,14 @@
         var ov = $("momSurprise"); if(ov) ov.classList.remove("open");
         momSurpriseOpen = false;
         if(momSurpriseTier >= 0){
+          /* The reveal is also the ledger entry: this tier is recorded
+             "granted" in the synced grants ledger (and any tier jumped
+             over in the same leap as "skipped"), so it can never be
+             granted twice or claimed again after a recount. */
+          var changed = recordMomGrants(momSurpriseTier, false);
           setLocalTierSeen(momSurpriseTier);
           momSurpriseTier = -1;
+          if(changed) save();
         }
         renderAll();
       }
@@ -3210,10 +3356,13 @@
       });
 
       /* ================= Coloring corner =================
-         Always open. Each drawing is line-art SVG made of tappable regions
-         (data-r). A girl picks a color, taps a region, and her work is saved
-         per drawing in S.coloring[girl].works. Golden drawings unlock once
-         with stars (logged like a purchase in the parents' day report). */
+         Always open — ALL 34 drawings, no locks and no star purchases
+         (decided 2026-11-24: the old 9 «golden» drawings are open too).
+         Each drawing is line-art SVG made of tappable regions (data-r).
+         A girl picks a color, taps a region, and her work is saved per
+         drawing in S.coloring[girl].works. The old per-girl `unlocked`
+         list stays in the state shape only so synced and backup data
+         keeps its shape — it is never read and never charged again. */
       var PALETTE = ["#EF476F","#FF7B54","#FFB800","#FFD93D","#8AC926","#43AA8B","#38BDF8","#4361EE","#9B5DE5","#F15BB5","#B08968","#6B7280","#22223B"];
       var DRAWINGS = [
         { id:"butterfly", name:"فراشة", emoji:"🦋", gold:false, svg:
@@ -3303,7 +3452,7 @@
           '<circle data-r="4" fill="#fff" cx="100" cy="30" r="10"/>' +
           '<path class="deco-line" d="M100 22 q4 -10 14 -12"/>' +
           '<path class="deco-line" d="M76 122 L112 158 M124 122 L88 158"/>' },
-        { id:"princess", name:"الأميرة", emoji:"👑", gold:true, price:40, svg:
+        { id:"princess", name:"الأميرة", emoji:"👑", gold:false, svg:
           '<path data-r="0" fill="#fff" d="M64 76 q-10 48 2 80 l18 0 q-8 -44 -4 -80 z"/>' +
           '<path data-r="1" fill="#fff" d="M136 76 q10 48 -2 80 l-18 0 q8 -44 4 -80 z"/>' +
           '<polygon data-r="2" fill="#fff" points="100,112 58,190 142,190"/>' +
@@ -3316,7 +3465,7 @@
           '<circle data-r="8" fill="#fff" cx="126" cy="30" r="5"/>' +
           '<circle class="deco-dot" cx="89" cy="84" r="3.2"/><circle class="deco-dot" cx="111" cy="84" r="3.2"/>' +
           '<path class="deco-line" d="M91 96 Q100 103 109 96"/>' },
-        { id:"castle", name:"القلعة", emoji:"🏰", gold:true, price:50, svg:
+        { id:"castle", name:"القلعة", emoji:"🏰", gold:false, svg:
           '<rect data-r="0" fill="#fff" x="12" y="184" width="176" height="12" rx="6"/>' +
           '<rect data-r="1" fill="#fff" x="28" y="88" width="32" height="96"/>' +
           '<rect data-r="2" fill="#fff" x="140" y="88" width="32" height="96"/>' +
@@ -3330,7 +3479,7 @@
           '<rect data-r="10" fill="#fff" x="36" y="106" width="16" height="24" rx="8"/>' +
           '<rect data-r="11" fill="#fff" x="148" y="106" width="16" height="24" rx="8"/>' +
           '<path class="deco-line" d="M100 32 V13"/>' },
-        { id:"unicorn", name:"يونيكورن", emoji:"🦄", gold:true, price:60, svg:
+        { id:"unicorn", name:"يونيكورن", emoji:"🦄", gold:false, svg:
           '<path data-r="0" fill="#fff" d="M40 100 q-22 12 -16 38 q3 13 14 15 q-7 -25 4 -40 z"/>' +
           '<rect data-r="1" fill="#fff" x="50" y="136" width="13" height="38" rx="6"/>' +
           '<rect data-r="2" fill="#fff" x="76" y="140" width="13" height="34" rx="6"/>' +
@@ -3527,7 +3676,7 @@
           '<path data-r="7" fill="#fff" d="M4 182 q16 -10 32 0 q16 10 32 0 q16 -10 32 0 q16 10 32 0 q16 -10 32 0 q16 10 32 0 v9 H4 z"/>' +
           '<circle class="deco-dot" cx="156" cy="90" r="3.6"/>' +
           '<path class="deco-line" d="M146 108 q9 6 18 1"/>' },
-        { id:"robot", name:"روبوت", emoji:"🤖", gold:true, price:45, svg:
+        { id:"robot", name:"روبوت", emoji:"🤖", gold:false, svg:
           '<circle data-r="0" fill="#fff" cx="100" cy="13" r="7"/>' +
           '<rect data-r="1" fill="#fff" x="97" y="19" width="6" height="13"/>' +
           '<rect data-r="2" fill="#fff" x="42" y="54" width="14" height="22" rx="5"/>' +
@@ -3545,7 +3694,7 @@
           '<rect data-r="14" fill="#fff" x="108" y="160" width="18" height="20" rx="6"/>' +
           '<rect data-r="15" fill="#fff" x="68" y="179" width="28" height="10" rx="5"/>' +
           '<rect data-r="16" fill="#fff" x="104" y="179" width="28" height="10" rx="5"/>' },
-        { id:"mushroom", name:"بيت الفطر", emoji:"🍄", gold:true, price:55, svg:
+        { id:"mushroom", name:"بيت الفطر", emoji:"🍄", gold:false, svg:
           '<rect data-r="0" fill="#fff" x="10" y="164" width="180" height="14" rx="7"/>' +
           '<rect data-r="1" fill="#fff" x="133" y="24" width="13" height="28" rx="3"/>' +
           '<circle data-r="2" fill="#fff" cx="140" cy="15" r="7"/>' +
@@ -3560,7 +3709,7 @@
           '<circle data-r="11" fill="#fff" cx="125" cy="106" r="8"/>' +
           '<circle class="deco-dot" cx="105" cy="150" r="2.4"/>' +
           '<circle class="deco-dot" cx="34" cy="156" r="2.6"/><circle class="deco-dot" cx="168" cy="156" r="2.6"/>' },
-        { id:"dragon", name:"تنين لطيف", emoji:"🐲", gold:true, price:70, svg:
+        { id:"dragon", name:"تنين لطيف", emoji:"🐲", gold:false, svg:
           '<polygon data-r="0" fill="#fff" points="58,118 18,140 34,158 68,146"/>' +
           '<polygon data-r="1" fill="#fff" points="88,88 79,66 99,79"/>' +
           '<polygon data-r="2" fill="#fff" points="117,84 113,60 128,77"/>' +
@@ -3577,7 +3726,7 @@
           '<circle class="deco-dot" cx="155" cy="64" r="3.4"/>' +
           '<circle class="deco-dot" cx="171" cy="76" r="1.9"/><circle class="deco-dot" cx="178" cy="83" r="1.9"/>' +
           '<path class="deco-line" d="M160 88 q8 4 15 1"/>' },
-        { id:"fairy", name:"جنية", emoji:"🧚", gold:true, price:75, svg:
+        { id:"fairy", name:"جنية", emoji:"🧚", gold:false, svg:
           '<ellipse data-r="0" fill="#fff" cx="52" cy="86" rx="26" ry="13" transform="rotate(-32 52 86)"/>' +
           '<ellipse data-r="1" fill="#fff" cx="148" cy="86" rx="26" ry="13" transform="rotate(32 148 86)"/>' +
           '<ellipse data-r="2" fill="#fff" cx="58" cy="118" rx="19" ry="9" transform="rotate(28 58 118)"/>' +
@@ -3592,7 +3741,7 @@
           '<path class="deco-line" d="M128 128 L152 132"/>' +
           '<circle class="deco-dot" cx="90" cy="80" r="3"/><circle class="deco-dot" cx="110" cy="80" r="3"/>' +
           '<path class="deco-line" d="M92 91 Q100 97 108 91"/>' },
-        { id:"mermaid", name:"عروسة البحر", emoji:"🧜‍♀️", gold:true, price:80, svg:
+        { id:"mermaid", name:"عروسة البحر", emoji:"🧜‍♀️", gold:false, svg:
           '<circle data-r="0" fill="#fff" cx="164" cy="34" r="7"/>' +
           '<circle data-r="1" fill="#fff" cx="179" cy="57" r="5"/>' +
           '<circle data-r="2" fill="#fff" cx="29" cy="112" r="6"/>' +
@@ -3610,7 +3759,7 @@
           '<polygon data-r="14" fill="#fff" points="148,168 170,186 140,182"/>' +
           '<circle class="deco-dot" cx="91" cy="64" r="2.8"/><circle class="deco-dot" cx="109" cy="64" r="2.8"/>' +
           '<path class="deco-line" d="M93 74 Q100 79 107 74"/>' },
-        { id:"peacock", name:"طاووس", emoji:"🦚", gold:true, price:90, svg:
+        { id:"peacock", name:"طاووس", emoji:"🦚", gold:false, svg:
           '<circle data-r="0" fill="#fff" cx="100" cy="104" r="60"/>' +
           '<circle data-r="1" fill="#fff" cx="100" cy="104" r="42"/>' +
           '<circle data-r="2" fill="#fff" cx="62" cy="74" r="10"/>' +
@@ -3652,16 +3801,11 @@
           '<span><span class="dt">🌞 رسمة اليوم: ' + dp.emoji + " " + dp.name + '</span>' +
           '<span class="ds">رسمة جديدة كل يوم — دوسي عليها وابدئي التلوين!</span></span></button>';
         $("colorGrid").innerHTML = DRAWINGS.map(function(p){
-          var locked = p.gold && cg.unlocked.indexOf(p.id) < 0;
-          var badge = !p.gold ? "" : locked
-            ? '<span class="pic-badge lock">🔒 افتحيها بـ ' + p.price + " ⭐</span>"
-            : '<span class="pic-badge open">✨ مفتوحة</span>';
           var started = cg.works[p.id] && Object.keys(cg.works[p.id]).length > 0;
-          return '<button class="pic-card' + (p.gold ? " gold" : "") + '" type="button" data-pic="' + p.id + '">' +
+          return '<button class="pic-card" type="button" data-pic="' + p.id + '">' +
             picSVG(p, cg.works[p.id]) +
-            '<span class="pic-name">' + (p.gold ? "👑 " : "") + p.emoji + " " + p.name + "</span>" +
-            badge +
-            (started && !locked ? '<span class="pic-badge open">🎨 بدأتي تلوينها</span>' : "") +
+            '<span class="pic-name">' + p.emoji + " " + p.name + "</span>" +
+            (started ? '<span class="pic-badge open">🎨 بدأتي تلوينها</span>' : '<span class="pic-badge open">✨ مفتوحة</span>') +
           "</button>";
         }).join("");
         document.querySelectorAll("[data-pic]").forEach(function(b){
@@ -3672,25 +3816,8 @@
       var edPic = null, edColor = PALETTE[0], edEraser = false, undoStack = [];
       function openPic(id){
         var pic = picById(id); if(!pic) return;
-        var g = currentGirl, cg = S.coloring[g];
-        if(pic.gold && cg.unlocked.indexOf(id) < 0){
-          if(S.balances[g] < pic.price){
-            showModal("🔒", "رسمة دهبية مقفولة", "رسمة «" + esc(pic.name) + "» " + pic.emoji + " محتاجة <b>" + pic.price + " ⭐</b> عشان تتفتح، ومعاكي دلوقتي <b>" + S.balances[g] + " ⭐</b>.<br />خلصي مهام أكتر واجمعي نجوم! 🌟", "تمام");
-            return;
-          }
-          showModal("👑", "نفتح الرسمة الدهبية؟",
-            GIRLS[g].name + " هتدفع <b>" + pic.price + " ⭐</b> عشان تفتح رسمة «" + esc(pic.name) + "» " + pic.emoji + " — وهتفضل مفتوحة ليها على طول!",
-            "أيوه، افتحيها! 👑",
-            function(){
-              S.balances[g] -= pic.price;
-              cg.unlocked.push(id);
-              logEvent(todayKey(), g, "unlock", "فتحت رسمة دهبية: " + pic.name, -pic.price);
-              save(); renderAll();
-              playHappy(true); confetti(70);
-              openPic(id);
-            }, true);
-          return;
-        }
+        /* Every drawing opens straight into the editor — no lock, no
+           price, no confirmation (all drawings opened 2026-11-24). */
         edPic = id; undoStack = []; edEraser = false; edColor = PALETTE[0];
         renderEditor();
         $("colorEditor").classList.remove("hidden");
@@ -4541,7 +4668,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.22-7", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-1", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
