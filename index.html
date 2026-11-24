@@ -437,6 +437,7 @@
         border:2px solid var(--red); background:transparent; color:var(--red); border-radius:28px;
         padding:11px; font-weight:800; width:100%; cursor:pointer; font-size:1rem;
       }
+      .panel h3.foldable{ cursor:pointer; user-select:none; -webkit-user-select:none; }
       /* ---------- Backup / restore (for updating the home-screen icon safely) ---------- */
       .backup-panel{ border:3px solid var(--gold); background:var(--gold-light); }
       .backup-panel p{ font-weight:700; line-height:1.65; margin:6px 0; color:var(--ink); }
@@ -540,11 +541,12 @@
         background:var(--gold-light); border:2px solid var(--gold); border-radius:20px;
         padding:10px 14px; cursor:pointer; text-align:start; color:var(--ink);
       }
-      .daily-card svg{ width:84px; height:84px; flex:0 0 84px; background:#fff; border-radius:14px; pointer-events:none; }
+      .daily-card svg{ width:132px; height:132px; flex:0 0 132px; background:#fff; border-radius:14px; pointer-events:none; }
       .daily-card .dt{ font-weight:800; font-size:1.15rem; display:block; }
       .daily-card .ds{ color:var(--gray); font-weight:700; font-size:.95rem; display:block; }
-      .color-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
-      @media (min-width:560px){ .color-grid{ grid-template-columns:repeat(3,1fr); } }
+      /* Two columns at every width: each drawing stays big so the girls
+         can see its details and colours clearly before colouring it. */
+      .color-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px; }
       .pic-card{
         background:var(--card); border:2px solid var(--line); border-radius:20px; padding:10px;
         cursor:pointer; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:6px;
@@ -556,9 +558,16 @@
       .pic-badge{ font-size:.85rem; font-weight:800; padding:2px 12px; border-radius:999px; }
       .pic-badge.lock{ background:var(--gold); color:var(--ink); }
       .pic-badge.open{ background:var(--green-light); color:var(--green); }
-      #colorEditor{ margin-top:14px; background:var(--card); border:2px solid var(--line); border-radius:var(--radius); padding:14px; }
-      #colorEditor h3{ margin:0 0 10px; font-size:1.2rem; font-weight:800; text-align:center; }
-      .pstage{ background:#fff; border:2px solid var(--line); border-radius:20px; padding:8px; }
+      /* The editor opens as a full-screen sheet so the picture the girls
+         colour is as big and clear as the phone screen allows. */
+      #colorEditor{
+        position:fixed; inset:0; z-index:57; overflow-y:auto; -webkit-overflow-scrolling:touch;
+        background:var(--cream); padding:16px 12px calc(20px + env(safe-area-inset-bottom));
+      }
+      #colorEditor h3{ margin:0; font-size:1.25rem; font-weight:800; text-align:center; flex:1; }
+      .ed-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+      .ed-head .mini{ flex:0 0 auto; }
+      .pstage{ background:#fff; border:3px solid var(--line); border-radius:20px; padding:6px; }
       .pstage svg{ width:100%; height:auto; display:block; }
       .csvg [data-r]{ stroke:#5B4632; stroke-width:3; stroke-linejoin:round; stroke-linecap:round; }
       .csvg .deco-line{ fill:none; stroke:#5B4632; stroke-width:2.5; stroke-linecap:round; }
@@ -814,13 +823,18 @@
         <div id="publicDeductList"></div>
       </div>
 
-      <h2 class="section-title" id="colorTitle">🎨 ركن التلوين</h2>
+      <h2 class="section-title foldable" id="colorTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="colorBody"><span id="colorTitleText">🎨 ركن التلوين</span> <span class="fold-arrow" id="colorFoldArrow" aria-hidden="true">▸</span></h2>
+      <div id="colorBody" class="hidden">
       <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — عندنا <b>٣٤ رسمة وكلها مفتوحة</b> 🎉 من غير قفل ومن غير شرا بالنجوم! اختاري أي رسمة ولوّنيها على طول، وشغلك بيتحفظ في معرضك. و«رسمة اليوم» اللي فوق بتتغيّر لوحدها كل يوم 🌞</p>
       <div id="colorDaily"></div>
       <div class="color-grid" id="colorGrid"></div>
+      </div>
 
       <div id="colorEditor" class="hidden">
-        <h3 id="edTitle">🎨 التلوين</h3>
+        <div class="ed-head">
+          <h3 id="edTitle">🎨 التلوين</h3>
+          <button class="mini" id="edClose" type="button">✖ إغلاق</button>
+        </div>
         <div class="pstage" id="edStage"></div>
         <div class="palette" id="edPalette" aria-label="لوحة الألوان"></div>
         <div class="ctools">
@@ -844,8 +858,9 @@
         <button class="change-pin" id="changePinBtn" type="button">🔑 تغيير الرقم المفضل</button>
 
         <div class="panel backup-panel">
-          <h3>💾 نسخة احتياطية — لتحديث شكل الأيقونة من غير ما تضيع البيانات</h3>
-          <p>لو عايزين تمسحوا أيقونة التطبيق القديمة من الشاشة الرئيسية وتضيفوها من جديد عشان تظهر بالنجمة الذهبية والاسم الجديد <b>Ka ❤️ Ju</b>، اعملوا الخطوات دي <b>بالترتيب</b> — كده أسماء المكافآت اللي عدّلتوها ونجوم البنات والرقم السري هيرجعوا زي ما هم بالظبط:</p>
+          <h3 class="foldable" id="backupFoldTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="backupBody" style="margin-bottom:0">💾 نسخة احتياطية / استرجاع <span class="fold-arrow" id="backupFoldArrow" aria-hidden="true">▸</span></h3>
+          <div id="backupBody" class="hidden">
+          <p style="margin-top:10px"><b>لتحديث شكل الأيقونة من غير ما تضيع البيانات:</b> لو عايزين تمسحوا أيقونة التطبيق القديمة من الشاشة الرئيسية وتضيفوها من جديد عشان تظهر بالنجمة الذهبية والاسم الجديد <b>Ka ❤️ Ju</b>، اعملوا الخطوات دي <b>بالترتيب</b> — كده أسماء المكافآت اللي عدّلتوها ونجوم البنات والرقم السري هيرجعوا زي ما هم بالظبط:</p>
           <ol>
             <li>دوسوا «إنشاء نسخة احتياطية» وبعدين «نسخ الكود»، وابعتوا الكود لنفسكم واتساب (أو احفظوه في الملاحظات).</li>
             <li>بس بعد ما تتأكدوا إن الكود اتنسخ واتبعت، امسحوا الأيقونة القديمة من الشاشة الرئيسية.</li>
@@ -876,6 +891,7 @@
             </div>
             <div class="backup-err" id="restoreMsg" role="status"></div>
             <p>الاسترجاع هيبدّل بيانات النسخة دي بالبيانات اللي في الكود (النجوم والمكافآت والمهام والسجلات والتلوين والرقم السري). لو النسخة دي فاضية ولسه جديدة، ده بالظبط اللي عايزينه.</p>
+          </div>
           </div>
         </div>
 
@@ -1205,7 +1221,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-1";
+      const BUILD_ID = "2026.11.24-2";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -3794,7 +3810,7 @@
       }
       function renderColoring(){
         var g = currentGirl, cg = S.coloring[g];
-        $("colorTitle").textContent = "🎨 ركن التلوين — " + GIRLS[g].name + " " + GIRLS[g].emoji;
+        $("colorTitleText").textContent = "🎨 ركن التلوين — " + GIRLS[g].name + " " + GIRLS[g].emoji;
         var dp = dailyPic();
         $("colorDaily").innerHTML =
           '<button class="daily-card" type="button" data-pic="' + dp.id + '">' + picSVG(dp, cg.works[dp.id]) +
@@ -3821,11 +3837,15 @@
         edPic = id; undoStack = []; edEraser = false; edColor = PALETTE[0];
         renderEditor();
         $("colorEditor").classList.remove("hidden");
-        $("colorEditor").scrollIntoView({ behavior:"smooth", block:"start" });
+        /* The editor is a full-screen sheet: start it at the top with the
+           picture big, and keep the page behind it from scrolling. */
+        $("colorEditor").scrollTop = 0;
+        document.body.style.overflow = "hidden";
       }
       function closeEditor(){
         edPic = null;
         $("colorEditor").classList.add("hidden");
+        document.body.style.overflow = "";
       }
       function renderEditor(){
         var pic = picById(edPic); if(!pic) return;
@@ -3894,7 +3914,34 @@
         toast("برافو يا فنانة! 🎨", "لوحتك اتحفظت في ركن التلوين");
         $("colorTitle").scrollIntoView({ behavior:"smooth" });
       });
+      $("edClose").addEventListener("click", function(){
+        closeEditor();
+        renderColoring();
+      });
+      /* The colouring corner is a fold: only its title shows until it is
+         tapped, then all 34 drawings unfold. The open state lives only in
+         the DOM for this session — every fresh load starts folded. */
+      function setColorFold(open){
+        var body = $("colorBody"); if(!body) return;
+        body.classList.toggle("hidden", !open);
+        var arrow = $("colorFoldArrow");
+        if(arrow) arrow.textContent = open ? "▾" : "▸";
+        var t = $("colorTitle");
+        if(t) t.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+      function toggleColorFold(){
+        var body = $("colorBody"); if(!body) return;
+        setColorFold(body.classList.contains("hidden"));
+      }
+      var colorTitleEl = $("colorTitle");
+      if(colorTitleEl){
+        colorTitleEl.addEventListener("click", toggleColorFold);
+        colorTitleEl.addEventListener("keydown", function(e){
+          if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleColorFold(); }
+        });
+      }
       $("colorBtn").addEventListener("click", function(){
+        setColorFold(true);
         $("colorTitle").scrollIntoView({ behavior:"smooth" });
       });
 
@@ -4202,6 +4249,24 @@
           if(typeof d.balances[g] !== "number") d.balances[g] = 0;
         });
         return reconcileBalances(normalizeDays(d));
+      }
+      /* The backup panel is a small fold in the parents area: only its
+         header shows until it is tapped. Session-only DOM state — every
+         fresh load starts folded. */
+      function toggleBackupFold(){
+        var body = $("backupBody"); if(!body) return;
+        var nowHidden = body.classList.toggle("hidden");
+        var arrow = $("backupFoldArrow");
+        if(arrow) arrow.textContent = nowHidden ? "▸" : "▾";
+        var t = $("backupFoldTitle");
+        if(t) t.setAttribute("aria-expanded", nowHidden ? "false" : "true");
+      }
+      var backupFoldTitleEl = $("backupFoldTitle");
+      if(backupFoldTitleEl){
+        backupFoldTitleEl.addEventListener("click", toggleBackupFold);
+        backupFoldTitleEl.addEventListener("keydown", function(e){
+          if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleBackupFold(); }
+        });
       }
       $("backupCreateBtn").addEventListener("click", function(){
         try{
@@ -4668,7 +4733,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-1", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-2", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
