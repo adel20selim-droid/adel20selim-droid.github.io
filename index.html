@@ -565,29 +565,38 @@
       .pic-badge{ font-size:.85rem; font-weight:800; padding:2px 12px; border-radius:999px; }
       .pic-badge.lock{ background:var(--gold); color:var(--ink); }
       .pic-badge.open{ background:var(--green-light); color:var(--green); }
-      /* The editor opens as a full-screen sheet so the picture the girls
-         colour is as big and clear as the phone screen allows. */
+      /* The editor opens as a full-screen sheet laid out as ONE fixed
+         column with no scrolling: header, model panel, colouring stage,
+         palette and tools all share the phone's height, and the two
+         square drawings flex into whatever height is left — so the
+         model, the drawing and the colours are all visible at once on
+         one mobile screen (user request 2026-11-24: shrink the white
+         gaps and padding so nothing needs a scroll). */
       #colorEditor{
-        position:fixed; inset:0; z-index:57; overflow-y:auto; -webkit-overflow-scrolling:touch;
-        background:var(--cream); padding:16px 12px calc(20px + env(safe-area-inset-bottom));
+        position:fixed; inset:0; z-index:57; overflow:hidden;
+        background:var(--cream); padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+        display:flex; flex-direction:column;
       }
-      #colorEditor h3{ margin:0; font-size:1.25rem; font-weight:800; text-align:center; flex:1; }
-      .ed-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-      .ed-head .mini{ flex:0 0 auto; }
-      .pstage{ background:#fff; border:3px solid var(--line); border-radius:20px; padding:6px; }
-      .pstage svg{ width:100%; height:auto; display:block; }
+      #colorEditor h3{ margin:0; font-size:1.12rem; font-weight:800; text-align:center; flex:1; }
+      .ed-head{ display:flex; align-items:center; gap:8px; margin-bottom:6px; flex:0 0 auto; }
+      .ed-head .mini{ flex:0 0 auto; min-height:40px; }
+      .pstage{ background:#fff; border:3px solid var(--line); border-radius:16px; padding:4px; }
+      .pstage svg{ width:100%; height:100%; display:block; }
+      /* the colouring stage takes half of the leftover height */
+      #edStage{ flex:1 1 0; min-height:0; }
       /* The coloured MODEL panel («الصورة اللي هنعمل زيها»): a big,
          clear, display-only copy of the same drawing, pre-filled with
          fixed model colours (MODEL_COLORS by region index — the same
          contract as the Android app). It is never painted, never saved
          and never synced; the girls imitate it in the stage below. */
       .model-panel{
-        background:var(--gold-light); border:3px solid var(--gold); border-radius:20px;
-        padding:12px 10px 10px; margin-bottom:14px; box-shadow:var(--shadow);
+        background:var(--gold-light); border:3px solid var(--gold); border-radius:16px;
+        padding:6px 8px 8px; margin-bottom:8px; box-shadow:var(--shadow);
+        display:flex; flex-direction:column; flex:1 1 0; min-height:0;
       }
-      .model-title{ text-align:center; font-size:1.45rem; font-weight:800; color:var(--gold-dark); }
-      .model-sub{ text-align:center; color:var(--gray); font-weight:700; font-size:.95rem; margin:2px 0 10px; line-height:1.55; }
-      .model-stage{ border-color:var(--gold); padding:4px; }
+      .model-title{ text-align:center; font-size:1.12rem; font-weight:800; color:var(--gold-dark); flex:0 0 auto; }
+      .model-sub{ text-align:center; color:var(--gray); font-weight:700; font-size:.82rem; margin:0 0 4px; line-height:1.4; flex:0 0 auto; }
+      .model-stage{ border-color:var(--gold); padding:3px; flex:1 1 0; min-height:0; }
       .model-stage svg{ pointer-events:none; }
       .model-stage .csvg [data-r]{ cursor:default; }
       .csvg [data-r]{ stroke:#5B4632; stroke-width:3; stroke-linejoin:round; stroke-linecap:round; }
@@ -595,14 +604,14 @@
       .csvg .deco-dot{ fill:#5B4632; stroke:none; }
       .pstage .csvg [data-r]{ cursor:pointer; }
       .pstage .csvg [data-r]:active{ opacity:.7; }
-      .palette{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; margin-top:14px; }
+      .palette{ display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-top:8px; flex:0 0 auto; }
       .swatch{
-        width:44px; height:44px; min-height:44px; border-radius:50%; cursor:pointer;
+        width:40px; height:40px; min-height:40px; border-radius:50%; cursor:pointer;
         border:3px solid #fff; box-shadow:0 0 0 2px var(--line); padding:0;
       }
       .swatch.on{ box-shadow:0 0 0 3px var(--ink); transform:scale(1.15); }
-      .ctools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
-      .ctools .mini{ flex:1; min-width:100px; min-height:48px; font-size:1rem; }
+      .ctools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; flex:0 0 auto; }
+      .ctools .mini{ flex:1; min-width:100px; min-height:44px; font-size:1rem; }
       .ctools .mini.on{ background:var(--gold); border-color:var(--gold); color:var(--ink); }
       /* ---------- Mom's reward ---------- */
       .mom-card{
@@ -858,7 +867,7 @@
         </div>
         <div class="model-panel" id="edModel">
           <div class="model-title">🖼️ الصورة اللي هنعمل زيها</div>
-          <p class="model-sub">بصّي على الألوان والتفاصيل كويس، ولوّني الرسمة اللي تحت زيّها بالظبط 🎨</p>
+          <p class="model-sub">بصّي على الألوان والتفاصيل، ولوّني اللي تحت زيّها بالظبط 🎨</p>
           <div class="pstage model-stage" id="edModelStage"></div>
         </div>
         <div class="pstage" id="edStage"></div>
@@ -869,7 +878,6 @@
           <button class="mini del" id="edReset" type="button">🗑️ امسح الكل</button>
           <button class="mini" id="edDone" type="button">✅ خلصت</button>
         </div>
-        <p class="guide-note" style="text-align:center">اختاري لون من فوق وبعدين دوسي على الجزء اللي عايزة تلوّنيه — شغلك بيتحفظ لوحده ⭐</p>
       </div>
 
       <section id="parents">
@@ -1274,7 +1282,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-3";
+      const BUILD_ID = "2026.11.24-4";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -4911,7 +4919,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-3", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-4", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
