@@ -359,31 +359,23 @@
       /* pulses while the browser is actually ready to install in one tap */
       .install-ready{ animation:hotPulse 1.2s ease infinite; }
       /* ---------- Home-screen Mom strip ----------
-         Sits at the top of the main screen, above the girl cards: Mom's
-         name and her points — her lifetime earned total (the same
-         number the «مكافأة ماما» card below shows — see renderMom). */
+         One slim bar directly under the girl cards: Mom's points —
+         her lifetime earned total — with today's points in small
+         type beside it. Tapping it opens Mama's own page, where all
+         her reward details live (see renderMom / renderMomPage). */
       .mom-strip{
-        margin-top:12px; border-radius:var(--radius); padding:12px 16px;
-        text-align:center; background:var(--rose-light);
+        margin-top:12px; border-radius:999px; padding:9px 18px;
+        display:flex; align-items:center; gap:10px;
+        background:var(--rose-light);
         border:2px solid var(--rose); box-shadow:var(--shadow);
         cursor:pointer;
       }
-      .mom-strip .ms-chip{
-        display:inline-block; margin-top:8px; margin-inline-start:6px; padding:3px 14px;
-        background:var(--card); border:2px solid var(--rose); border-radius:999px;
-        color:var(--rose-dark); font-weight:800; font-size:.9rem;
-      }
-      .mom-strip .ms-title{ font-size:1.3rem; font-weight:800; }
-      .mom-strip .ms-points{ font-weight:800; font-size:1.1rem; margin-top:2px; }
-      .mom-strip .ms-points b{ color:var(--rose-dark); font-size:1.4rem; }
-      .mom-strip .ms-sub{ color:var(--gray); font-weight:700; font-size:.85rem; margin-top:2px; }
+      .mom-strip .ms-main{ font-weight:800; font-size:1.08rem; white-space:nowrap; }
+      .mom-strip .ms-main b{ color:var(--rose-dark); font-size:1.35rem; }
+      .mom-strip .ms-today{ margin-inline-start:auto; color:var(--gold-dark); font-weight:800; font-size:.88rem; white-space:nowrap; }
+      .mom-strip .ms-arrow{ color:var(--rose-dark); font-weight:800; font-size:1.25rem; line-height:1; }
       .mom-today{ display:block; color:var(--gold-dark); font-weight:800; font-size:.95rem; margin-top:2px; direction:rtl; text-align:right; }
-      .mom-strip .ms-badge{
-        display:inline-block; margin-top:8px; padding:4px 14px;
-        background:var(--gold-light); border:2px dashed var(--gold-dark);
-        border-radius:999px; color:var(--gold-dark); font-weight:800; font-size:.97rem;
-      }
-      /* small permanent manual-update button under the Mom strip */
+      /* small permanent manual-update button */
       .manual-update-wrap{ text-align:center; margin-top:10px; }
       #manualUpdateBtn{
         background:transparent; border:2px solid var(--gold-dark); color:var(--gold-dark);
@@ -613,14 +605,7 @@
       .ctools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; flex:0 0 auto; }
       .ctools .mini{ flex:1; min-width:100px; min-height:44px; font-size:1rem; }
       .ctools .mini.on{ background:var(--gold); border-color:var(--gold); color:var(--ink); }
-      /* ---------- Mom's reward ---------- */
-      .mom-card{
-        background:var(--card); border:2px solid var(--rose); border-radius:var(--radius);
-        padding:14px; margin-top:10px; box-shadow:var(--shadow);
-      }
-      .mom-effort{ text-align:center; font-weight:800; font-size:1.12rem; }
-      .mom-effort b{ color:var(--rose-dark); font-size:1.35rem; }
-      .mom-breakdown{ text-align:center; color:var(--gray); font-weight:700; font-size:.85rem; margin-top:2px; }
+      /* ---------- Mom's reward (her own page & the surprise popup) ---------- */
       .mp-breakdown{ color:var(--gray); font-weight:700; margin-top:2px; font-size:.85rem; }
       .mom-teaser{
         margin-top:10px; text-align:center; color:var(--gray); font-weight:700; line-height:1.65;
@@ -632,7 +617,6 @@
       }
       .mom-msg-text{ font-size:1.18rem; font-weight:800; line-height:1.6; }
       .mom-sign{ margin-top:6px; color:var(--rose-dark); font-weight:800; }
-      .mom-next{ margin-top:10px; text-align:center; font-weight:800; color:var(--gold-dark); line-height:1.6; }
       .mom-coupon{
         margin-top:12px; text-align:center; padding:14px;
         background:var(--gold-light); border:2.5px dashed var(--gold-dark); border-radius:16px;
@@ -640,22 +624,6 @@
       .mom-coupon-label{ font-weight:800; color:var(--gold-dark); font-size:.95rem; }
       .mom-coupon-text{ font-size:1.22rem; font-weight:800; line-height:1.55; margin-top:4px; }
       .mom-coupon-note{ margin-top:6px; font-weight:700; }
-      .mom-page-btn{
-        margin-top:12px; width:100%; min-height:50px; padding:12px;
-        border:2px solid var(--rose); border-radius:28px; background:var(--rose-light);
-        color:var(--rose-dark); font-size:1.08rem; font-weight:800; cursor:pointer;
-      }
-      .mom-page-btn:active{ background:var(--rose); color:#fff; }
-      /* tier ladder chips on the home card */
-      .mom-chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:10px; }
-      .mom-chip{
-        padding:6px 14px; border-radius:999px; border:2px solid var(--line);
-        background:var(--card-soft); font-weight:800; font-size:.98rem;
-      }
-      .mom-chip.on{
-        background:var(--gold-light); border-color:var(--gold-dark); color:var(--gold-dark);
-        box-shadow:0 4px 12px rgba(217,119,6,.25);
-      }
       /* tier rows on Mama's page */
       .mp-tier-status{ white-space:nowrap; font-weight:800; }
       .mp-tier-status.ok{ color:var(--green); }
@@ -672,11 +640,12 @@
       .mom-req-note{ font-weight:700; color:var(--gray); line-height:1.55; }
 
       /* ---------- Mama's own page ----------
-         Full-screen view opened from the top «💐 ماما» strip (or the card's
-         «صفحة ماما» button): her points and their breakdown, the tier
-         ladder, her revealed rewards, and the tasks the girls finished
-         for her. Rendered fresh on every open by renderMomPage — nothing
-         extra is stored. */
+         Full-screen view opened from the slim «💐 ماما» strip under the
+         girl cards: her points total and today's points, the tier
+         ladder, the per-girl breakdown, her reward record and revealed
+         rewards, and the tasks the girls finished for her. Rendered
+         fresh on every open by renderMomPage — nothing extra is
+         stored. */
       .mom-page{
         position:fixed; inset:0; z-index:58; display:none; overflow-y:auto;
         background:var(--cream);
@@ -752,7 +721,7 @@
 
       /* ----- Raised surfaces: cards & panels get real depth ----- */
       .task, .reward, .panel, .note-card, .deduct-row, .deduct-balance,
-      .stat, .guide-card, .mp-prog, .mp-day, .mom-card, .praise,
+      .stat, .guide-card, .mp-prog, .mp-day, .praise,
       .backup-box, .recovery, .mock{
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.85),
@@ -929,21 +898,6 @@
           0 1px 0 var(--rose-dark),
           0 3px 7px rgba(214,51,108,.28);
       }
-      .mom-page-btn{
-        background-image:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0) 60%);
-        box-shadow:
-          inset 0 1px 0 rgba(255,255,255,.8),
-          0 4px 0 var(--rose),
-          0 8px 14px rgba(214,51,108,.18);
-        transition:transform .09s ease, box-shadow .09s ease, background-color .15s ease, color .15s ease;
-      }
-      .mom-page-btn:active{
-        transform:translateY(3px);
-        box-shadow:
-          inset 0 2px 5px rgba(62,47,35,.14),
-          0 1px 0 var(--rose),
-          0 3px 7px rgba(214,51,108,.20);
-      }
       .modal .ghost, .danger-btn{
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.9),
@@ -1058,22 +1012,11 @@
       }
 
       /* ----- Chips, bars & palette: small depth details ----- */
-      .mom-chip, .mp-task, .mom-strip .ms-chip{
+      .mp-task{
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.85),
           0 2px 0 var(--line),
           0 4px 8px rgba(160,120,40,.10);
-      }
-      .mom-chip.on{
-        box-shadow:
-          inset 0 1px 0 rgba(255,255,255,.7),
-          0 2px 0 var(--gold-dark),
-          0 6px 12px rgba(217,119,6,.25);
-      }
-      .mom-strip .ms-badge{
-        box-shadow:
-          inset 0 1px 0 rgba(255,255,255,.7),
-          0 3px 7px rgba(160,110,0,.22);
       }
       .girl .bar, .mp-bar{
         box-shadow:inset 0 2px 4px rgba(62,47,35,.16), inset 0 -1px 0 rgba(255,255,255,.55);
@@ -1139,7 +1082,7 @@
       @media (hover:hover) and (pointer:fine){
         .btn-gold:hover, .buy:hover:not(:disabled), .save-btn:hover,
         .btn-soft:hover, .mini:hover, .tab:hover, .install-pill:hover,
-        .mom-req-btn:hover, .mom-page-btn:hover{
+        .mom-req-btn:hover{
           transform:translateY(-1px);
           filter:brightness(1.03);
         }
@@ -1153,7 +1096,7 @@
       }
       @media (prefers-reduced-motion: reduce){
         .btn-gold, .btn-soft, .buy, .save-btn, .mini, .tab, .check,
-        .mom-req-btn, .mom-page-btn, .install-pill, .deduct-apply,
+        .mom-req-btn, .install-pill, .deduct-apply,
         .mom-strip, .pic-card, .daily-card, .swatch{
           transition-duration:.001s !important;
         }
@@ -1217,8 +1160,6 @@
         <button class="install-pill" id="installBarBtn" type="button">📲 تثبيت</button>
       </div>
 
-      <div class="mom-strip" id="momStrip" role="status"></div>
-
       <div class="manual-update-wrap">
         <button id="manualUpdateBtn" type="button" onclick="manualUpdate()">🔄 تحديث التطبيق</button>
       </div>
@@ -1250,6 +1191,8 @@
         </button>
       </section>
 
+      <div class="mom-strip" id="momStrip" role="status"></div>
+
       <div class="now-strip karma" id="nowStrip" role="status"></div>
 
       <div class="praise" id="praiseBanner" role="status"></div>
@@ -1272,9 +1215,6 @@
 
       <h2 class="section-title" id="rewardsTitle">🎁 المكافآت</h2>
       <div id="rewardList"></div>
-
-      <h2 class="section-title">💐 مكافأة ماما</h2>
-      <div class="mom-card" id="momCard"></div>
 
       <h2 class="section-title foldable" id="deductPublicTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="deductPublicBody"><span id="deductPublicTitleText">⭐ الخصومات</span> <span class="fold-arrow" id="deductFoldArrow" aria-hidden="true">▸</span></h2>
       <div id="deductPublicBody" class="hidden">
@@ -1692,9 +1632,8 @@
 
     <!-- Mama's own page: her points (the girls' lifetime earned total),
          her tier ladder and revealed rewards, and the girls' tasks for
-         her. Opened from the top «💐 ماما» strip or the «صفحة ماما»
-         button on the «مكافأة ماما» card; filled fresh by
-         renderMomPage() on every open. -->
+         her. Opened from the slim «💐 ماما» strip under the girl cards;
+         filled fresh by renderMomPage() on every open. -->
     <div class="mom-page" id="momPage" role="dialog" aria-label="صفحة ماما">
       <div class="mom-page-inner">
         <button class="mom-back" id="momBackBtn" type="button">↩️ رجوع</button>
@@ -1718,7 +1657,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-6";
+      const BUILD_ID = "2026.11.24-7";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -2871,49 +2810,25 @@
           '<div class="mom-coupon-text">' + esc(c.text) + '</div>' +
           '<div class="mom-coupon-note">ابعتي الكوبون ده لبابا وهو ينفذه ❤️</div></div>';
       }
+      /* The slim Mom strip under the girl cards: her points (the
+         lifetime earned total) with today's points in small type.
+         Tapping the strip opens Mama's own page (bound once at init);
+         the breakdown, the tier ladder and everything else about her
+         rewards live on that page, not on the home screen. */
       function renderMom(){
-        var box = $("momCard"); if(!box) return;
+        var strip = $("momStrip"); if(!strip) return;
         ensureMom(S);
         seedMomGrantsFromLocal();
         var x = mamaPoints();
-        var idx = momTierIndexForPoints(x);
-        var breakdown = momLifetimeBreakdown();
         var momToday = earnedOn(todayKey(), "judy") + earnedOn(todayKey(), "karma");
-        /* Top-of-screen Mom strip: her points (the lifetime earned
-           total) with its per-girl breakdown and, when a tier is
-           reached, a small badge naming only its type — never the
-           content. */
-        var strip = $("momStrip");
-        if(strip){
-          var sh = '<div class="ms-title">💐 ماما</div>' +
-            '<div class="ms-points">نقاط ماما: <b>' + x + '</b></div>' +
-            '<div class="ms-sub">' + breakdown + '</div>' +
-            '<div class="mom-today">نقاط ماما النهاردة: ‎+' + momToday + '</div>';
-          if(idx >= 0) sh += '<div class="ms-badge">' + momTierIcon(S.mom.tiers[idx].type) + (S.mom.tiers[idx].type === "fixed" ? " " + esc(momFixedLabel(S.mom.tiers[idx].text)) : "") + '</div>';
-          sh += '<span class="ms-chip">التفاصيل ‹</span>';
-          strip.innerHTML = sh;
-        }
-        var html = '<div class="mom-effort">نقاط ماما: <b>' + x + '</b> ⭐</div>';
-        html += '<div class="mom-breakdown">' + breakdown + '</div>';
-        html += '<div class="mom-breakdown">نقاط ماما بتتحسب من كل اللي كسبته البنات من أول يوم — بتزيد بس، ومبتقلش لما البنات تشتري مكافآت أو يتخصم منها ⭐</div>';
-        html += '<div class="mom-today">نقاط ماما النهاردة: ‎+' + momToday + '</div>';
-        html += '<div class="mom-chips">' + S.mom.tiers.map(function(t, i){
-          return '<span class="mom-chip' + (i === idx ? " on" : "") + '">' + esc(momTierChipText(t)) + '</span>';
-        }).join("") + '</div>';
-        var next = S.mom.tiers[idx + 1];
-        if(next){
-          html += '<div class="mom-next">فاضل ' + (next.points - x) + ' نقطة وتوصل لباقة ' + esc(momTierChipText(next)) + '</div>';
-        } else if(idx >= 0){
-          html += '<div class="mom-next">وصلتي لأعلى باقة 🏆</div>';
-        }
-        html += '<button class="mom-page-btn" id="momPageBtn" type="button">💐 صفحة ماما — كل مكافآتها ومهامها</button>';
-        box.innerHTML = html;
-        var mpb = $("momPageBtn");
-        if(mpb) mpb.addEventListener("click", openMomPage);
+        strip.innerHTML =
+          '<span class="ms-main">💐 ماما: <b>' + x + '</b> نقطة ⭐</span>' +
+          '<span class="ms-today">نقاط النهاردة ‎+' + momToday + '</span>' +
+          '<span class="ms-arrow" aria-hidden="true">‹</span>';
       }
       /* ================= Mama's own page =================
          Everything on her page is derived on open from the same state the
-         strip and card already read — the lifetime points (via
+         strip already reads — the lifetime points (via
          mamaPoints), the `mom` tiers/pools and the synced grants ledger.
          Reward CONTENTS appear here for tiers recorded "granted" in the
          ledger, plus tiers already revealed to her on this device (the
@@ -2930,8 +2845,6 @@
         var revealed = momRevealedIdx();
         var html = '<div class="mp-head"><div class="mp-title">💐 ماما</div>' +
           '<div class="mp-points">نقاط ماما: <b>' + x + '</b> ⭐</div>' +
-          '<div class="mp-breakdown">' + momLifetimeBreakdown() + '</div>' +
-          '<div class="mp-breakdown">بتزيد بس — مبتقلش بصرف البنات أو الخصومات ⭐</div>' +
           '<div class="mom-today">نقاط ماما النهاردة: ‎+' + (earnedOn(key, "judy") + earnedOn(key, "karma")) + '</div>' +
           '<div class="mp-date">' + esc(fmtDateAr(key)) + '</div></div>';
 
@@ -2971,6 +2884,11 @@
             '</div>';
         }).join("");
 
+        /* The breakdown: how the total splits between the two girls,
+           with one short line on how her points work. */
+        html += '<div class="mp-prog"><div class="mp-breakdown">' + momLifetimeBreakdown() + '</div>' +
+          '<div class="mp-breakdown">نقاط ماما بتتحسب من كل اللي كسبته البنات من أول يوم — بتزيد بس، ومبتقلش لما البنات تشتري مكافآت أو يتخصم منها ⭐</div></div>';
+
         html += '<h2 class="mp-sec">🧾 سجل مكافآت ماما</h2>';
         if(S.mom.grants.length){
           html += S.mom.grants.map(function(g){
@@ -2983,7 +2901,6 @@
                 : '<span class="mp-tier-status wait">اتعدّت — اتفوّتت</span>') +
               '</div>';
           }).join("");
-          html += '<div class="mp-prog-text">كل باقة بتتسجل في السجل ده مرة واحدة بس وبتتزامن على كل أجهزة العيلة — مفيش عدّ من الأول ولا باقة بتتاخد مرتين. باقة الرسالة اللي بتتعدى في قفزة بتتفوّت، لكن كوبونات الفلوس عمرها ما بتضيع: بتفضل «جاهز للطلب» فوق لحد ما تطلبيها بنفسك وبابا يسلّمها لك، وساعتها بس بتتسجل هنا «استلمتها» بالتاريخ 💪</div>';
         } else {
           html += '<div class="empty-note">لسه مفيش باقات اتسجلت في السجل — أول باقة توصليلها هتتسجل هنا على طول 🧾</div>';
         }
@@ -5586,7 +5503,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-6", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-7", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
