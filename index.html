@@ -225,6 +225,119 @@
         background:var(--card); border:2px solid var(--gold-dark); color:var(--gray); cursor:not-allowed;
       }
 
+      /* ---------- The big vault (الكنز الكبير) ---------- */
+      /* The star-catcher game card stands out from the other vault
+         rewards: violet face and frame instead of the plain card. */
+      .reward.game-reward{ background:var(--violet-light); border:3px solid var(--violet); }
+      .reward .rsub{ color:var(--violet-dark); font-weight:800; font-size:.88rem; line-height:1.35; }
+
+      /* ---------- Games centre (مركز الألعاب) ----------
+         Full-screen sheet above everything except modals/confetti.
+         One session HUD (10-minute countdown + exit) stays on top the
+         whole visit; below it either the games menu or the open game:
+         a play head (back to the menu, title, that game's score), one
+         line of how-to, and the stage. touch-action:none on the stage
+         keeps drags and taps from scrolling the page behind it. All
+         colours are single-hue tints from the app palette — no
+         rainbow anywhere. */
+      #gameCenter{
+        position:fixed; inset:0; z-index:63; background:var(--cream);
+        display:flex; flex-direction:column;
+        padding:calc(10px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom));
+      }
+      .gc-hud{ display:flex; align-items:center; gap:10px; flex:0 0 auto; }
+      .gc-timer{
+        background:var(--card); border:2px solid var(--gold-dark); border-radius:20px;
+        padding:8px 14px; font-weight:800; font-size:1.15rem; color:var(--ink);
+        box-shadow:var(--shadow);
+      }
+      .gc-hud-title{ font-weight:800; font-size:1.15rem; color:var(--violet-dark); }
+      .gc-exit{
+        margin-inline-start:auto; border:none; border-radius:20px; min-height:46px; padding:8px 18px;
+        background:var(--red); color:#fff; font-weight:800; font-size:1.05rem; cursor:pointer;
+        box-shadow:var(--shadow);
+      }
+      .gc-exit:active{ transform:scale(.96); }
+      .gc-menu-sub{ text-align:center; color:var(--gray); font-weight:800; margin:14px 4px 4px; line-height:1.55; }
+      .gc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+      .gc-card{
+        background:var(--card); border:3px solid var(--gold); border-radius:24px; cursor:pointer;
+        padding:18px 10px 14px; display:flex; flex-direction:column; align-items:center; gap:4px;
+        box-shadow:var(--shadow); color:var(--ink); min-height:158px;
+        -webkit-tap-highlight-color:transparent;
+      }
+      .gc-card:active{ transform:scale(.97); }
+      .gc-card .gc-ic{ font-size:3rem; line-height:1.1; }
+      .gc-card .gc-name{ font-weight:800; font-size:1.18rem; }
+      .gc-card .gc-desc{ color:var(--gray); font-weight:700; font-size:.86rem; line-height:1.45; text-align:center; }
+      .gc-play-head{ display:flex; align-items:center; gap:10px; margin-top:12px; flex:0 0 auto; }
+      .gc-back{
+        border:2px solid var(--gold-dark); background:var(--card); color:var(--gold-dark);
+        border-radius:20px; min-height:46px; padding:8px 14px; font-weight:800; font-size:1rem; cursor:pointer;
+        -webkit-tap-highlight-color:transparent;
+      }
+      .gc-back:active{ transform:scale(.96); }
+      .gc-game-title{ font-weight:800; font-size:1.15rem; }
+      .gc-score{
+        margin-inline-start:auto; background:var(--card); border:2px solid var(--gold-dark); border-radius:20px;
+        padding:8px 14px; font-weight:800; font-size:1.1rem; color:var(--gold-dark); box-shadow:var(--shadow);
+      }
+      .gc-game-desc{ text-align:center; color:var(--gray); font-weight:800; margin:8px 4px 0; flex:0 0 auto; line-height:1.5; }
+      .gc-stage{
+        position:relative; flex:1 1 auto; min-height:0; margin-top:10px; overflow:hidden;
+        background:var(--card-soft); border:3px solid var(--line); border-radius:24px;
+        touch-action:none; display:flex; flex-direction:column; user-select:none; -webkit-user-select:none;
+      }
+      /* Star catcher pieces */
+      .gc-item{ position:absolute; top:0; left:0; font-size:2.3rem; line-height:1; pointer-events:none; will-change:transform; }
+      .gc-item.cloud{ filter:grayscale(1) brightness(.7); }
+      .gc-basket{
+        position:absolute; bottom:6px; left:0; width:76px; text-align:center;
+        font-size:3.2rem; line-height:1.1; pointer-events:none; will-change:transform;
+      }
+      /* Balloons: one red balloon emoji, recoloured per balloon with a
+         single hue-rotate — each balloon stays one solid colour. */
+      .gc-balloon{
+        position:absolute; top:0; left:0; width:64px; height:78px; font-size:3.4rem; line-height:1.15;
+        text-align:center; background:none; border:none; cursor:pointer; padding:0;
+        will-change:transform; -webkit-tap-highlight-color:transparent;
+      }
+      .gc-balloon.pop{ transition:transform .18s ease, opacity .18s ease; }
+      /* Memory cards */
+      .gc-mem-grid{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:12px; align-content:center; }
+      .gc-mem-card{
+        border:3px solid var(--gold-dark); border-radius:18px; background:var(--gold-light);
+        font-size:2.2rem; min-height:76px; cursor:pointer; color:var(--gold-dark); font-weight:800;
+        display:flex; align-items:center; justify-content:center;
+        transition:transform .15s ease, background .15s ease, border-color .15s ease;
+        -webkit-tap-highlight-color:transparent;
+      }
+      .gc-mem-card.open{ background:var(--card); border-color:var(--violet); }
+      .gc-mem-card.matched{ background:var(--green-light); border-color:var(--green); }
+      .gc-mem-card:active{ transform:scale(.95); }
+      .gc-mem-foot{ flex:0 0 auto; display:flex; align-items:center; justify-content:center; gap:12px; padding:0 12px 12px; flex-wrap:wrap; }
+      .gc-win{ font-weight:800; color:var(--green); font-size:1.05rem; text-align:center; }
+      .gc-restart{
+        border:none; border-radius:20px; min-height:46px; padding:8px 20px; cursor:pointer;
+        background:var(--gold); color:var(--ink); font-weight:800; font-size:1.02rem; box-shadow:var(--shadow);
+      }
+      .gc-restart:active{ transform:scale(.96); }
+      /* Bunny holes: the bunny slides up out of the hole; the opaque
+         ground strip in front of it hides it while it is down. */
+      .gc-holes{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:14px; align-content:center; }
+      .gc-hole{ position:relative; height:106px; overflow:hidden; }
+      .gc-bunny{
+        position:absolute; left:50%; bottom:14px; transform:translate(-50%,108%);
+        font-size:3.4rem; line-height:1; background:none; border:none; cursor:pointer; padding:0;
+        transition:transform .18s ease; pointer-events:none; -webkit-tap-highlight-color:transparent;
+      }
+      .gc-bunny.up{ transform:translate(-50%,0); pointer-events:auto; }
+      .gc-hole-ground{
+        position:absolute; left:0; right:0; bottom:0; height:30px; border-radius:50%;
+        background:var(--cream-dark); border:2px solid var(--line); pointer-events:none;
+        display:flex; align-items:center; justify-content:center; font-size:.95rem;
+      }
+
       /* ---------- Overlay / modals ---------- */
       .overlay{
         position:fixed; inset:0; background:rgba(62,47,35,.55);
@@ -1371,6 +1484,12 @@
       <h2 class="section-title" id="rewardsTitle">🎁 المكافآت</h2>
       <div id="rewardList"></div>
 
+      <h2 class="section-title foldable fold-btn" id="vaultTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="vaultBody"><span id="vaultTitleText">🎁 الكنز الكبير</span> <span class="fold-arrow" id="vaultFoldArrow" aria-hidden="true">▸</span></h2>
+      <div id="vaultBody" class="hidden">
+      <p class="color-sub">مكافآت كبيرة للبنات الشاطرين اللي بيجمّعوا نجوم كتير ⭐ أسعارها أعلى من المتجر العادي — أهداف بعيدة تستاهل التعب! والشراء مقفول برقم الأهل زي المتجر بالظبط 🔒</p>
+      <div id="vaultList"></div>
+      </div>
+
       <h2 class="section-title foldable fold-btn" id="colorTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="colorBody"><span id="colorTitleText">🎨 ركن التلوين</span> <span class="color-thumbs" id="colorThumbs" aria-hidden="true"></span> <span class="fold-arrow" id="colorFoldArrow" aria-hidden="true">▸</span></h2>
       <div id="colorBody" class="hidden">
       <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — عندنا <b>٣٤ رسمة وكلها مفتوحة</b> 🎉 من غير قفل ومن غير شرا بالنجوم! اختاري أي رسمة ولوّنيها على طول، وشغلك بيتحفظ في معرضك. و«رسمة اليوم» اللي فوق بتتغيّر لوحدها كل يوم 🌞</p>
@@ -1402,6 +1521,32 @@
           <button class="mini" id="edEraser" type="button">🧽 ممحاة</button>
           <button class="mini del" id="edReset" type="button">🗑️ امسح الكل</button>
           <button class="mini" id="edDone" type="button">✅ خلصت</button>
+        </div>
+      </div>
+
+      <div id="gameCenter" class="hidden" role="dialog" aria-label="مركز الألعاب">
+        <div class="gc-hud">
+          <span class="gc-timer" id="gcTimer">⏱️ 10:00</span>
+          <span class="gc-hud-title">🎮 وقت الألعاب</span>
+          <button class="gc-exit" id="gcExit" type="button">✖ خروج</button>
+        </div>
+        <div id="gcMenu">
+          <p class="gc-menu-sub">اختاري لعبة والعبوا! 🎉<br />تقدري تبدّلي بين الألعاب براحتك طول ما الوقت شغال ⏱️</p>
+          <div class="gc-grid">
+            <button class="gc-card" type="button" data-game="catch"><span class="gc-ic">⭐</span><span class="gc-name">صيد النجوم</span><span class="gc-desc">حرّكي السلة واصطادي النجوم والفراشات، وخدي بالك من السحابة! ☁️</span></button>
+            <button class="gc-card" type="button" data-game="balloon"><span class="gc-ic">🎈</span><span class="gc-name">فرقعة البالونات</span><span class="gc-desc">بالونات بتطير لفوق — دوسي عليها وفرقعيها قبل ما تهرب!</span></button>
+            <button class="gc-card" type="button" data-game="memory"><span class="gc-ic">🃏</span><span class="gc-name">لعبة الذاكرة</span><span class="gc-desc">افتحي الكروت ولاقي كل زوجين شبه بعض!</span></button>
+            <button class="gc-card" type="button" data-game="bunny"><span class="gc-ic">🐰</span><span class="gc-name">أطعمي الأرنب</span><span class="gc-desc">الأرنب بيطلع من جحره — دوسي عليه بسرعة واطعميه جزرة! 🥕</span></button>
+          </div>
+        </div>
+        <div id="gcPlay" class="hidden">
+          <div class="gc-play-head">
+            <button class="gc-back" id="gcBack" type="button">↩️ الألعاب</button>
+            <span class="gc-game-title" id="gcGameTitle"></span>
+            <span class="gc-score" id="gcScore">⭐ 0</span>
+          </div>
+          <p class="gc-game-desc" id="gcGameDesc"></p>
+          <div class="gc-stage" id="gcStage"></div>
         </div>
       </div>
 
@@ -1835,7 +1980,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-13";
+      const BUILD_ID = "2026.11.24-14";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -1896,6 +2041,16 @@
       var DEFAULT_DEDUCTIONS = [
         ["اتخانقت مع أختي","😤",2],["ما سمعتش كلام ماما أو بابا","🔇",2],["كدبت","🤥",3],
         ["لعبت بالموبايل من غير إذن","📱",3],["عليت صوتي أو صرخت","📢",1],["سبت أوضتي مش مترتبة","🧺",1]
+      ];
+      /* The big vault (الكنز الكبير): long-goal rewards priced far above
+         the regular store so there is always a bigger prize to chase.
+         Seeded once into the family data with vault:true (see
+         defaultVaultRewards / ensureVault); the star-catcher game card
+         (500 stars) is added there too, flagged game:true. */
+      var DEFAULT_VAULT_REWARDS = [
+        ["أختار لبس الخروج","👗",150],["أرسم وشي بالألوان","🎭",180],["أعمل كيكة مع ماما","🧁",220],
+        ["يوم سبا بنات مع ماما","💅",320],["أختار هدية لصاحبتي","🎀",350],
+        ["جلسة تصوير بالأزياء","📸",420],["عدة رسم وتلوين كاملة","🖍️",550],["يوم كامل من اختياري","👑",700]
       ];
       /* ================= Early-prayer star («نجمة الصلاة بدري») =================
          Each of the five daily prayers is a task whose name contains the
@@ -2358,10 +2513,34 @@
       function defaultDeductions(){
         return DEFAULT_DEDUCTIONS.map(function(d,i){ return { id:"x"+(i+1), name:d[0], emoji:d[1], stars:d[2] }; });
       }
+      /* Vault rewards are ordinary rewards carrying vault:true: they buy
+         through the exact same flow (parents-number gate, «محتاجة X
+         نجمة», redeem event in the reports) and parents can rename,
+         reprice or delete them from the parents area like any reward —
+         they just render in the vault section instead of the store. */
+      function defaultVaultRewards(){
+        var list = DEFAULT_VAULT_REWARDS.map(function(r,i){ return { id:"v"+(i+1), name:r[0], emoji:r[1], price:r[2], vault:true }; });
+        list.push({ id:"v10", name:"وقت الألعاب — ١٠ دقايق لعب", emoji:"🎮", price:500, vault:true, game:true });
+        return list;
+      }
+      /* Seed the vault ONCE per family (vaultSeeded): a vault reward a
+         parent deleted must never come back, so once the flag is set
+         this never adds anything again. Runs on local load and on every
+         adopted state (sync pull / backup restore) via migrateBackupData. */
+      function ensureVault(s){
+        if(!s || s.vaultSeeded) return s;
+        if(!Array.isArray(s.rewards)) s.rewards = [];
+        var have = {};
+        s.rewards.forEach(function(r){ if(r && r.id) have[r.id] = true; });
+        defaultVaultRewards().forEach(function(r){ if(!have[r.id]) s.rewards.push(r); });
+        s.vaultSeeded = true;
+        return s;
+      }
       function seed(){
         return {
           tasks: DEFAULT_TASKS.map(function(t,i){ return { id:"t"+(i+1), name:t[0], emoji:t[1], stars:t[2], girl:"both" }; }),
-          rewards: DEFAULT_REWARDS.map(function(r,i){ return { id:"r"+(i+1), name:r[0], emoji:r[1], price:r[2] }; }),
+          rewards: DEFAULT_REWARDS.map(function(r,i){ return { id:"r"+(i+1), name:r[0], emoji:r[1], price:r[2] }; }).concat(defaultVaultRewards()),
+          vaultSeeded: true,
           deductions: defaultDeductions(),
           prayerTimes: defaultPrayerTimes(),
           balances: { judy:0, karma:0 },
@@ -2438,6 +2617,8 @@
               s.prayerTimes = sanitizePrayerTimes(s.prayerTimes);
               /* migrate older saves: add the mom's-reward pools */
               ensureMom(s);
+              /* migrate older saves: seed the big vault once */
+              ensureVault(s);
               GIRL_KEYS.forEach(function(g){
                 if(!s.coloring[g]) s.coloring[g] = { unlocked:[], works:{} };
                 if(!s.coloring[g].unlocked) s.coloring[g].unlocked = [];
@@ -2775,8 +2956,363 @@
             logEvent(todayKey(), girl, "redeem", "اشترت مكافأة: " + rw.name, -rw.price);
             save(); renderAll();
             playHappy(true); confetti(80);
+            /* The vault's games reward opens the games centre
+               instead of the usual congratulations: one purchase =
+               one 10-minute play session. */
+            if(rw.game){ startGameCenter(girl); return; }
             showModal("🎊", "مبروك يا " + GIRLS[girl].name + "!", "اشتريتي: <b>" + esc(rw.name) + "</b> " + rw.emoji + " 🎉<br />استمتعي بيها يا بطلة!", "تمام 🎉");
           }, true);
+      }
+
+      /* ================= Games centre (مركز الألعاب) =================
+         Bought from the vault for 500 stars: ONE session of 10 minutes
+         in a full-screen games centre with FOUR games — star catcher,
+         balloon pop, memory match and feed-the-bunny. One session
+         clock in the HUD counts down the whole visit and stays
+         visible in the menu and inside every game; she hops between
+         games freely from the menu, the exit button ends the session
+         early, and at zero the centre closes with an encouragement
+         message and her total points. Pure fun, all local: scores
+         live only in this closure — nothing is saved or synced and
+         her stars never change; the only trace is the ordinary
+         purchase event buyReward already logged. The clock runs on
+         accumulated frame time, so a backgrounded tab (paused rAF)
+         never eats into her 10 minutes. One shared rAF loop drives
+         the clock and whichever game is open (its tick). */
+      var gc = null;
+      function gcFmtTime(sec){
+        sec = Math.max(0, Math.ceil(sec));
+        return pad(Math.floor(sec / 60)) + ":" + pad(sec % 60);
+      }
+      function gcHud(){ if(gc) $("gcTimer").textContent = "⏱️ " + gcFmtTime(gc.left); }
+      function gcSetScore(){ if(gc && gc.game) $("gcScore").textContent = "⭐ " + gc.scores[gc.game]; }
+      function gcAddScore(n){
+        if(!gc || !gc.game) return;
+        gc.scores[gc.game] = Math.max(0, gc.scores[gc.game] + n);
+        gcSetScore();
+      }
+      function startGameCenter(girl){
+        if(gc) stopGameCenter();
+        gc = { girl:girl, left:600, last:0, raf:0, lastSec:-1, game:null,
+               scores:{ catch:0, balloon:0, memory:0, bunny:0 } };
+        $("gameCenter").classList.remove("hidden");
+        showGcMenu();
+        gcHud();
+        gc.last = performance.now();
+        gc.raf = requestAnimationFrame(gcFrame);
+      }
+      function gcFrame(now){
+        if(!gc) return;
+        var dt = Math.min(100, now - gc.last); gc.last = now;
+        gc.left -= dt / 1000;
+        if(gc.left <= 0){ gc.left = 0; gcHud(); finishGameCenter(false); return; }
+        var sec = Math.ceil(gc.left);
+        if(sec !== gc.lastSec){ gc.lastSec = sec; gcHud(); }
+        if(gc.game && GC_GAMES[gc.game] && GC_GAMES[gc.game].tick) GC_GAMES[gc.game].tick(dt);
+        gc.raf = requestAnimationFrame(gcFrame);
+      }
+      function showGcMenu(){
+        if(!gc) return;
+        if(gc.game && GC_GAMES[gc.game]) GC_GAMES[gc.game].stop();
+        gc.game = null;
+        $("gcStage").innerHTML = "";
+        $("gcPlay").classList.add("hidden");
+        $("gcMenu").classList.remove("hidden");
+      }
+      function openGcGame(key){
+        if(!gc || !GC_GAMES[key]) return;
+        if(gc.game && GC_GAMES[gc.game]) GC_GAMES[gc.game].stop();
+        $("gcStage").innerHTML = "";
+        gc.game = key;
+        gc.scores[key] = 0;
+        $("gcMenu").classList.add("hidden");
+        $("gcPlay").classList.remove("hidden");
+        $("gcGameTitle").textContent = GC_GAMES[key].title;
+        $("gcGameDesc").textContent = GC_GAMES[key].desc;
+        gcSetScore();
+        GC_GAMES[key].start($("gcStage"));
+      }
+      function stopGameCenter(){
+        if(!gc) return;
+        cancelAnimationFrame(gc.raf);
+        if(gc.game && GC_GAMES[gc.game]) GC_GAMES[gc.game].stop();
+        gc = null;
+        $("gcStage").innerHTML = "";
+        $("gameCenter").classList.add("hidden");
+      }
+      function finishGameCenter(early){
+        if(!gc) return;
+        var girl = gc.girl;
+        var total = gc.scores.catch + gc.scores.balloon + gc.scores.memory + gc.scores.bunny;
+        stopGameCenter();
+        playHappy(true); confetti(90);
+        showModal("🎮", early ? "خلصت اللعب" : "خلص وقت اللعب! ⏰",
+          "برافو يا " + GIRLS[girl].name + "! لعبتي وجمعتي <b>" + total + "</b> نقطة في الألعاب ⭐🎈<br />عايزة تلعبي تاني؟ وقت الألعاب موجود في الكنز الكبير 🎁",
+          "تمام 🎉");
+      }
+
+      /* ---------- Game 1: star catcher (صيد النجوم) ----------
+         Stars ⭐ (1 point), butterflies 🦋 (2) and glowing stars 🌟 (3)
+         rain down; she slides the basket with her finger to catch
+         them. The grey cloud ☁️ is the trap: catching it costs a
+         point (never below zero). Falls a little faster as the
+         session goes on. */
+      var catchG = null;
+      function catchStart(stage){
+        catchStop();
+        var basket = document.createElement("div");
+        basket.className = "gc-basket"; basket.textContent = "🧺";
+        basket.setAttribute("aria-hidden", "true");
+        stage.appendChild(basket);
+        var w = stage.clientWidth || 320;
+        catchG = { stage:stage, basket:basket, items:[], spawnIn:350, basketX:w / 2, targetX:w / 2 };
+        catchPlace();
+      }
+      function catchPlace(){
+        if(catchG) catchG.basket.style.transform = "translateX(" + Math.round(catchG.basketX - 38) + "px)";
+      }
+      function catchSpawn(){
+        var w = catchG.stage.clientWidth || 320;
+        var roll = Math.random();
+        var emoji = "⭐", pts = 1, cloud = false;
+        if(roll > 0.88){ emoji = "☁️"; pts = -1; cloud = true; }
+        else if(roll > 0.80){ emoji = "🌟"; pts = 3; }
+        else if(roll > 0.55){ emoji = "🦋"; pts = 2; }
+        var el = document.createElement("div");
+        el.className = "gc-item" + (cloud ? " cloud" : "");
+        el.textContent = emoji;
+        el.setAttribute("aria-hidden", "true");
+        catchG.stage.appendChild(el);
+        var elapsed = gc ? 600 - gc.left : 0;
+        catchG.items.push({ el:el, x: 26 + Math.random() * Math.max(10, w - 52), y:-48,
+          speed: 120 + Math.random() * 70 + Math.min(90, elapsed * 0.18), pts:pts });
+      }
+      function catchTick(dt){
+        if(!catchG || !gc) return;
+        var stage = catchG.stage, h = stage.clientHeight, w = stage.clientWidth;
+        catchG.spawnIn -= dt;
+        if(catchG.spawnIn <= 0){ catchSpawn(); catchG.spawnIn = 620 + Math.random() * 520; }
+        var basketTop = h - 84;
+        for(var i = catchG.items.length - 1; i >= 0; i--){
+          var it = catchG.items[i];
+          it.y += it.speed * dt / 1000;
+          var caught = it.y >= basketTop && it.y <= basketTop + 54 && Math.abs(it.x - catchG.basketX) <= 56;
+          if(caught) gcAddScore(it.pts);
+          if(caught || it.y > h + 56){
+            it.el.remove(); catchG.items.splice(i, 1); continue;
+          }
+          it.el.style.transform = "translate(" + Math.round(it.x - 21) + "px," + Math.round(it.y) + "px)";
+        }
+        if(catchG.targetX < 38) catchG.targetX = 38;
+        if(catchG.targetX > w - 38) catchG.targetX = w - 38;
+        catchG.basketX += (catchG.targetX - catchG.basketX) * Math.min(1, dt / 55);
+        catchPlace();
+      }
+      function catchStop(){
+        if(!catchG) return;
+        catchG.items.forEach(function(it){ it.el.remove(); });
+        if(catchG.basket) catchG.basket.remove();
+        catchG = null;
+      }
+
+      /* ---------- Game 2: balloon pop (فرقعة البالونات) ----------
+         Balloons float up at different speeds, swaying as they rise;
+         a tap pops one for a point. Each balloon is a single solid
+         colour (one hue-rotate on the balloon emoji). */
+      var balG = null;
+      var BALLOON_HUES = [0, 55, 120, 190, 265];
+      function balloonStart(stage){
+        balloonStop();
+        balG = { stage:stage, items:[], spawnIn:200 };
+      }
+      function balloonSpawn(){
+        var stage = balG.stage;
+        var w = stage.clientWidth || 320;
+        var el = document.createElement("button");
+        el.type = "button"; el.className = "gc-balloon"; el.textContent = "🎈";
+        el.setAttribute("aria-label", "بالونة");
+        el.style.filter = "hue-rotate(" + BALLOON_HUES[Math.floor(Math.random() * BALLOON_HUES.length)] + "deg)";
+        var it = { el:el, x: 8 + Math.random() * Math.max(10, w - 80), y:(stage.clientHeight || 400) + 84,
+          speed: 55 + Math.random() * 75, sway: Math.random() * Math.PI * 2, dead:false, lastT:"" };
+        it.lastT = "translate(" + Math.round(it.x) + "px," + Math.round(it.y) + "px)";
+        el.style.transform = it.lastT;
+        stage.appendChild(el);
+        balG.items.push(it);
+        el.addEventListener("pointerdown", function(ev){
+          ev.preventDefault();
+          if(!balG || it.dead) return;
+          it.dead = true;
+          var idx = balG.items.indexOf(it); if(idx >= 0) balG.items.splice(idx, 1);
+          gcAddScore(1);
+          el.textContent = "💥";
+          el.style.filter = "";
+          el.classList.add("pop");
+          el.style.transform = it.lastT + " scale(1.35)";
+          el.style.opacity = "0";
+          setTimeout(function(){ el.remove(); }, 190);
+        });
+      }
+      function balloonTick(dt){
+        if(!balG || !gc) return;
+        balG.spawnIn -= dt;
+        if(balG.spawnIn <= 0){ balloonSpawn(); balG.spawnIn = 700 + Math.random() * 650; }
+        for(var i = balG.items.length - 1; i >= 0; i--){
+          var it = balG.items[i];
+          it.y -= it.speed * dt / 1000;
+          it.sway += dt / 900;
+          if(it.y < -96){ it.el.remove(); balG.items.splice(i, 1); continue; }
+          it.lastT = "translate(" + Math.round(it.x + Math.sin(it.sway) * 10) + "px," + Math.round(it.y) + "px)";
+          it.el.style.transform = it.lastT;
+        }
+      }
+      function balloonStop(){
+        if(!balG) return;
+        balG.items.forEach(function(it){ it.el.remove(); });
+        balG = null;
+      }
+
+      /* ---------- Game 3: memory match (لعبة الذاكرة) ----------
+         12 cards, 6 emoji pairs. Flip two; a match stays open and
+         scores 2 points, a miss flips back. Finding all six pairs
+         shows the win line, and the restart button inside the game
+         reshuffles a fresh board (the session clock keeps running). */
+      var memG = null;
+      var MEM_EMOJIS = ["🌸","🦋","🍓","🐰","⭐","🍦"];
+      function memoryStart(stage){
+        memoryStop();
+        memG = { stage:stage, first:null, lock:false, pairs:0, winEl:null };
+        buildMemoryBoard();
+      }
+      function buildMemoryBoard(){
+        if(!memG) return;
+        var stage = memG.stage;
+        stage.innerHTML = "";
+        memG.first = null; memG.lock = false; memG.pairs = 0;
+        var deck = [];
+        MEM_EMOJIS.forEach(function(e){ deck.push(e, e); });
+        for(var i = deck.length - 1; i > 0; i--){
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+        }
+        var grid = document.createElement("div"); grid.className = "gc-mem-grid";
+        deck.forEach(function(emoji){
+          var card = document.createElement("button");
+          card.type = "button"; card.className = "gc-mem-card"; card.textContent = "★";
+          card.setAttribute("aria-label", "كارت");
+          card.addEventListener("click", function(){ memoryFlip(card, emoji); });
+          grid.appendChild(card);
+        });
+        stage.appendChild(grid);
+        var foot = document.createElement("div"); foot.className = "gc-mem-foot";
+        var win = document.createElement("span"); win.className = "gc-win";
+        var rb = document.createElement("button");
+        rb.type = "button"; rb.className = "gc-restart"; rb.textContent = "🔄 العب من جديد";
+        rb.addEventListener("click", function(){
+          if(!memG) return;
+          if(gc){ gc.scores.memory = 0; gcSetScore(); }
+          buildMemoryBoard();
+        });
+        foot.appendChild(win); foot.appendChild(rb);
+        stage.appendChild(foot);
+        memG.winEl = win;
+      }
+      function memoryFlip(card, emoji){
+        if(!memG || memG.lock || card.classList.contains("open") || card.classList.contains("matched")) return;
+        card.classList.add("open"); card.textContent = emoji;
+        if(!memG.first){ memG.first = { card:card, emoji:emoji }; return; }
+        var first = memG.first; memG.first = null;
+        if(first.emoji === emoji){
+          first.card.classList.add("matched"); card.classList.add("matched");
+          memG.pairs++;
+          gcAddScore(2);
+          if(memG.pairs >= MEM_EMOJIS.length){
+            if(memG.winEl) memG.winEl.textContent = "🏆 برافو! لقيتي كل الأزواج!";
+            playHappy(true); confetti(50);
+          }
+        } else {
+          memG.lock = true;
+          var alive = memG;
+          setTimeout(function(){
+            if(memG !== alive) return;
+            first.card.classList.remove("open"); first.card.textContent = "★";
+            card.classList.remove("open"); card.textContent = "★";
+            memG.lock = false;
+          }, 750);
+        }
+      }
+      function memoryStop(){ memG = null; }
+
+      /* ---------- Game 4: feed the bunny (أطعمي الأرنب) ----------
+         Bunnies pop out of six holes for about a second; tapping one
+         while it is up feeds it a carrot for a point, then it ducks
+         back down. Timings all run on the shared session tick. */
+      var bunG = null;
+      function bunnyStart(stage){
+        bunnyStop();
+        var wrap = document.createElement("div"); wrap.className = "gc-holes";
+        stage.appendChild(wrap);
+        bunG = { stage:stage, holes:[] };
+        for(var i = 0; i < 6; i++){
+          var hole = document.createElement("div"); hole.className = "gc-hole";
+          var bun = document.createElement("button");
+          bun.type = "button"; bun.className = "gc-bunny"; bun.textContent = "🐰";
+          bun.setAttribute("aria-label", "أرنب");
+          var ground = document.createElement("div"); ground.className = "gc-hole-ground"; ground.textContent = "🥕";
+          hole.appendChild(bun); hole.appendChild(ground);
+          wrap.appendChild(hole);
+          var h = { el:bun, up:false, timer: 500 + Math.random() * 1600, upTime:0 };
+          bunG.holes.push(h);
+          (function(hh){
+            hh.el.addEventListener("pointerdown", function(ev){
+              ev.preventDefault();
+              if(!bunG || !hh.up) return;
+              hh.up = false; hh.el.classList.remove("up");
+              hh.timer = 700 + Math.random() * 1500;
+              gcAddScore(1);
+            });
+          })(h);
+        }
+      }
+      function bunnyTick(dt){
+        if(!bunG || !gc) return;
+        bunG.holes.forEach(function(h){
+          if(h.up){
+            h.upTime -= dt;
+            if(h.upTime <= 0){ h.up = false; h.el.classList.remove("up"); h.timer = 600 + Math.random() * 1600; }
+          } else {
+            h.timer -= dt;
+            if(h.timer <= 0){ h.up = true; h.el.classList.add("up"); h.upTime = 950 + Math.random() * 550; }
+          }
+        });
+      }
+      function bunnyStop(){ bunG = null; }
+
+      var GC_GAMES = {
+        catch:   { title:"⭐ صيد النجوم", desc:"حرّكي السلة بإصبعك واصطادي النجوم والفراشات — وخدي بالك من السحابة الرمادية، لو دخلت السلة هتنقّص نقطة! ☁️", start:catchStart, stop:catchStop, tick:catchTick },
+        balloon: { title:"🎈 فرقعة البالونات", desc:"دوسي على البالونات وفرقعيها قبل ما تطير بعيد!", start:balloonStart, stop:balloonStop, tick:balloonTick },
+        memory:  { title:"🃏 لعبة الذاكرة", desc:"افتحي الكروت ولاقي كل زوجين شبه بعض — كل زوج بنقطتين!", start:memoryStart, stop:memoryStop, tick:null },
+        bunny:   { title:"🐰 أطعمي الأرنب", desc:"لما الأرنب يطلع من جحره دوسي عليه بسرعة واطعميه جزرة! 🥕", start:bunnyStart, stop:bunnyStop, tick:bunnyTick }
+      };
+
+      /* Centre wiring: menu cards open a game, back returns to the
+         menu (the clock keeps running), exit ends the session. The
+         stage pointer handlers drive the catch basket only. */
+      document.querySelectorAll(".gc-card").forEach(function(b){
+        b.addEventListener("click", function(){ openGcGame(b.getAttribute("data-game")); });
+      });
+      var gcBackEl = $("gcBack");
+      if(gcBackEl) gcBackEl.addEventListener("click", showGcMenu);
+      var gcExitEl = $("gcExit");
+      if(gcExitEl) gcExitEl.addEventListener("click", function(){ finishGameCenter(true); });
+      var gcStageEl = $("gcStage");
+      function gcStagePoint(clientX){
+        if(!gc || gc.game !== "catch" || !catchG || !gcStageEl) return;
+        var r = gcStageEl.getBoundingClientRect();
+        catchG.targetX = clientX - r.left;
+      }
+      if(gcStageEl){
+        gcStageEl.addEventListener("pointerdown", function(e){ gcStagePoint(e.clientX); });
+        gcStageEl.addEventListener("pointermove", function(e){ if(e.buttons || e.pointerType === "touch") gcStagePoint(e.clientX); });
       }
 
       /* ================= Rendering ================= */
@@ -2835,8 +3371,11 @@
       function renderRewards(){
         var girl = currentGirl, bal = S.balances[girl];
         var box = $("rewardList");
-        if(!S.rewards.length){ box.innerHTML = '<div class="empty-note">لا توجد مكافآت بعد — الأهل يقدروا يضيفوها من منطقة الأهل 🎁</div>'; return; }
-        box.innerHTML = S.rewards.map(function(rw){
+        /* The regular store shows only non-vault rewards; the vault
+           rewards render in their own section (renderVaultRewards). */
+        var store = S.rewards.filter(function(r){ return !r.vault; });
+        if(!store.length){ box.innerHTML = '<div class="empty-note">لا توجد مكافآت بعد — الأهل يقدروا يضيفوها من منطقة الأهل 🎁</div>'; return; }
+        box.innerHTML = store.map(function(rw){
           var missing = rw.price - bal;
           var can = missing <= 0;
           return '<div class="reward">' +
@@ -2848,6 +3387,39 @@
         }).join("");
         box.querySelectorAll(".buy").forEach(function(btn){
           btn.addEventListener("click", function(){ buyReward(girl, btn.getAttribute("data-reward")); });
+        });
+      }
+      /* The big vault (الكنز الكبير): the vault:true rewards, rendered
+         only here — never in the regular store above. Same rows, same
+         buy buttons, same buyReward flow; the star-catcher game card
+         sits on top with its own violet look. Like the deductions, the
+         section always renders folded — session-only DOM state. */
+      function renderVaultRewards(){
+        var girl = currentGirl, bal = S.balances[girl];
+        var foldBody = $("vaultBody");
+        if(foldBody) foldBody.classList.add("hidden");
+        var foldArrow = $("vaultFoldArrow");
+        if(foldArrow) foldArrow.textContent = "▸";
+        var foldTitle = $("vaultTitle");
+        if(foldTitle) foldTitle.setAttribute("aria-expanded", "false");
+        var box = $("vaultList");
+        if(!box) return;
+        var list = S.rewards.filter(function(r){ return !!r.vault; });
+        list.sort(function(a, b){ return (b.game ? 1 : 0) - (a.game ? 1 : 0); });
+        if(!list.length){ box.innerHTML = '<div class="empty-note">الكنز فاضي دلوقتي — الأهل يقدروا يضيفوا مكافآت من منطقة الأهل 🎁</div>'; return; }
+        box.innerHTML = list.map(function(rw){
+          var missing = rw.price - bal;
+          var can = missing <= 0;
+          return '<div class="reward' + (rw.game ? " game-reward" : "") + '">' +
+            '<span class="ric">' + rw.emoji + '</span>' +
+            '<div class="mid"><div class="rname" dir="rtl">' + esc(rw.name) + '</div>' +
+            '<div class="rprice">⭐ ' + rw.price + '</div>' +
+            (rw.game ? '<div class="rsub">🕹️ مركز ألعاب فيه ٤ ألعاب حلوة — كل شراء = ١٠ دقايق لعب!</div>' : "") + '</div>' +
+            '<button class="buy" type="button" data-vault-reward="' + rw.id + '"' + (can ? "" : " disabled") + '>' +
+            (can ? "اشتري 🔒" : "محتاجة " + missing + " نجمة") + '</button></div>';
+        }).join("");
+        box.querySelectorAll(".buy").forEach(function(btn){
+          btn.addEventListener("click", function(){ buyReward(girl, btn.getAttribute("data-vault-reward")); });
         });
       }
       function renderPublicDeductions(){
@@ -3249,7 +3821,7 @@
         renderAll();
       }
 
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); try{ checkMomSurprise(); }catch(e){} }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderVaultRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); try{ checkMomSurprise(); }catch(e){} }
 
       /* Names stay on ONE line: shrink the font just enough to fit the row.
          Base size comes from CSS (1.05rem); only names that still overflow
@@ -3324,6 +3896,24 @@
         deductTitleEl.addEventListener("click", togglePublicDeductions);
         deductTitleEl.addEventListener("keydown", function(e){
           if(e.key === "Enter" || e.key === " "){ e.preventDefault(); togglePublicDeductions(); }
+        });
+      }
+      /* Fold/unfold the big vault by tapping its title — same pattern
+         as the deductions: session-only DOM state, and
+         renderVaultRewards folds it again on every render. */
+      function toggleVault(){
+        var body = $("vaultBody"); if(!body) return;
+        var nowHidden = body.classList.toggle("hidden");
+        var arrow = $("vaultFoldArrow");
+        if(arrow) arrow.textContent = nowHidden ? "▸" : "▾";
+        var t = $("vaultTitle");
+        if(t) t.setAttribute("aria-expanded", nowHidden ? "false" : "true");
+      }
+      var vaultTitleEl = $("vaultTitle");
+      if(vaultTitleEl){
+        vaultTitleEl.addEventListener("click", toggleVault);
+        vaultTitleEl.addEventListener("keydown", function(e){
+          if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleVault(); }
         });
       }
 
@@ -5304,6 +5894,7 @@
         d.prayerTimes = sanitizePrayerTimes(d.prayerTimes);
         if(!d.balances || typeof d.balances !== "object") d.balances = { judy:0, karma:0 };
         ensureMom(d);
+        ensureVault(d);
         GIRL_KEYS.forEach(function(g){
           if(!d.coloring[g]) d.coloring[g] = { unlocked:[], works:{} };
           if(!d.coloring[g].unlocked) d.coloring[g].unlocked = [];
@@ -5829,7 +6420,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-13", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-14", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
