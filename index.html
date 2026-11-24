@@ -72,12 +72,15 @@
       .girl.karma{ background:var(--violet-light); border:2px solid var(--violet); }
       /* the girl we are NOT standing on fades back, so the chosen one pops */
       .girl:not(.sel){ opacity:.58; filter:saturate(.4); }
+      /* Selected card: extra top padding pushes the girl's name fully
+         below the «✔ بنعلّم لها دلوقتي» badge (the badge straddles the
+         card's top edge and used to cover the top of the name). */
       .girl.judy.sel{
-        border:5px solid var(--rose-dark); padding:9px; transform:scale(1.04);
+        border:5px solid var(--rose-dark); padding:30px 9px 9px; transform:scale(1.04);
         box-shadow:0 12px 28px rgba(214,51,108,.38);
       }
       .girl.karma.sel{
-        border:5px solid var(--violet-dark); padding:9px; transform:scale(1.04);
+        border:5px solid var(--violet-dark); padding:30px 9px 9px; transform:scale(1.04);
         box-shadow:0 12px 28px rgba(109,40,217,.38);
       }
       .girl.judy.sel:active, .girl.karma.sel:active{ transform:scale(1.0); }
@@ -1777,7 +1780,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-9";
+      const BUILD_ID = "2026.11.24-10";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -5663,10 +5666,36 @@
          the update never touches localStorage or any app data. */
       function updateAvailable(localId, serverId){ return !!serverId && !!localId && serverId !== localId; }
       var serverBuildId = null;
+      function showUpdateBanner(serverId){
+        serverBuildId = serverId;
+        var b = document.getElementById("updateBanner");
+        if(b) b.style.display = "block";
+      }
+      /* The probe URL carries a one-off query so no cache layer — an
+         older service worker still running on a phone, the CDN, the
+         browser's HTTP cache — can hand back a stale version.json
+         whose build equals the running one and hide the banner
+         forever (that silent staleness is why the «في تحديث جديد»
+         strip stopped appearing). If version.json itself is
+         unreachable or unusable, fall back — once per page session —
+         to reading the build id out of the freshly fetched page. */
+      var pageProbeTried = false;
+      function probeServerBuild(){
+        var bust = "?cb=" + Date.now();
+        return fetch("version.json" + bust, {cache:"no-store"}).then(function(r){ return r && r.ok ? r.json() : null; }).then(function(d){
+          if(d && d.build) return d.build;
+          if(pageProbeTried) return null;
+          pageProbeTried = true;
+          return fetch("index.html" + bust, {cache:"no-store"}).then(function(r){ return r && r.ok ? r.text() : null; }).then(function(html){
+            var m = html && html.match(/BUILD_ID\s*=\s*"([^"]+)"/);
+            return m ? m[1] : null;
+          }).catch(function(){ return null; });
+        });
+      }
       function checkForUpdate(){
         if(!window.fetch) return;
-        fetch("version.json", {cache:"no-store"}).then(function(r){ return r && r.ok ? r.json() : null; }).then(function(d){
-          if(d && updateAvailable(BUILD_ID, d.build)){ serverBuildId = d.build; var b = document.getElementById("updateBanner"); if(b) b.style.display = "block"; }
+        probeServerBuild().then(function(serverId){
+          if(updateAvailable(BUILD_ID, serverId)) showUpdateBanner(serverId);
         }).catch(function(){});
       }
       var updateNavStarted = false;
@@ -5707,13 +5736,13 @@
         btn.textContent = "جارٍ الفحص…";
         btn.disabled = true;
         try{
-          fetch("version.json", {cache:"no-store"}).then(function(r){ return r && r.ok ? r.json() : null; }).then(function(d){
-            if(d && updateAvailable(BUILD_ID, d.build)){
-              serverBuildId = d.build;
+          probeServerBuild().then(function(serverId){
+            if(updateAvailable(BUILD_ID, serverId)){
+              serverBuildId = serverId;
               applyUpdate();
               return;
             }
-            if(d){
+            if(serverId){
               try{
                 if("serviceWorker" in navigator && navigator.serviceWorker.getRegistration){
                   navigator.serviceWorker.getRegistration().then(function(r){ if(r) r.update(); }).catch(function(){});
@@ -5737,7 +5766,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-9", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-10", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
