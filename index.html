@@ -660,6 +660,16 @@
       .mp-tier-status{ white-space:nowrap; font-weight:800; }
       .mp-tier-status.ok{ color:var(--green); }
       .mp-tier-status.wait{ color:var(--gray); }
+      .mp-tier-status.ready{ color:var(--gold-dark); }
+      /* coupon request action on Mama's page / in the surprise popup */
+      .mp-tier-act{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+      .mom-req-btn{
+        border:2px solid var(--rose); background:var(--rose); color:#fff;
+        border-radius:999px; padding:8px 18px; min-height:44px;
+        font-size:1rem; font-weight:800; cursor:pointer; white-space:nowrap;
+      }
+      .mom-req-btn:active{ background:var(--rose-dark); border-color:var(--rose-dark); }
+      .mom-req-note{ font-weight:700; color:var(--gray); line-height:1.55; }
 
       /* ---------- Mama's own page ----------
          Full-screen view opened from the top «💐 ماما» strip (or the card's
@@ -962,6 +972,12 @@
           </div>
         </div>
 
+        <div class="panel" id="momRequestsPanel">
+          <h3>📩 طلبات كوبونات ماما</h3>
+          <p class="guide-note">كوبونات ماما اللي فيها فلوس ما بتتاخدش تلقائي أبدًا: لما توصل لباقة كوبون بيبقى عندها في صفحتها «جاهز للطلب»، وهي اللي تطلبه بزر «📩 اطلبي من بابا» — وطلبها بيظهر هنا وبيتزامن على كل الأجهزة. الكوبون ما بيبقاش «استلمته» إلا لما تسلّموه لها فعليًا وتدوسوا «تم التسليم»، وساعتها بيتسجل في سجل مكافآتها بالتاريخ.</p>
+          <div id="momRequestsList"></div>
+        </div>
+
         <div id="tab-tasks">
           <div class="panel">
             <h3 id="taskFormTitle">➕ إضافة مهمة</h3>
@@ -1116,7 +1132,7 @@
           <div id="momEditors" class="hidden">
             <div class="panel">
               <h3>🎁 باقات مكافآت ماما</h3>
-              <p class="guide-note">نقاط ماما نظام محاسبي دقيق: هي <b>إجمالي كل اللي كسبته البنات من أول يوم</b> (من سجل الأحداث نفسه) — بتزيد بس، ومبتقلش لما بنت تشتري مكافأة أو يتخصم منها، ومفيش عدّ من الأول أبدًا. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁 أو كوبون مخصوص 💰 بنص ثابت زي «كوبون ٢٠ ريال»). أول ما نقاطها توصل لباقة بتتسجل لها في <b>سجل مكافآت ماما</b> المتزامن على كل الأجهزة — مرة واحدة بس ومبتتكررش؛ ولو عدّت باقة في قفزة واحدة من غير ما تاخدها، بتتسجل «اتفوّتت» ومتتاخدش بعدين بنفس النقاط، فالأحسن لها دايمًا تكمّل للباقة الأعلى. وبين باقتين بتاخد الأقل. محتوى مكافآت الرسايل والكوبونات مفاجأة: بيظهر لها بس لما توصل للباقة أول مرة، وهي شايفة أرقام الباقات وأنواعها — وقيمة الكوبون المخصوص بس — بس.</p>
+              <p class="guide-note">نقاط ماما نظام محاسبي دقيق: هي <b>إجمالي كل اللي كسبته البنات من أول يوم</b> (من سجل الأحداث نفسه) — بتزيد بس، ومبتقلش لما بنت تشتري مكافأة أو يتخصم منها، ومفيش عدّ من الأول أبدًا. كل باقة هنا برقم نقاط ونوع مكافأة (رسالة 💌 أو كوبون 🎁 أو كوبون مخصوص 💰 بنص ثابت زي «كوبون ٢٠ ريال»). باقات الرسايل 💌 بتتسجل لها في <b>سجل مكافآت ماما</b> المتزامن أول ما توصلها — مرة واحدة بس ومبتتكررش، ولو عدّت باقة رسالة في قفزة واحدة بتتسجل «اتفوّتت». أما باقات الكوبونات 🎁 والمخصوصة 💰 فمفيش فيها حاجة تلقائي: الكوبون بيبقى «جاهز للطلب» عندها في صفحتها، هي تطلبه بزر «اطلبي من بابا»، وطلبها يوصلكم في قسم «📩 طلبات كوبونات ماما» فوق، وما بيتسجلش «استلمتها» إلا لما تدوسوا «تم التسليم» بعد ما تسلّموها فعليًا — والكوبون اللي تعدّيه من غير ما تطلبه مبيضيعش أبدًا، بيفضل محفوظ لها تطلبه أي وقت. وبين باقتين بتاخد الأقل. محتوى مكافآت الرسايل والكوبونات مفاجأة: بيظهر لها بس لما توصل للباقة أول مرة، وهي شايفة أرقام الباقات وأنواعها — وقيمة الكوبون المخصوص بس — بس.</p>
               <form class="f" id="momTierForm">
                 <div>
                   <label for="momTierPointsInput" id="momTierLabel">باقة جديدة — عدد النقاط</label>
@@ -1282,7 +1298,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-4";
+      const BUILD_ID = "2026.11.24-5";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -1408,14 +1424,24 @@
          carries an extra `text` — its reward is exactly that text (a
          specific cash coupon), with no pool pick. She earns the
          HIGHEST tier whose points are ≤ her lifetime points (floor
-         rule), or no tier below the lowest one. Every tier she reaches
-         is written ONCE into the synced ledger `mom.grants`
+         rule), or no tier below the lowest one. MESSAGE tiers are
+         written ONCE into the synced ledger `mom.grants`
          ({key, points, type, status, date}): the tier she lands on is
-         "granted", and any lower tier she jumped over in the same leap
-         is "skipped" — recorded as passed, never claimable later with
-         the same points. Because the ledger syncs with the family
-         state, no device can re-grant a tier and clearing a device
-         cannot erase it. The reward CONTENT is always a surprise: for
+         "granted", and any lower message tier she jumped over in the
+         same leap is "skipped" — recorded as passed, never claimable
+         later with the same points. COUPON tiers ("coupon" and
+         "fixed") are NEVER auto-granted and never skipped: money is
+         not received until she asks for it herself. A reached coupon
+         tier waits as "ready to request" on her page with a
+         «📩 اطلبي من بابا» button; her tap records a synced request
+         in `mom.requests` ({key, points, type, text?, reqDate,
+         delDate?}), Baba sees it in the parents area, and only his
+         «تم التسليم» tap marks it delivered — which is when a
+         "granted" entry with the delivery date lands in the ledger.
+         A coupon tier she passes without requesting stays requestable
+         forever (once per tier key, ever). Because the ledger and the
+         requests sync with the family state, no device can re-grant a
+         tier and clearing a device cannot erase it. The reward CONTENT is always a surprise: for
          message/coupon tiers it is picked deterministically from the
          tier type's pool by tierIndex mod pool.length (one pick per
          tier, identical on all devices), and revealed only by the
@@ -1496,7 +1522,8 @@
           messages: DEFAULT_MOM_MESSAGES.slice(),
           coupons: DEFAULT_MOM_COUPONS.slice(),
           tiers: defaultMomTiers(),
-          grants: []
+          grants: [],
+          requests: []
         };
       }
       /* A tier's stable identity in the grants ledger: its points, its
@@ -1535,19 +1562,107 @@
         for(var i = 0; i < grants.length; i++) if(grants[i].key === key) return grants[i];
         return null;
       }
-      /* Write tiers 0..idx into the synced grants ledger: tier idx is
-         "granted"; any lower tier not yet in the ledger was jumped over
-         and is recorded "skipped" (passed — never claimable later),
-         unless allGranted is set (seeding from this device's older
-         reveals, where every tier up to idx was shown one by one).
-         Entries already in the ledger are never rewritten. Returns
-         true when the ledger changed (the caller then saves). */
+      /* Coupon requests validation: keep only well-formed entries
+         ({key, points, type, reqDate} plus an optional fixed `text`
+         and an optional `delDate`) deduped by key — first entry wins,
+         so a tier can only ever be requested once. Only coupon/fixed
+         tiers are requestable; message tiers never appear here.
+         Deterministic and idempotent, like validateMomGrants. */
+      function validateMomRequests(list){
+        var out = [], seen = {};
+        (Array.isArray(list) ? list : []).forEach(function(r){
+          if(!r || typeof r !== "object") return;
+          var p = Number(r.points);
+          if(!Number.isInteger(p) || p < 1 || p > 100000) return;
+          if(r.type !== "coupon" && r.type !== "fixed") return;
+          var key = (r.key == null ? "" : String(r.key)).trim();
+          if(!key || seen[key]) return;
+          var reqDate = (r.reqDate == null ? "" : String(r.reqDate)).trim();
+          if(!reqDate) return;
+          seen[key] = true;
+          var o = { key: key, points: p, type: r.type, reqDate: reqDate };
+          if(r.type === "fixed" && r.text != null && String(r.text).trim()) o.text = String(r.text).trim();
+          if(r.delDate != null && String(r.delDate).trim()) o.delDate = String(r.delDate).trim();
+          out.push(o);
+        });
+        return out;
+      }
+      function momRequestFor(tier){
+        var key = momTierKey(tier);
+        var reqs = (S.mom && S.mom.requests) || [];
+        for(var i = 0; i < reqs.length; i++) if(reqs[i].key === key) return reqs[i];
+        return null;
+      }
+      /* A coupon/fixed tier's state in the request system, derived —
+         never stored: "delivered" (Baba marked it delivered; the date
+         is the delivery date), "pending" (she requested it and is
+         waiting; the date is the request date), "ready" (her points
+         reached the tier and she has not requested it yet — it waits
+         for her, forever), or "locked" (not reached yet). */
+      function momCouponState(tier){
+        var req = momRequestFor(tier);
+        if(req && req.delDate) return { state: "delivered", date: req.delDate };
+        var grant = momGrantFor(tier);
+        if(grant && grant.status === "granted") return { state: "delivered", date: grant.date || "" };
+        if(req) return { state: "pending", date: req.reqDate };
+        if(mamaPoints() >= tier.points) return { state: "ready" };
+        return { state: "locked" };
+      }
+      /* Her tap on «📩 اطلبي من بابا»: record the request in the
+         synced state (once per tier key, ever) so it reaches Baba's
+         parents area on every linked device. Points never change. */
+      function requestMomCoupon(key){
+        ensureMom(S);
+        var tier = null;
+        S.mom.tiers.forEach(function(t){ if(momTierKey(t) === key) tier = t; });
+        if(!tier || tier.type === "message") return;
+        if(momCouponState(tier).state !== "ready") return;
+        var r = { key: key, points: tier.points, type: tier.type, reqDate: todayKey() };
+        if(tier.type === "fixed") r.text = tier.text;
+        S.mom.requests.push(r);
+        save();
+        renderAll();
+        var mp = $("momPage");
+        if(mp && mp.classList.contains("open")) renderMomPage();
+        try{ renderMomSurpriseAction(); }catch(e){}
+        toast("اتطلب الكوبون 📩", "طلبك وصل لبابا — أول ما يسلّمه هيظهر عندك «استلمتها ✓»");
+      }
+      /* Baba's tap on «تم التسليم» in the parents area: the ONLY way
+         a coupon counts as received. The delivery is stamped on the
+         request AND written into the synced grants ledger with the
+         delivery date, so it stays fixed history even if the ladder
+         is edited later. */
+      function deliverMomCoupon(key){
+        ensureMom(S);
+        var req = null;
+        (S.mom.requests || []).forEach(function(r){ if(r.key === key) req = r; });
+        if(!req || req.delDate) return;
+        req.delDate = todayKey();
+        var exists = (S.mom.grants || []).some(function(g){ return g.key === key; });
+        if(!exists){
+          S.mom.grants.push({ key: key, points: req.points, type: req.type, status: "granted", date: req.delDate });
+        }
+        save();
+        renderAll();
+        toast("اتسلّم الكوبون لماما ✅", "اتسجل في سجل مكافآتها بالتاريخ");
+      }
+      /* Write MESSAGE tiers 0..idx into the synced grants ledger:
+         tier idx is "granted"; any lower message tier not yet in the
+         ledger was jumped over and is recorded "skipped" (passed —
+         never claimable later), unless allGranted is set (seeding
+         from this device's older reveals, where every tier up to idx
+         was shown one by one). Coupon/fixed tiers are never written
+         here at all — they live in the request system (mom.requests)
+         and enter the ledger only on actual delivery. Entries
+         already in the ledger are never rewritten. Returns true when
+         the ledger changed (the caller then saves). */
       function recordMomGrants(idx, allGranted){
         ensureMom(S);
         if(idx == null || idx < 0) return false;
         var changed = false;
         for(var i = 0; i <= idx && i < S.mom.tiers.length; i++){
           var t = S.mom.tiers[i];
+          if(t.type !== "message") continue;
           if(momGrantFor(t)) continue;
           S.mom.grants.push({
             key: momTierKey(t), points: t.points, type: t.type,
@@ -1654,6 +1769,32 @@
            simply start with an empty ledger and get seeded from this
            device's local reveal marker (see seedMomGrantsFromLocal). */
         s.mom.grants = validateMomGrants(s.mom.grants);
+        s.mom.requests = validateMomRequests(s.mom.requests);
+        /* Coupon-request migration (2026-11-24): before the request
+           system, coupon/fixed tiers were auto-recorded in the grants
+           ledger even though Mama never actually received the money.
+           A coupon grant now counts ONLY as a delivery record, and a
+           delivery always comes with a delivered request — so any
+           coupon/fixed grant without one is dropped here. The tier
+           itself then derives its state from the CURRENT ladder: a
+           tier still on the ladder falls back to "ready to request",
+           while a grant for a tier that left the ladder (e.g. the old
+           250 tier) is simply cancelled — never converted, never
+           delivered. Message grants are untouched. Likewise, a
+           still-pending request whose tier left the ladder is
+           cancelled; delivered requests and their ledger entries are
+           fixed history and are never pruned. Deterministic and
+           idempotent, so every linked device converges on its own. */
+        var deliveredKeys = {};
+        s.mom.requests.forEach(function(r){ if(r.delDate) deliveredKeys[r.key] = true; });
+        s.mom.grants = s.mom.grants.filter(function(g){
+          return g.type === "message" || !!deliveredKeys[g.key];
+        });
+        var ladderKeys = {};
+        s.mom.tiers.forEach(function(t){ ladderKeys[momTierKey(t)] = true; });
+        s.mom.requests = s.mom.requests.filter(function(r){
+          return !!r.delDate || !!ladderKeys[r.key];
+        });
         delete s.mom.tierSeen;
         delete s.mom.msgAt;
         delete s.mom.couponAt;
@@ -2209,10 +2350,14 @@
          on this total, which only grows — spending never lowers it and
          there is no recount from zero. Her tier is the HIGHEST tier
          whose points are ≤ the total (floor rule); below the lowest
-         tier there is no reward. Reached tiers are written once into
-         the synced grants ledger (recordMomGrants): the tier landed on
-         is granted, tiers jumped over in the same leap are recorded
-         skipped and can never be claimed later. The reward content is
+         tier there is no reward. Reached MESSAGE tiers are written
+         once into the synced grants ledger (recordMomGrants): the
+         tier landed on is granted, message tiers jumped over in the
+         same leap are recorded skipped and can never be claimed
+         later. COUPON tiers are different — never granted or skipped
+         automatically: they wait "ready to request" until she asks
+         from her page and Baba marks the delivery (mom.requests).
+         The reward content is
          a surprise, picked deterministically from the tier type's
          pool: tierIndex mod pool — one pick per tier and every linked
          device reveals the same content. */
@@ -2372,13 +2517,36 @@
 
         html += '<h2 class="mp-sec">🎁 الباقات</h2>';
         html += S.mom.tiers.map(function(t, i){
+          var label = momTierIcon(t.type) + ' باقة ' + t.points + ' نقطة' + (t.type === "fixed" ? ' — ' + esc(momFixedLabel(t.text)) : '');
+          /* Coupon/fixed tiers live in the request system: four
+             states — not reached yet, ready to request (with the
+             request button), requested and waiting for Baba, or
+             delivered. A passed coupon is never lost. */
+          if(t.type !== "message"){
+            var cs = momCouponState(t);
+            if(cs.state === "delivered"){
+              return '<div class="mp-day"><span class="mp-day-date">' + label + (cs.date ? '<small>اتسلّم ' + esc(fmtDateAr(cs.date)) + '</small>' : '') + '</span>' +
+                '<span class="mp-tier-status ok">استلمتها ✓</span></div>';
+            }
+            if(cs.state === "pending"){
+              return '<div class="mp-day"><span class="mp-day-date">' + label + (cs.date ? '<small>طلبتيه ' + esc(fmtDateAr(cs.date)) + '</small>' : '') + '</span>' +
+                '<span class="mp-tier-status wait">مستنية التسليم من بابا ⏳</span></div>';
+            }
+            if(cs.state === "ready"){
+              return '<div class="mp-day"><span class="mp-day-date">' + label + '</span>' +
+                '<span class="mp-tier-act"><span class="mp-tier-status ready">جاهز للطلب 🎟️</span>' +
+                '<button class="mom-req-btn" type="button" data-mom-req="' + esc(momTierKey(t)) + '">📩 اطلبي من بابا</button></span></div>';
+            }
+            return '<div class="mp-day"><span class="mp-day-date">' + label + '</span>' +
+              '<span class="mp-tier-status wait">فاضل ' + (t.points - x) + ' نقطة</span></div>';
+          }
           var grant = momGrantFor(t);
           var status;
           if(grant && grant.status === "granted") status = '<span class="mp-tier-status ok">استلمتها ✓</span>';
           else if(grant && grant.status === "skipped") status = '<span class="mp-tier-status wait">عدّتيها — اتفوّتت</span>';
           else if(i <= idx) status = '<span class="mp-tier-status ok">وصلتلها ✓</span>';
           else status = '<span class="mp-tier-status wait">فاضل ' + (t.points - x) + ' نقطة</span>';
-          return '<div class="mp-day"><span class="mp-day-date">' + momTierIcon(t.type) + ' باقة ' + t.points + ' نقطة' + (t.type === "fixed" ? ' — ' + esc(momFixedLabel(t.text)) : '') + '</span>' +
+          return '<div class="mp-day"><span class="mp-day-date">' + label + '</span>' +
             status +
             '</div>';
         }).join("");
@@ -2386,14 +2554,16 @@
         html += '<h2 class="mp-sec">🧾 سجل مكافآت ماما</h2>';
         if(S.mom.grants.length){
           html += S.mom.grants.map(function(g){
-            var label = momTierIcon(g.type) + ' باقة ' + g.points + ' نقطة';
+            var reqTxt = "";
+            (S.mom.requests || []).forEach(function(r){ if(r.key === g.key && r.text) reqTxt = r.text; });
+            var label = momTierIcon(g.type) + ' باقة ' + g.points + ' نقطة' + (g.type === "fixed" && reqTxt ? ' — ' + esc(momFixedLabel(reqTxt)) : '');
             return '<div class="mp-day"><span class="mp-day-date">' + label + (g.date ? '<small>' + esc(fmtDateAr(g.date)) + '</small>' : '') + '</span>' +
               (g.status === "granted"
-                ? '<span class="mp-tier-status ok">اتسجلت ليها ✓</span>'
+                ? '<span class="mp-tier-status ok">' + (g.type === "message" ? 'اتسجلت ليها ✓' : 'استلمتها ✓') + '</span>'
                 : '<span class="mp-tier-status wait">اتعدّت — اتفوّتت</span>') +
               '</div>';
           }).join("");
-          html += '<div class="mp-prog-text">كل باقة بتتسجل في السجل ده مرة واحدة بس وبتتزامن على كل أجهزة العيلة — مفيش عدّ من الأول ولا باقة بتتاخد مرتين، والباقة اللي بتتعدى في قفزة واحدة بتتفوّت ومتتاخدش بعدين بنفس النقاط. كمّلي للباقة الأعلى 💪</div>';
+          html += '<div class="mp-prog-text">كل باقة بتتسجل في السجل ده مرة واحدة بس وبتتزامن على كل أجهزة العيلة — مفيش عدّ من الأول ولا باقة بتتاخد مرتين. باقة الرسالة اللي بتتعدى في قفزة بتتفوّت، لكن كوبونات الفلوس عمرها ما بتضيع: بتفضل «جاهز للطلب» فوق لحد ما تطلبيها بنفسك وبابا يسلّمها لك، وساعتها بس بتتسجل هنا «استلمتها» بالتاريخ 💪</div>';
         } else {
           html += '<div class="empty-note">لسه مفيش باقات اتسجلت في السجل — أول باقة توصليلها هتتسجل هنا على طول 🧾</div>';
         }
@@ -2432,6 +2602,9 @@
         });
 
         body.innerHTML = html;
+        body.querySelectorAll("[data-mom-req]").forEach(function(b){
+          b.addEventListener("click", function(){ requestMomCoupon(b.getAttribute("data-mom-req")); });
+        });
         try{ fitNames(); }catch(e){}
       }
       function openMomPage(){
@@ -2479,19 +2652,46 @@
         momSurpriseOpen = true;
         momSurpriseTier = idx;
         $("momSurpriseEmoji").textContent = momTierIcon(c.type);
-        $("momSurpriseBody").innerHTML = momRewardHtml(c);
+        $("momSurpriseBody").innerHTML = momRewardHtml(c) + '<div id="momSurpriseAction"></div>';
+        renderMomSurpriseAction();
         ov.classList.add("open");
         try{ playHappy(true); }catch(e){}
         confetti(50);
+      }
+      /* For a coupon/fixed tier the popup is a celebration ONLY — it
+         never records a receipt. It shows the same request button as
+         her page (or the waiting note when she already requested it);
+         delivery happens only through Baba's «تم التسليم». Message
+         tiers get no action here — they are granted as before. */
+      function renderMomSurpriseAction(){
+        var box = $("momSurpriseAction"); if(!box) return;
+        if(momSurpriseTier < 0){ box.innerHTML = ""; return; }
+        ensureMom(S);
+        var tier = S.mom.tiers[momSurpriseTier];
+        if(!tier || tier.type === "message"){ box.innerHTML = ""; return; }
+        var cs = momCouponState(tier);
+        if(cs.state === "pending"){
+          box.innerHTML = '<div class="mom-req-note" style="text-align:center;margin-top:10px">طلبتي الكوبون ده خلاص 📩<br>مستنية التسليم من بابا ⏳</div>';
+        } else if(cs.state === "ready"){
+          box.innerHTML = '<button class="mom-req-btn" type="button" id="momSurpriseReqBtn" style="margin-top:12px;width:100%">📩 اطلبي من بابا</button>' +
+            '<div class="mom-req-note" style="text-align:center;margin-top:8px">الكوبون محفوظ لك — اطلبيه دلوقتي أو أي وقت من صفحتك، مش هيضيع 🎟️</div>';
+          var b = $("momSurpriseReqBtn");
+          if(b) b.addEventListener("click", function(){ requestMomCoupon(momTierKey(tier)); });
+        } else {
+          box.innerHTML = "";
+        }
       }
       function closeMomSurprise(){
         var ov = $("momSurprise"); if(ov) ov.classList.remove("open");
         momSurpriseOpen = false;
         if(momSurpriseTier >= 0){
-          /* The reveal is also the ledger entry: this tier is recorded
-             "granted" in the synced grants ledger (and any tier jumped
-             over in the same leap as "skipped"), so it can never be
-             granted twice or claimed again after a recount. */
+          /* For MESSAGE tiers the reveal is also the ledger entry:
+             the tier is recorded "granted" in the synced grants
+             ledger (and any message tier jumped over in the same leap
+             as "skipped"), so it can never be granted twice or claimed
+             again after a recount. Coupon/fixed tiers are untouched
+             here — closing the celebration records no receipt; they
+             move only through her request and Baba's delivery. */
           var changed = recordMomGrants(momSurpriseTier, false);
           setLocalTierSeen(momSurpriseTier);
           momSurpriseTier = -1;
@@ -2935,7 +3135,54 @@
         });
         renderDeductions();
         renderMomAdmin();
+        renderMomRequests();
         renderPrayerForm();
+      }
+
+      /* ================= Parents: Mama's coupon requests =================
+         Her requests live in the synced `mom.requests`; this panel is
+         rendered with the rest of the parents area (behind the parents
+         number). Pending requests get a «تم التسليم» button — that
+         tap is the only delivery (see deliverMomCoupon). Delivered
+         requests stay listed here as a record, and also land in the
+         grants ledger on her page. */
+      function renderMomRequests(){
+        var box = $("momRequestsList"); if(!box) return;
+        ensureMom(S);
+        var pending = (S.mom.requests || []).filter(function(r){ return !r.delDate; });
+        var delivered = (S.mom.requests || []).filter(function(r){ return !!r.delDate; });
+        function reqLabel(r){
+          return momTierIcon(r.type) + ' باقة ' + r.points + ' نقطة' + (r.type === "fixed" && r.text ? ' — ' + esc(momFixedLabel(r.text)) : '');
+        }
+        var html = "";
+        if(pending.length){
+          html += pending.map(function(r){
+            return '<div class="row-item"><span class="e">📩</span>' +
+              '<span class="n">' + reqLabel(r) + '<small>ماما طلبته ' + esc(fmtDateAr(r.reqDate)) + '</small></span>' +
+              '<button class="mini" type="button" data-mom-deliver="' + esc(r.key) + '">تم التسليم ✅</button></div>';
+          }).join("");
+        } else {
+          html += '<div class="empty-note">مفيش طلبات كوبونات مستنية دلوقتي 📩</div>';
+        }
+        if(delivered.length){
+          html += delivered.map(function(r){
+            return '<div class="row-item"><span class="e">✅</span>' +
+              '<span class="n">' + reqLabel(r) + '<small>اتسلّم ' + esc(fmtDateAr(r.delDate)) + '</small></span>' +
+              '<span class="mp-tier-status ok">اتسلّم ✓</span></div>';
+          }).join("");
+        }
+        box.innerHTML = html;
+        box.querySelectorAll("[data-mom-deliver]").forEach(function(b){
+          b.addEventListener("click", function(){
+            var key = b.getAttribute("data-mom-deliver");
+            var req = null;
+            (S.mom.requests || []).forEach(function(r){ if(r.key === key) req = r; });
+            if(!req || req.delDate) return;
+            showModal("🎟️", "تم تسليم الكوبون لماما؟",
+              "كوبون «" + esc(reqLabel(req)) + "» هيتسجل في سجل مكافآت ماما بتاريخ النهاردة، وهيظهر عندها «استلمتها ✓».",
+              "أيوه، تم التسليم", function(){ deliverMomCoupon(key); });
+          });
+        });
       }
 
       /* ================= Parents: early-prayer «بدري لحد» cutoffs =================
@@ -4919,7 +5166,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-4", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-5", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
