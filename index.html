@@ -1343,18 +1343,18 @@
       <h2 class="section-title" id="rewardsTitle">🎁 المكافآت</h2>
       <div id="rewardList"></div>
 
-      <h2 class="section-title foldable fold-btn" id="deductPublicTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="deductPublicBody"><span id="deductPublicTitleText">⭐ الخصومات</span> <span class="fold-arrow" id="deductFoldArrow" aria-hidden="true">▸</span></h2>
-      <div id="deductPublicBody" class="hidden">
-        <p class="color-sub">الخصم مقفول برقم الأهل 🔒 — لو حصلت حالة من دول، دوسوا «اخصم» واكتبوا الرقم المفضل، وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
-        <div class="deduct-balance" id="deductPublicBalance"></div>
-        <div id="publicDeductList"></div>
-      </div>
-
       <h2 class="section-title foldable fold-btn" id="colorTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="colorBody"><span id="colorTitleText">🎨 ركن التلوين</span> <span class="color-thumbs" id="colorThumbs" aria-hidden="true"></span> <span class="fold-arrow" id="colorFoldArrow" aria-hidden="true">▸</span></h2>
       <div id="colorBody" class="hidden">
       <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — عندنا <b>٣٤ رسمة وكلها مفتوحة</b> 🎉 من غير قفل ومن غير شرا بالنجوم! اختاري أي رسمة ولوّنيها على طول، وشغلك بيتحفظ في معرضك. و«رسمة اليوم» اللي فوق بتتغيّر لوحدها كل يوم 🌞</p>
       <div id="colorDaily"></div>
       <div class="color-grid" id="colorGrid"></div>
+      </div>
+
+      <h2 class="section-title foldable fold-btn" id="deductPublicTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="deductPublicBody"><span id="deductPublicTitleText">⭐ الخصومات</span> <span class="fold-arrow" id="deductFoldArrow" aria-hidden="true">▸</span></h2>
+      <div id="deductPublicBody" class="hidden">
+        <p class="color-sub">الخصم مقفول برقم الأهل 🔒 — لو حصلت حالة من دول، دوسوا «اخصم» واكتبوا الرقم المفضل، وهيتخصم تمنها من رصيد البنت المختارة فوق، وبيتسجل الخصم في تقرير اليوم.</p>
+        <div class="deduct-balance" id="deductPublicBalance"></div>
+        <div id="publicDeductList"></div>
       </div>
 
       <div id="colorEditor" class="hidden">
@@ -1807,7 +1807,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-11";
+      const BUILD_ID = "2026.11.24-12";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -5793,7 +5793,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-11", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-12", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
