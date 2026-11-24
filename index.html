@@ -504,6 +504,43 @@
       }
       .note-saved{ color:var(--green); font-weight:800; font-size:.9rem; min-height:1.2em; margin-top:4px; }
       .note-show{ background:var(--gold-light); border-radius:12px; padding:8px 12px; font-weight:700; margin:2px 0 8px; }
+      /* ---------- Daily-note button on each girl card ----------
+         The big «ملاحظتي عن اليوم» section is gone (build
+         2026.11.24-8): in its place a small 📝 button sits beside
+         each girl's name on her own card. While today's note for
+         that girl is still empty it pulses gently to remind Mama to
+         write something lovely; once a note is saved it calms down
+         and wears a green ✓ badge. Tapping it opens the note editor
+         overlay for that girl and today (app day ends 3am, like the
+         rest of the app) — the note itself is the same per-girl,
+         per-day `note` in the synced state, still shown in the
+         parents' day report. */
+      .girl .gname{ flex-wrap:wrap; row-gap:4px; }
+      .note-btn{
+        position:relative; flex:0 0 auto; width:34px; height:34px; min-height:34px;
+        border-radius:50%; background:var(--gold-light); border:2px solid var(--gold);
+        font-size:1.02rem; line-height:1; padding:0; cursor:pointer;
+        display:inline-flex; align-items:center; justify-content:center;
+      }
+      .note-btn:active{ transform:scale(.88); }
+      .note-btn.pulse{ animation:notePulse 1.6s ease-in-out infinite; }
+      @keyframes notePulse{
+        0%,100%{ box-shadow:0 0 0 0 rgba(255,184,0,.55); transform:scale(1); }
+        50%{ box-shadow:0 0 0 8px rgba(255,184,0,0); transform:scale(1.16); }
+      }
+      .note-btn.done{ background:var(--green-light); border-color:var(--green); }
+      .note-btn .note-check{
+        position:absolute; top:-7px; inset-inline-end:-7px; width:17px; height:17px;
+        border-radius:50%; background:var(--green); color:#fff; border:2px solid #fff;
+        font-size:.62rem; font-weight:800; line-height:1;
+        display:flex; align-items:center; justify-content:center;
+      }
+      .modal textarea.note-edit{
+        width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:14px;
+        background:var(--card-soft); color:var(--ink); font-size:1.05rem; font-weight:700;
+        font-family:inherit; resize:vertical; min-height:64px; margin-top:10px; text-align:start;
+        box-shadow:inset 0 2px 5px rgba(62,47,35,.08), inset 0 -1px 0 rgba(255,255,255,.65), 0 1px 0 rgba(255,255,255,.6);
+      }
 
       /* ---------- Public deductions (outside parents area) ---------- */
       .deduct-balance{
@@ -531,6 +568,22 @@
 
       /* ---------- Coloring corner ---------- */
       .color-btn{ width:100%; margin-top:12px; }
+      /* Folded-header preview thumbnails (build 2026.11.24-8): while
+         the corner is folded, its title carries small coloured
+         previews of the drawings inside, so a child can see what is
+         in there without opening it. They hide as soon as the corner
+         unfolds (the real drawings are on show then). The title and
+         arrow stay exactly as they were, and tapping anywhere on the
+         title still opens the corner. */
+      #colorTitle{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+      .color-thumbs{ display:inline-flex; align-items:center; gap:6px; }
+      .color-thumb{
+        width:46px; height:46px; flex:0 0 46px; background:#fff;
+        border:2px solid var(--line); border-radius:12px; padding:2px;
+        overflow:hidden; box-shadow:var(--shadow); pointer-events:none;
+      }
+      .color-thumb svg{ width:100%; height:100%; display:block; }
+      #colorTitle.fold-open .color-thumbs{ display:none; }
       .color-sub{ color:var(--gray); font-weight:700; margin:2px 0 0; line-height:1.55; }
       .daily-card{
         display:flex; align-items:center; gap:14px; width:100%; margin-top:10px;
@@ -649,7 +702,7 @@
       .mom-page{
         position:fixed; inset:0; z-index:58; display:none; overflow-y:auto;
         background:var(--cream);
-        padding:calc(14px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom));
+        padding:calc(14px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom));
       }
       .mom-page.open{ display:block; }
       .mom-page-inner{ max-width:680px; margin:0 auto; }
@@ -659,6 +712,56 @@
         font-size:1.05rem; font-weight:800; cursor:pointer; margin-bottom:14px;
       }
       .mom-back:active{ background:var(--gold-light); }
+      /* ---------- Fixed «back home» button (build 2026.11.24-8) ----------
+         On every view that is not the home screen — Mama's page and
+         the parents area — one big fixed button stays pinned to the
+         bottom of the screen so Mama never gets lost: one tap takes
+         her back home. It never scrolls away, sits above the view's
+         content, keeps clear of the phone's bottom safe area, and is
+         hidden again the moment she is back home. The colouring
+         editor keeps its own close button (its no-scroll layout has
+         no room for a bottom bar without covering its tools), given
+         the same gold pill shape below so the two feel like one
+         system. */
+      #globalBack{
+        position:fixed; left:16px; right:16px; margin:0 auto; max-width:648px;
+        bottom:calc(14px + env(safe-area-inset-bottom)); z-index:59;
+        height:58px; min-height:58px; border:none; border-radius:28px;
+        background:var(--gold); color:var(--ink);
+        background-image:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%);
+        font-size:1.22rem; font-weight:800; cursor:pointer;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.65),
+          0 5px 0 var(--gold-dark),
+          0 12px 24px rgba(120,80,20,.35);
+        transition:transform .09s ease, box-shadow .09s ease;
+      }
+      #globalBack:active{
+        transform:translateY(4px);
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.12),
+          0 1px 0 var(--gold-dark),
+          0 4px 9px rgba(120,80,20,.30);
+      }
+      /* while a sub-view is up, the floating install pill steps aside
+         so it can never sit under the back button */
+      body.subview #installBar{ display:none !important; }
+      /* the editor's own close, in the back button's gold pill shape */
+      #edClose{
+        background:var(--gold); border-color:var(--gold-dark); color:var(--ink);
+        background-image:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.65),
+          0 4px 0 var(--gold-dark),
+          0 8px 14px rgba(160,110,0,.28);
+      }
+      #edClose:active{
+        transform:translateY(3px);
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.12),
+          0 1px 0 var(--gold-dark),
+          0 3px 7px rgba(160,110,0,.26);
+      }
       .mp-head{
         text-align:center; background:var(--rose-light); border:2px solid var(--rose);
         border-radius:var(--radius); padding:18px 14px; box-shadow:var(--shadow);
@@ -1177,14 +1280,14 @@
       <section class="girls" aria-label="اختيار البنت">
         <button class="girl karma" id="card-karma" type="button">
           <span class="sel-badge">✔ بنعلّم لها دلوقتي</span>
-          <span class="gname">🦋 كارما <span class="balance" id="bal-karma">⭐ <span class="st" id="balNum-karma">0</span></span></span>
+          <span class="gname">🦋 كارما <span class="balance" id="bal-karma">⭐ <span class="st" id="balNum-karma">0</span></span><span class="note-btn pulse" id="noteBtn-karma" role="button" tabindex="0" title="ملاحظة اليوم" aria-label="اكتبي ملاحظة اليوم لـ كارما">📝</span></span>
           <span class="today-line" id="today-karma"></span>
           <span class="stars-today" id="starsToday-karma"></span>
           <span class="bar"><i id="bar-karma" style="width:0%"></i></span>
         </button>
         <button class="girl judy" id="card-judy" type="button">
           <span class="sel-badge">✔ بنعلّم لها دلوقتي</span>
-          <span class="gname">🌸 جودي <span class="balance" id="bal-judy">⭐ <span class="st" id="balNum-judy">0</span></span></span>
+          <span class="gname">🌸 جودي <span class="balance" id="bal-judy">⭐ <span class="st" id="balNum-judy">0</span></span><span class="note-btn pulse" id="noteBtn-judy" role="button" tabindex="0" title="ملاحظة اليوم" aria-label="اكتبي ملاحظة اليوم لـ جودي">📝</span></span>
           <span class="today-line" id="today-judy"></span>
           <span class="stars-today" id="starsToday-judy"></span>
           <span class="bar"><i id="bar-judy" style="width:0%"></i></span>
@@ -1199,12 +1302,6 @@
 
       <h2 class="section-title" id="tasksTitle">مهام اليوم 📋</h2>
       <div id="taskList"></div>
-
-      <div class="note-card">
-        <div class="note-head" id="noteTitle">📝 ملاحظتي عن اليوم</div>
-        <textarea id="dayNote" rows="2" maxlength="300" placeholder="اكتبي حاجة حلوة حصلت النهارده... ✏️" aria-label="ملاحظتي عن اليوم"></textarea>
-        <div class="note-saved" id="noteSaved"></div>
-      </div>
 
       <div class="nav-btns">
         <button class="btn-gold" id="rewardsBtn" type="button">المكافآت 🎁</button>
@@ -1223,7 +1320,7 @@
         <div id="publicDeductList"></div>
       </div>
 
-      <h2 class="section-title foldable" id="colorTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="colorBody"><span id="colorTitleText">🎨 ركن التلوين</span> <span class="fold-arrow" id="colorFoldArrow" aria-hidden="true">▸</span></h2>
+      <h2 class="section-title foldable" id="colorTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="colorBody"><span id="colorTitleText">🎨 ركن التلوين</span> <span class="color-thumbs" id="colorThumbs" aria-hidden="true"></span> <span class="fold-arrow" id="colorFoldArrow" aria-hidden="true">▸</span></h2>
       <div id="colorBody" class="hidden">
       <p class="color-sub">ركن مفتوح دايمًا للّعب والتلوين — عندنا <b>٣٤ رسمة وكلها مفتوحة</b> 🎉 من غير قفل ومن غير شرا بالنجوم! اختاري أي رسمة ولوّنيها على طول، وشغلك بيتحفظ في معرضك. و«رسمة اليوم» اللي فوق بتتغيّر لوحدها كل يوم 🌞</p>
       <div id="colorDaily"></div>
@@ -1583,6 +1680,12 @@
       <div class="version-stamp" id="versionStamp"></div>
     </main>
 
+    <!-- Fixed back-home button: shown only while a sub-view (Mama's
+         page or the parents area) is open — never on the home screen.
+         Visibility is driven by refreshGlobalBack() watching those
+         views; one tap returns home. -->
+    <button id="globalBack" class="hidden" type="button">↩️ رجوع للرئيسية</button>
+
     <!-- Celebration / info modal -->
     <div class="overlay" id="modalOverlay">
       <div class="modal" id="modalBox">
@@ -1630,6 +1733,23 @@
       </div>
     </div>
 
+    <!-- Daily-note editor: opened by the small 📝 button beside a
+         girl's name on her card. Writes the same per-girl, per-day
+         note the old big section wrote (S.days[today][girl].note) —
+         synced like everything else and shown in the parents' day
+         report exactly as before. -->
+    <div class="overlay" id="noteOverlay">
+      <div class="modal">
+        <div class="big-emoji">📝</div>
+        <h2 id="noteEditTitle">📝 ملاحظتي عن اليوم</h2>
+        <p>اكتبي حاجة حلوة حصلت النهارده... ✏️</p>
+        <textarea class="note-edit" id="noteEditText" rows="3" maxlength="300" placeholder="اكتبي حاجة حلوة حصلت النهارده... ✏️" aria-label="ملاحظتي عن اليوم"></textarea>
+        <div class="note-saved" id="noteEditSaved"></div>
+        <button class="cta" id="noteEditDone" type="button">حفظ وإغلاق ✓</button>
+        <button class="ghost" id="noteEditCancel" type="button">إغلاق</button>
+      </div>
+    </div>
+
     <!-- Mama's own page: her points (the girls' lifetime earned total),
          her tier ladder and revealed rewards, and the girls' tasks for
          her. Opened from the slim «💐 ماما» strip under the girl cards;
@@ -1657,7 +1777,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-7";
+      const BUILD_ID = "2026.11.24-8";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -2956,6 +3076,40 @@
         document.body.style.overflow = "";
         try{ checkMomSurprise(); }catch(e){}
       }
+      /* ================= Fixed back-home button =================
+         One fixed bottom button for every non-home view (Mama's page,
+         the parents area): visible only while one of those views is
+         open, so the home screen itself never shows it. A
+         MutationObserver on the two views' class lists keeps it in
+         sync with every open/close path in the app — no call site
+         needs to know it exists. Going home from Mama's page is
+         exactly her page's own close; going home from the parents
+         area folds the section away and scrolls back to the top,
+         keeping the session's unlock (the «للأهل» button reopens it
+         without asking for the number again, as before). The
+         colouring editor is deliberately not a sub-view here: it
+         already has its own close, and its fixed no-scroll layout
+         would put this bar on top of its tools. */
+      function refreshGlobalBack(){
+        var btn = $("globalBack"); if(!btn) return;
+        var show = ($("momPage") && $("momPage").classList.contains("open")) ||
+                   ($("parents") && $("parents").classList.contains("open"));
+        btn.classList.toggle("hidden", !show);
+        document.body.classList.toggle("subview", !!show);
+      }
+      $("globalBack").addEventListener("click", function(){
+        if($("momPage") && $("momPage").classList.contains("open")){ closeMomPage(); return; }
+        if($("parents") && $("parents").classList.contains("open")){
+          $("parents").classList.remove("open");
+          window.scrollTo({ top:0, behavior:"smooth" });
+        }
+      });
+      try{
+        var backObserver = new MutationObserver(refreshGlobalBack);
+        if($("momPage")) backObserver.observe($("momPage"), { attributes:true, attributeFilter:["class"] });
+        if($("parents")) backObserver.observe($("parents"), { attributes:true, attributeFilter:["class"] });
+      }catch(e){}
+      refreshGlobalBack();
       /* ================= Mama's surprise reveal =================
          When the CURRENT tier index (from the lifetime points total)
          exceeds the tier index already revealed on this device (the local
@@ -3065,6 +3219,23 @@
           save();
           closeEditor();
           renderAll();
+        });
+      });
+      /* The 📝 note button lives INSIDE each girl card (which is itself
+         a button), so its taps must never fall through to the card's
+         select-this-girl click: stop propagation and open the note
+         editor for that girl instead. */
+      GIRL_KEYS.forEach(function(g){
+        var nb = $("noteBtn-" + g); if(!nb) return;
+        nb.addEventListener("click", function(e){
+          e.stopPropagation();
+          openNoteEditor(g);
+        });
+        nb.addEventListener("keydown", function(e){
+          if(e.key === "Enter" || e.key === " "){
+            e.preventDefault(); e.stopPropagation();
+            openNoteEditor(g);
+          }
         });
       });
       /* Tapping Mama's strip opens her own page; «رجوع» returns to the
@@ -3282,7 +3453,13 @@
         });
       }
       $("parentsBtn").addEventListener("click", function(){
-        if(parentsUnlocked){ $("parents").scrollIntoView({ behavior:"smooth" }); return; }
+        if(parentsUnlocked){
+          /* the fixed back button may have folded the section away on
+             the way home — reopen it (the session stays unlocked) */
+          $("parents").classList.add("open");
+          $("parents").scrollIntoView({ behavior:"smooth" });
+          return;
+        }
         startGate(storedPinHash() ? "entry" : "setup1");
       });
       $("changePinBtn").addEventListener("click", function(){ startGate("chg1"); });
@@ -4097,26 +4274,69 @@
       $("repDayBtn").addEventListener("click", function(){ if($("repDay").value) renderDayReport($("repDay").value); });
       $("repMonthBtn").addEventListener("click", function(){ if($("repMonth").value) renderMonthReport($("repMonth").value); });
 
-      /* ================= Daily note (per girl, per day) ================= */
-      function renderNote(){
-        var ta = $("dayNote");
-        $("noteTitle").textContent = "📝 ملاحظتي عن اليوم — " + GIRLS[currentGirl].name + " " + GIRLS[currentGirl].emoji;
-        if(document.activeElement !== ta){
-          var r = S.days[todayKey()] && S.days[todayKey()][currentGirl];
-          ta.value = r && r.note ? r.note : "";
-        }
-      }
+      /* ================= Daily note (per girl, per day) =================
+         The note lives exactly where it always did — S.days[today]
+         [girl].note, trimmed, saved through save() so it syncs, and
+         shown in the parents' day report. Only the writing surface
+         changed (build 2026.11.24-8): the big section under the
+         tasks is gone, and each girl's card carries a small 📝
+         button beside her name. It pulses while today's note for
+         HER is empty and settles with a ✓ badge once one is saved;
+         tapping it opens the editor overlay for that girl and today
+         (todayKey() — the app day that ends at 3am). */
+      var noteGirl = "karma";
       var noteTimer = null;
-      $("dayNote").addEventListener("input", function(){
+      function noteHasToday(g){
+        var r = S.days[todayKey()] && S.days[todayKey()][g];
+        return !!(r && r.note && String(r.note).trim());
+      }
+      function renderNote(){
+        GIRL_KEYS.forEach(function(g){
+          var b = $("noteBtn-" + g); if(!b) return;
+          var has = noteHasToday(g);
+          b.classList.toggle("pulse", !has);
+          b.classList.toggle("done", has);
+          b.innerHTML = "📝" + (has ? '<span class="note-check" aria-hidden="true">✓</span>' : "");
+          b.setAttribute("aria-label", has
+            ? "ملاحظة اليوم مكتوبة لـ " + GIRLS[g].name + " — دوسي هنا لتعديلها"
+            : "اكتبي ملاحظة اليوم لـ " + GIRLS[g].name);
+        });
+      }
+      function persistNote(){
+        var r = rec(todayKey(), noteGirl);
+        r.note = $("noteEditText").value.trim();
+        save();
+        renderNote();
+      }
+      function openNoteEditor(g){
+        noteGirl = g;
+        clearTimeout(noteTimer);
+        $("noteEditTitle").textContent = "📝 ملاحظتي عن اليوم — " + GIRLS[g].name + " " + GIRLS[g].emoji;
+        var r = S.days[todayKey()] && S.days[todayKey()][g];
+        $("noteEditText").value = r && r.note ? r.note : "";
+        $("noteEditSaved").textContent = "";
+        $("noteOverlay").classList.add("open");
+        setTimeout(function(){ try{ $("noteEditText").focus(); }catch(e){} }, 60);
+      }
+      function closeNoteEditor(){
+        clearTimeout(noteTimer);
+        persistNote();
+        $("noteOverlay").classList.remove("open");
+      }
+      $("noteEditText").addEventListener("input", function(){
         clearTimeout(noteTimer);
         noteTimer = setTimeout(function(){
-          var r = rec(todayKey(), currentGirl);
-          r.note = $("dayNote").value.trim();
-          save();
-          $("noteSaved").textContent = "اتحفظت ✓";
-          setTimeout(function(){ $("noteSaved").textContent = ""; }, 2200);
+          persistNote();
+          $("noteEditSaved").textContent = "اتحفظت ✓";
+          setTimeout(function(){ $("noteEditSaved").textContent = ""; }, 2200);
         }, 400);
       });
+      $("noteEditDone").addEventListener("click", function(){
+        var had = $("noteEditText").value.trim().length > 0;
+        closeNoteEditor();
+        if(had) toast("اتحفظت ملاحظة اليوم 📝", "ملاحظة " + GIRLS[noteGirl].name + " بقت في سجل اليوم ✓");
+      });
+      $("noteEditCancel").addEventListener("click", closeNoteEditor);
 
       /* ================= Coloring corner =================
          Always open — ALL 34 drawings, no locks and no star purchases
@@ -4575,6 +4795,16 @@
       function renderColoring(){
         var g = currentGirl, cg = S.coloring[g];
         $("colorTitleText").textContent = "🎨 ركن التلوين — " + GIRLS[g].name + " " + GIRLS[g].emoji;
+        /* Folded-header previews: the first four drawings, shown in
+           their fixed model colours inside the folded title so the
+           girls can see what the corner holds before opening it.
+           Display only — modelWork fills are never saved or synced. */
+        var thumbsEl = $("colorThumbs");
+        if(thumbsEl){
+          thumbsEl.innerHTML = DRAWINGS.slice(0, 4).map(function(p){
+            return '<span class="color-thumb">' + picSVG(p, modelWork(p)) + "</span>";
+          }).join("");
+        }
         var dp = dailyPic();
         $("colorDaily").innerHTML =
           '<button class="daily-card" type="button" data-pic="' + dp.id + '">' + picSVG(dp, cg.works[dp.id]) +
@@ -4696,7 +4926,11 @@
         var arrow = $("colorFoldArrow");
         if(arrow) arrow.textContent = open ? "▾" : "▸";
         var t = $("colorTitle");
-        if(t) t.setAttribute("aria-expanded", open ? "true" : "false");
+        if(t){
+          t.setAttribute("aria-expanded", open ? "true" : "false");
+          /* the preview thumbnails belong to the folded state only */
+          t.classList.toggle("fold-open", open);
+        }
       }
       function toggleColorFold(){
         var body = $("colorBody"); if(!body) return;
@@ -5503,7 +5737,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-7", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-8", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
