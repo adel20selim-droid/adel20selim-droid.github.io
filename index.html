@@ -204,16 +204,19 @@
 
       /* ---------- Rewards (Android reward rows) ---------- */
       .reward{
-        display:flex; align-items:center; gap:12px; background:var(--card);
+        display:flex; align-items:center; gap:10px; background:var(--card);
         border:2px solid var(--line); border-radius:var(--radius);
-        padding:12px 14px; margin-top:10px;
+        padding:12px; margin-top:10px;
       }
       .reward .ric{
         width:56px; height:56px; flex:0 0 56px; font-size:2.25rem;
         display:flex; align-items:center; justify-content:center;
       }
       .reward .mid{ flex:1; min-width:0; }
-      .reward .rname{ font-weight:800; font-size:1.05rem; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:rtl; text-align:right; }
+      /* Reward names ALWAYS show in full — no ellipsis, ever: the name
+         wraps onto a second line when it needs the room, and fitNames
+         steps its font down if it would need a third. */
+      .reward .rname{ font-weight:800; font-size:1.05rem; line-height:1.3; overflow-wrap:break-word; direction:rtl; text-align:right; }
       .reward .rprice{ color:var(--gold-dark); font-weight:800; font-size:1rem; }
       .buy{
         flex:0 0 auto; height:54px; border:none; border-radius:28px; padding:0 18px;
@@ -223,13 +226,21 @@
       .buy:active{ background:var(--gold-dark); transform:scale(.96); }
       .buy:disabled{
         background:var(--card); border:2px solid var(--gold-dark); color:var(--gray); cursor:not-allowed;
+        /* The «محتاجة X نجمة» chip stays compact — smaller type, tighter
+           padding, shorter pill — so the reward name beside it gets the
+           room it needs to show in full instead of truncating. */
+        font-size:.8rem; padding:0 9px; height:44px; white-space:nowrap;
       }
 
       /* ---------- The big vault (الكنز الكبير) ---------- */
-      /* The star-catcher game card stands out from the other vault
-         rewards: violet face and frame instead of the plain card. */
+      /* Each game reward card stands out from the other vault rewards:
+         violet face and frame instead of the plain card. */
       .reward.game-reward{ background:var(--violet-light); border:3px solid var(--violet); }
       .reward .rsub{ color:var(--violet-dark); font-weight:800; font-size:.88rem; line-height:1.35; }
+      /* The «🎮 الألعاب» fold inside the vault: same raised fold-button
+         look as the section titles, one step smaller since it nests
+         inside the vault section. */
+      .games-fold{ font-size:1.18rem; margin-top:14px; }
 
       /* ---------- Games centre (مركز الألعاب) ----------
          Full-screen sheet above everything except modals/confetti.
@@ -1487,6 +1498,11 @@
       <h2 class="section-title foldable fold-btn" id="vaultTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="vaultBody"><span id="vaultTitleText">🎁 الكنز الكبير</span> <span class="fold-arrow" id="vaultFoldArrow" aria-hidden="true">▸</span></h2>
       <div id="vaultBody" class="hidden">
       <p class="color-sub">مكافآت كبيرة للبنات الشاطرين اللي بيجمّعوا نجوم كتير ⭐ أسعارها أعلى من المتجر العادي — أهداف بعيدة تستاهل التعب! والشراء مقفول برقم الأهل زي المتجر بالظبط 🔒</p>
+      <h3 class="section-title foldable fold-btn games-fold" id="gamesTitle" role="button" tabindex="0" aria-expanded="false" aria-controls="gamesBody"><span id="gamesTitleText">🎮 الألعاب</span> <span class="fold-arrow" id="gamesFoldArrow" aria-hidden="true">▸</span></h3>
+      <div id="gamesBody" class="hidden">
+      <p class="color-sub">٤ ألعاب حلوة 🎮 كل لعبة لوحدها بسعرها — اختاري اللعبة اللي نفسك فيها، ولما تجمّعي نجومها وتشتريها هتفتحلك <b>١٠ دقايق لعب</b> فيها على طول! ⏱️</p>
+      <div id="gamesList"></div>
+      </div>
       <div id="vaultList"></div>
       </div>
 
@@ -1527,7 +1543,7 @@
       <div id="gameCenter" class="hidden" role="dialog" aria-label="مركز الألعاب">
         <div class="gc-hud">
           <span class="gc-timer" id="gcTimer">⏱️ 10:00</span>
-          <span class="gc-hud-title">🎮 وقت الألعاب</span>
+          <span class="gc-hud-title" id="gcHudTitle">🎮 وقت الألعاب</span>
           <button class="gc-exit" id="gcExit" type="button">✖ خروج</button>
         </div>
         <div id="gcMenu">
@@ -1980,7 +1996,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-14";
+      const BUILD_ID = "2026.11.24-17";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -2045,8 +2061,9 @@
       /* The big vault (الكنز الكبير): long-goal rewards priced far above
          the regular store so there is always a bigger prize to chase.
          Seeded once into the family data with vault:true (see
-         defaultVaultRewards / ensureVault); the star-catcher game card
-         (500 stars) is added there too, flagged game:true. */
+         defaultVaultRewards / ensureVault). The four games are separate
+         vault rewards too, each flagged game:"<key>" naming its game in
+         the games centre (see defaultGameRewards / ensureGamesSplit). */
       var DEFAULT_VAULT_REWARDS = [
         ["أختار لبس الخروج","👗",150],["أرسم وشي بالألوان","🎭",180],["أعمل كيكة مع ماما","🧁",220],
         ["يوم سبا بنات مع ماما","💅",320],["أختار هدية لصاحبتي","🎀",350],
@@ -2519,9 +2536,21 @@
          reprice or delete them from the parents area like any reward —
          they just render in the vault section instead of the store. */
       function defaultVaultRewards(){
-        var list = DEFAULT_VAULT_REWARDS.map(function(r,i){ return { id:"v"+(i+1), name:r[0], emoji:r[1], price:r[2], vault:true }; });
-        list.push({ id:"v10", name:"وقت الألعاب — ١٠ دقايق لعب", emoji:"🎮", price:500, vault:true, game:true });
-        return list;
+        return DEFAULT_VAULT_REWARDS.map(function(r,i){ return { id:"v"+(i+1), name:r[0], emoji:r[1], price:r[2], vault:true }; });
+      }
+      /* The four games, each its OWN vault reward with its own price.
+         `game` carries the games-centre key (catch / balloon / memory /
+         bunny): buying the reward opens a 10-minute session of THAT
+         game only. Parents can rename / reprice / delete them like any
+         reward — the edit form only touches name, emoji and price, so
+         vault and game survive every edit. */
+      function defaultGameRewards(){
+        return [
+          { id:"g1", name:"لعبة صيد النجوم", emoji:"⭐", price:300, vault:true, game:"catch" },
+          { id:"g2", name:"لعبة فرقعة البالونات", emoji:"🎈", price:350, vault:true, game:"balloon" },
+          { id:"g3", name:"لعبة الذاكرة", emoji:"🃏", price:400, vault:true, game:"memory" },
+          { id:"g4", name:"لعبة أطعمي الأرنب", emoji:"🐰", price:450, vault:true, game:"bunny" }
+        ];
       }
       /* Seed the vault ONCE per family (vaultSeeded): a vault reward a
          parent deleted must never come back, so once the flag is set
@@ -2536,11 +2565,29 @@
         s.vaultSeeded = true;
         return s;
       }
+      /* One-time split of the old games bundle (build -16): the single
+         «وقت الألعاب» reward (flagged game:true, boolean) is REMOVED
+         and the four games are seeded as separate rewards, once only,
+         under the gamesSplit flag — a game a parent later deletes never
+         comes back. Old purchase events in the day logs are history and
+         are NOT touched. Runs on local load and on every adopted state
+         via migrateBackupData, exactly like ensureVault. */
+      function ensureGamesSplit(s){
+        if(!s || s.gamesSplit) return s;
+        if(!Array.isArray(s.rewards)) s.rewards = [];
+        s.rewards = s.rewards.filter(function(r){ return !(r && r.game === true); });
+        var have = {};
+        s.rewards.forEach(function(r){ if(r && r.game) have[r.game] = true; });
+        defaultGameRewards().forEach(function(r){ if(!have[r.game]) s.rewards.push(r); });
+        s.gamesSplit = true;
+        return s;
+      }
       function seed(){
         return {
           tasks: DEFAULT_TASKS.map(function(t,i){ return { id:"t"+(i+1), name:t[0], emoji:t[1], stars:t[2], girl:"both" }; }),
-          rewards: DEFAULT_REWARDS.map(function(r,i){ return { id:"r"+(i+1), name:r[0], emoji:r[1], price:r[2] }; }).concat(defaultVaultRewards()),
+          rewards: DEFAULT_REWARDS.map(function(r,i){ return { id:"r"+(i+1), name:r[0], emoji:r[1], price:r[2] }; }).concat(defaultVaultRewards()).concat(defaultGameRewards()),
           vaultSeeded: true,
+          gamesSplit: true,
           deductions: defaultDeductions(),
           prayerTimes: defaultPrayerTimes(),
           balances: { judy:0, karma:0 },
@@ -2619,6 +2666,8 @@
               ensureMom(s);
               /* migrate older saves: seed the big vault once */
               ensureVault(s);
+              /* migrate older saves: split the games bundle once */
+              ensureGamesSplit(s);
               GIRL_KEYS.forEach(function(g){
                 if(!s.coloring[g]) s.coloring[g] = { unlocked:[], works:{} };
                 if(!s.coloring[g].unlocked) s.coloring[g].unlocked = [];
@@ -2956,29 +3005,31 @@
             logEvent(todayKey(), girl, "redeem", "اشترت مكافأة: " + rw.name, -rw.price);
             save(); renderAll();
             playHappy(true); confetti(80);
-            /* The vault's games reward opens the games centre
-               instead of the usual congratulations: one purchase =
-               one 10-minute play session. */
-            if(rw.game){ startGameCenter(girl); return; }
+            /* A game reward opens the games centre instead of the
+               usual congratulations: one purchase = one 10-minute
+               session of THAT game only (rw.game is its centre key). */
+            if(rw.game){ startGameCenter(girl, typeof rw.game === "string" ? rw.game : null); return; }
             showModal("🎊", "مبروك يا " + GIRLS[girl].name + "!", "اشتريتي: <b>" + esc(rw.name) + "</b> " + rw.emoji + " 🎉<br />استمتعي بيها يا بطلة!", "تمام 🎉");
           }, true);
       }
 
       /* ================= Games centre (مركز الألعاب) =================
-         Bought from the vault for 500 stars: ONE session of 10 minutes
-         in a full-screen games centre with FOUR games — star catcher,
-         balloon pop, memory match and feed-the-bunny. One session
-         clock in the HUD counts down the whole visit and stays
-         visible in the menu and inside every game; she hops between
-         games freely from the menu, the exit button ends the session
-         early, and at zero the centre closes with an encouragement
-         message and her total points. Pure fun, all local: scores
-         live only in this closure — nothing is saved or synced and
-         her stars never change; the only trace is the ordinary
-         purchase event buyReward already logged. The clock runs on
-         accumulated frame time, so a backgrounded tab (paused rAF)
-         never eats into her 10 minutes. One shared rAF loop drives
-         the clock and whichever game is open (its tick). */
+         Each game is bought separately from the vault's «🎮 الألعاب»
+         fold: ONE purchase = ONE session of 10 minutes in the
+         full-screen games centre, locked to the game she bought —
+         the centre opens straight into that game, with no menu to
+         hop into games she did not buy (the menu path below survives
+         only as a fallback if a session is ever started without a
+         game key). One session clock in the HUD counts down the whole
+         visit; the exit button ends the session early, and at zero
+         the centre closes with an encouragement message and her
+         points. Pure fun, all local: scores live only in this
+         closure — nothing is saved or synced and her stars never
+         change; the only trace is the ordinary purchase event
+         buyReward already logged. The clock runs on accumulated
+         frame time, so a backgrounded tab (paused rAF) never eats
+         into her 10 minutes. One shared rAF loop drives the clock
+         and whichever game is open (its tick). */
       var gc = null;
       function gcFmtTime(sec){
         sec = Math.max(0, Math.ceil(sec));
@@ -2991,12 +3042,19 @@
         gc.scores[gc.game] = Math.max(0, gc.scores[gc.game] + n);
         gcSetScore();
       }
-      function startGameCenter(girl){
+      function startGameCenter(girl, gameKey){
         if(gc) stopGameCenter();
-        gc = { girl:girl, left:600, last:0, raf:0, lastSec:-1, game:null,
+        var single = (gameKey && GC_GAMES[gameKey]) ? gameKey : null;
+        gc = { girl:girl, left:600, last:0, raf:0, lastSec:-1, game:null, single:single,
                scores:{ catch:0, balloon:0, memory:0, bunny:0 } };
         $("gameCenter").classList.remove("hidden");
-        showGcMenu();
+        /* A bought game locks the session to it: the HUD names the
+           game, the «back to the games» button is hidden (there is no
+           menu to go back to), and the game opens immediately. */
+        $("gcHudTitle").textContent = single ? GC_GAMES[single].title : "🎮 وقت الألعاب";
+        var backBtn = $("gcBack");
+        if(backBtn) backBtn.classList.toggle("hidden", !!single);
+        if(single) openGcGame(single); else showGcMenu();
         gcHud();
         gc.last = performance.now();
         gc.raf = requestAnimationFrame(gcFrame);
@@ -3013,6 +3071,9 @@
       }
       function showGcMenu(){
         if(!gc) return;
+        /* A single-game session has no menu: «back» never leaves the
+           bought game (the button is hidden in that mode anyway). */
+        if(gc.single) return;
         if(gc.game && GC_GAMES[gc.game]) GC_GAMES[gc.game].stop();
         gc.game = null;
         $("gcStage").innerHTML = "";
@@ -3043,11 +3104,15 @@
       function finishGameCenter(early){
         if(!gc) return;
         var girl = gc.girl;
+        var single = gc.single;
         var total = gc.scores.catch + gc.scores.balloon + gc.scores.memory + gc.scores.bunny;
         stopGameCenter();
         playHappy(true); confetti(90);
         showModal("🎮", early ? "خلصت اللعب" : "خلص وقت اللعب! ⏰",
-          "برافو يا " + GIRLS[girl].name + "! لعبتي وجمعتي <b>" + total + "</b> نقطة في الألعاب ⭐🎈<br />عايزة تلعبي تاني؟ وقت الألعاب موجود في الكنز الكبير 🎁",
+          "برافو يا " + GIRLS[girl].name + "! " +
+          (single
+            ? "لعبتى <b>" + esc(GC_GAMES[single].title) + "</b> وجمعتي <b>" + total + "</b> نقطة ⭐<br />عايزة تلعبي تاني؟ اللعبة موجودة في «🎮 الألعاب» جوه الكنز الكبير 🎁"
+            : "لعبتي وجمعتي <b>" + total + "</b> نقطة في الألعاب ⭐🎈<br />عايزة تلعبي تاني؟ الألعاب موجودة في الكنز الكبير 🎁"),
           "تمام 🎉");
       }
 
@@ -3391,9 +3456,10 @@
       }
       /* The big vault (الكنز الكبير): the vault:true rewards, rendered
          only here — never in the regular store above. Same rows, same
-         buy buttons, same buyReward flow; the star-catcher game card
-         sits on top with its own violet look. Like the deductions, the
-         section always renders folded — session-only DOM state. */
+         buy buttons, same buyReward flow. The game rewards render
+         separately in the «🎮 الألعاب» fold at the top of the vault
+         (renderGamesRewards). Like the deductions, the section always
+         renders folded — session-only DOM state. */
       function renderVaultRewards(){
         var girl = currentGirl, bal = S.balances[girl];
         var foldBody = $("vaultBody");
@@ -3404,22 +3470,53 @@
         if(foldTitle) foldTitle.setAttribute("aria-expanded", "false");
         var box = $("vaultList");
         if(!box) return;
-        var list = S.rewards.filter(function(r){ return !!r.vault; });
-        list.sort(function(a, b){ return (b.game ? 1 : 0) - (a.game ? 1 : 0); });
+        var list = S.rewards.filter(function(r){ return !!r.vault && !r.game; });
         if(!list.length){ box.innerHTML = '<div class="empty-note">الكنز فاضي دلوقتي — الأهل يقدروا يضيفوا مكافآت من منطقة الأهل 🎁</div>'; return; }
         box.innerHTML = list.map(function(rw){
           var missing = rw.price - bal;
           var can = missing <= 0;
-          return '<div class="reward' + (rw.game ? " game-reward" : "") + '">' +
+          return '<div class="reward">' +
             '<span class="ric">' + rw.emoji + '</span>' +
             '<div class="mid"><div class="rname" dir="rtl">' + esc(rw.name) + '</div>' +
-            '<div class="rprice">⭐ ' + rw.price + '</div>' +
-            (rw.game ? '<div class="rsub">🕹️ مركز ألعاب فيه ٤ ألعاب حلوة — كل شراء = ١٠ دقايق لعب!</div>' : "") + '</div>' +
+            '<div class="rprice">⭐ ' + rw.price + '</div></div>' +
             '<button class="buy" type="button" data-vault-reward="' + rw.id + '"' + (can ? "" : " disabled") + '>' +
             (can ? "اشتري 🔒" : "محتاجة " + missing + " نجمة") + '</button></div>';
         }).join("");
         box.querySelectorAll(".buy").forEach(function(btn){
           btn.addEventListener("click", function(){ buyReward(girl, btn.getAttribute("data-vault-reward")); });
+        });
+      }
+      /* The games fold (🎮 الألعاب) at the top of the vault: each game
+         is its own reward card — its emoji, its full name and its own
+         price — bought through the exact same buyReward flow (parents
+         number every time, «محتاجة X نجمة» counter, purchase event in
+         the reports). Buying opens a 10-minute session of that game
+         only. Renders folded like every other section. */
+      function renderGamesRewards(){
+        var girl = currentGirl, bal = S.balances[girl];
+        var foldBody = $("gamesBody");
+        if(foldBody) foldBody.classList.add("hidden");
+        var foldArrow = $("gamesFoldArrow");
+        if(foldArrow) foldArrow.textContent = "▸";
+        var foldTitle = $("gamesTitle");
+        if(foldTitle) foldTitle.setAttribute("aria-expanded", "false");
+        var box = $("gamesList");
+        if(!box) return;
+        var list = S.rewards.filter(function(r){ return !!r.vault && !!r.game; });
+        if(!list.length){ box.innerHTML = '<div class="empty-note">مفيش ألعاب دلوقتي 🎮</div>'; return; }
+        box.innerHTML = list.map(function(rw){
+          var missing = rw.price - bal;
+          var can = missing <= 0;
+          return '<div class="reward game-reward">' +
+            '<span class="ric">' + rw.emoji + '</span>' +
+            '<div class="mid"><div class="rname" dir="rtl">' + esc(rw.name) + '</div>' +
+            '<div class="rprice">⭐ ' + rw.price + '</div>' +
+            '<div class="rsub">⏱️ ١٠ دقايق لعب!</div></div>' +
+            '<button class="buy" type="button" data-game-reward="' + rw.id + '"' + (can ? "" : " disabled") + '>' +
+            (can ? "اشتري 🔒" : "محتاجة " + missing + " نجمة") + '</button></div>';
+        }).join("");
+        box.querySelectorAll(".buy").forEach(function(btn){
+          btn.addEventListener("click", function(){ buyReward(girl, btn.getAttribute("data-game-reward")); });
         });
       }
       function renderPublicDeductions(){
@@ -3821,18 +3918,34 @@
         renderAll();
       }
 
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderVaultRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); try{ checkMomSurprise(); }catch(e){} }
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderVaultRewards(); renderGamesRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); try{ checkMomSurprise(); }catch(e){} }
 
-      /* Names stay on ONE line: shrink the font just enough to fit the row.
-         Base size comes from CSS (1.05rem); only names that still overflow
-         get stepped down, never below 11px (then the CSS ellipsis takes over). */
+      /* Task and deduction names stay on ONE line: shrink the font just
+         enough to fit the row (never below 11px, then the CSS ellipsis
+         takes over). REWARD names are different by design: they never
+         truncate — the CSS lets them wrap, and here the font steps down
+         only while the wrapped name would need a THIRD line, so every
+         reward name always shows in full on at most two lines. */
       function fitNames(){
-        document.querySelectorAll(".task .tname, .reward .rname, .deduct-row .dname").forEach(function(el){
+        document.querySelectorAll(".task .tname, .deduct-row .dname").forEach(function(el){
           el.style.fontSize = "";
           if(!el.clientWidth) return;
           var size = parseFloat(window.getComputedStyle(el).fontSize) || 16;
           var guard = 0;
           while(el.scrollWidth > el.clientWidth && size > 11 && guard < 24){
+            size -= 0.5;
+            el.style.fontSize = size + "px";
+            guard++;
+          }
+        });
+        document.querySelectorAll(".reward .rname").forEach(function(el){
+          el.style.fontSize = "";
+          if(!el.clientWidth) return;
+          var size = parseFloat(window.getComputedStyle(el).fontSize) || 16;
+          var guard = 0;
+          while(size > 11 && guard < 24){
+            var lh = parseFloat(window.getComputedStyle(el).lineHeight) || size * 1.3;
+            if(el.scrollHeight <= lh * 2 + 2) break;
             size -= 0.5;
             el.style.fontSize = size + "px";
             guard++;
@@ -3908,12 +4021,36 @@
         if(arrow) arrow.textContent = nowHidden ? "▸" : "▾";
         var t = $("vaultTitle");
         if(t) t.setAttribute("aria-expanded", nowHidden ? "false" : "true");
+        /* The vault renders folded, so fitNames skipped its reward
+           names while they were hidden — fit them now that they show. */
+        if(!nowHidden) fitNames();
       }
       var vaultTitleEl = $("vaultTitle");
       if(vaultTitleEl){
         vaultTitleEl.addEventListener("click", toggleVault);
         vaultTitleEl.addEventListener("keydown", function(e){
           if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleVault(); }
+        });
+      }
+      /* Fold/unfold the «🎮 الألعاب» fold inside the vault — same
+         pattern as the vault itself: session-only DOM state, and
+         renderGamesRewards folds it again on every render. */
+      function toggleGames(){
+        var body = $("gamesBody"); if(!body) return;
+        var nowHidden = body.classList.toggle("hidden");
+        var arrow = $("gamesFoldArrow");
+        if(arrow) arrow.textContent = nowHidden ? "▸" : "▾";
+        var t = $("gamesTitle");
+        if(t) t.setAttribute("aria-expanded", nowHidden ? "false" : "true");
+        /* Same as the vault: the game cards rendered hidden, so fit
+           their names now that they are visible. */
+        if(!nowHidden) fitNames();
+      }
+      var gamesTitleEl = $("gamesTitle");
+      if(gamesTitleEl){
+        gamesTitleEl.addEventListener("click", toggleGames);
+        gamesTitleEl.addEventListener("keydown", function(e){
+          if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleGames(); }
         });
       }
 
@@ -5895,6 +6032,7 @@
         if(!d.balances || typeof d.balances !== "object") d.balances = { judy:0, karma:0 };
         ensureMom(d);
         ensureVault(d);
+        ensureGamesSplit(d);
         GIRL_KEYS.forEach(function(g){
           if(!d.coloring[g]) d.coloring[g] = { unlocked:[], works:{} };
           if(!d.coloring[g].unlocked) d.coloring[g].unlocked = [];
@@ -6420,7 +6558,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-14", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-17", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
@@ -6450,7 +6588,7 @@
       if(versionStampEl) versionStampEl.textContent = "إصدار التطبيق: " + BUILD_ID;
 
       /* Update check: once at start, again whenever the app comes back
-         to the foreground, and every 5 minutes while it stays open. */
+         to the foreground, and every 30 seconds while it stays open. */
       checkForUpdate();
       document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible") checkForUpdate(); });
       window.addEventListener("focus", checkForUpdate);
