@@ -143,6 +143,10 @@
       .task .mid{ flex:1; min-width:0; }
       .task .tname{ font-size:1.05rem; font-weight:800; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:rtl; text-align:right; }
       .task .tstars{ color:var(--gold-dark); font-weight:800; font-size:.95rem; }
+      /* Early-prayer hint on a prayer row: the cutoff when it is still
+         to earn, and a green note once today's early star is hers. */
+      .task .tearly{ color:var(--gold-dark); font-weight:800; font-size:.88rem; }
+      .task .tearly.got{ color:var(--green); }
       .check{
         width:58px; height:58px; flex:0 0 58px; border-radius:50%;
         border:4px solid var(--gold); background:var(--card);
@@ -419,7 +423,7 @@
       .tabs .mini.gp{ flex:1; min-height:48px; font-size:1.05rem; }
       form.f{ display:grid; gap:10px; margin-top:6px; }
       form.f label{ font-weight:800; font-size:.98rem; }
-      form.f input[type="text"], form.f input[type="number"], form.f select, input[type="date"], input[type="month"]{
+      form.f input[type="text"], form.f input[type="number"], form.f input[type="time"], form.f select, input[type="date"], input[type="month"]{
         width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:14px;
         background:var(--card-soft); color:var(--ink); font-size:1.05rem; font-weight:700; min-height:48px;
       }
@@ -544,17 +548,20 @@
       .daily-card svg{ width:132px; height:132px; flex:0 0 132px; background:#fff; border-radius:14px; pointer-events:none; }
       .daily-card .dt{ font-weight:800; font-size:1.15rem; display:block; }
       .daily-card .ds{ color:var(--gray); font-weight:700; font-size:.95rem; display:block; }
-      /* Two columns at every width: each drawing stays big so the girls
-         can see its details and colours clearly before colouring it. */
-      .color-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px; }
+      /* ONE drawing per row, full width: each drawing gets the whole
+         screen width so its details and colours are big and clear
+         before the girls start colouring it (user request 2026-11-24 —
+         two side-by-side was too small to imitate). The svg is capped
+         on very wide screens so a card never becomes a wall poster. */
+      .color-grid{ display:grid; grid-template-columns:1fr; gap:16px; margin-top:12px; }
       .pic-card{
-        background:var(--card); border:2px solid var(--line); border-radius:20px; padding:10px;
-        cursor:pointer; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:6px;
+        background:var(--card); border:2px solid var(--line); border-radius:20px; padding:12px;
+        cursor:pointer; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:8px;
       }
       .pic-card:active{ transform:scale(.97); }
-      .pic-card svg{ width:100%; height:auto; background:#fff; border-radius:12px; pointer-events:none; }
+      .pic-card svg{ width:100%; max-width:400px; height:auto; background:#fff; border-radius:12px; pointer-events:none; }
       .pic-card.gold{ border:3px solid var(--gold); background:var(--gold-light); }
-      .pic-name{ font-weight:800; font-size:1.05rem; }
+      .pic-name{ font-weight:800; font-size:1.2rem; }
       .pic-badge{ font-size:.85rem; font-weight:800; padding:2px 12px; border-radius:999px; }
       .pic-badge.lock{ background:var(--gold); color:var(--ink); }
       .pic-badge.open{ background:var(--green-light); color:var(--green); }
@@ -569,6 +576,20 @@
       .ed-head .mini{ flex:0 0 auto; }
       .pstage{ background:#fff; border:3px solid var(--line); border-radius:20px; padding:6px; }
       .pstage svg{ width:100%; height:auto; display:block; }
+      /* The coloured MODEL panel («الصورة اللي هنعمل زيها»): a big,
+         clear, display-only copy of the same drawing, pre-filled with
+         fixed model colours (MODEL_COLORS by region index — the same
+         contract as the Android app). It is never painted, never saved
+         and never synced; the girls imitate it in the stage below. */
+      .model-panel{
+        background:var(--gold-light); border:3px solid var(--gold); border-radius:20px;
+        padding:12px 10px 10px; margin-bottom:14px; box-shadow:var(--shadow);
+      }
+      .model-title{ text-align:center; font-size:1.45rem; font-weight:800; color:var(--gold-dark); }
+      .model-sub{ text-align:center; color:var(--gray); font-weight:700; font-size:.95rem; margin:2px 0 10px; line-height:1.55; }
+      .model-stage{ border-color:var(--gold); padding:4px; }
+      .model-stage svg{ pointer-events:none; }
+      .model-stage .csvg [data-r]{ cursor:default; }
       .csvg [data-r]{ stroke:#5B4632; stroke-width:3; stroke-linejoin:round; stroke-linecap:round; }
       .csvg .deco-line{ fill:none; stroke:#5B4632; stroke-width:2.5; stroke-linecap:round; }
       .csvg .deco-dot{ fill:#5B4632; stroke:none; }
@@ -835,6 +856,11 @@
           <h3 id="edTitle">🎨 التلوين</h3>
           <button class="mini" id="edClose" type="button">✖ إغلاق</button>
         </div>
+        <div class="model-panel" id="edModel">
+          <div class="model-title">🖼️ الصورة اللي هنعمل زيها</div>
+          <p class="model-sub">بصّي على الألوان والتفاصيل كويس، ولوّني الرسمة اللي تحت زيّها بالظبط 🎨</p>
+          <div class="pstage model-stage" id="edModelStage"></div>
+        </div>
         <div class="pstage" id="edStage"></div>
         <div class="palette" id="edPalette" aria-label="لوحة الألوان"></div>
         <div class="ctools">
@@ -959,6 +985,33 @@
           <div class="panel">
             <h3>المهام الحالية</h3>
             <div id="adminTaskList"></div>
+          </div>
+          <div class="panel">
+            <h3>⭐ نجمة الصلاة بدري</h3>
+            <p class="guide-note">لكل صلاة من الصلوات الخمس، حدّدوا وقت «بدري لحد» مرة واحدة هنا: لو البنت علّمت الصلاة <b>قبل</b> وقتها المضبوط، هتاخد <b>نجمة زيادة تلقائيًا</b> فوق نجوم الصلاة، وبتتسجل في سجل اليوم والتقارير باسم «⭐ نجمة بدري» — نجمة واحدة بس لكل صلاة في اليوم، ولو شالت تعليم الصلاة بتتشال نجمة البدري معاها. سيبوا وقت أي صلاة فاضي لو مش عايزين لها نجمة بدري. الأوقات دي بتتزامن مع باقي أجهزة العيلة زي أي إعدادات.</p>
+            <form class="f" id="prayerForm">
+              <div>
+                <label for="pt-fajr">🕌 صلاة الفجر — بدري لحد</label>
+                <input type="time" id="pt-fajr" />
+              </div>
+              <div>
+                <label for="pt-dhuhr">🕌 صلاة الظهر — بدري لحد</label>
+                <input type="time" id="pt-dhuhr" />
+              </div>
+              <div>
+                <label for="pt-asr">🕌 صلاة العصر — بدري لحد</label>
+                <input type="time" id="pt-asr" />
+              </div>
+              <div>
+                <label for="pt-maghrib">🕌 صلاة المغرب — بدري لحد</label>
+                <input type="time" id="pt-maghrib" />
+              </div>
+              <div>
+                <label for="pt-isha">🕌 صلاة العشاء — بدري لحد</label>
+                <input type="time" id="pt-isha" />
+              </div>
+              <button class="save-btn" type="submit">حفظ أوقات «بدري لحد» ✅</button>
+            </form>
           </div>
         </div>
 
@@ -1221,7 +1274,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-2";
+      const BUILD_ID = "2026.11.24-3";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -1283,6 +1336,52 @@
         ["اتخانقت مع أختي","😤",2],["ما سمعتش كلام ماما أو بابا","🔇",2],["كدبت","🤥",3],
         ["لعبت بالموبايل من غير إذن","📱",3],["عليت صوتي أو صرخت","📢",1],["سبت أوضتي مش مترتبة","🧺",1]
       ];
+      /* ================= Early-prayer star («نجمة الصلاة بدري») =================
+         Each of the five daily prayers is a task whose name contains the
+         prayer word (صلاة الفجر / الظهر / العصر / المغرب / العشاء). The
+         parents set ONE «بدري لحد» cutoff time per prayer in the parents
+         area; the cutoffs live in the synced state as `prayerTimes`
+         ({fajr, dhuhr, asr, maghrib, isha} → "HH:MM" or ""), so they
+         travel with the family data like any other setting. When a girl
+         checks a prayer BEFORE its cutoff she earns +1 extra star,
+         logged as its own event («⭐ نجمة بدري») and recorded on the
+         done record (`earlyStar`), so unchecking the prayer removes the
+         early star with it and there can never be more than one early
+         star per prayer per day. An empty cutoff means no early star
+         for that prayer. */
+      var PRAYER_DEFS = [
+        { key:"fajr",   name:"الفجر",   label:"صلاة الفجر" },
+        { key:"dhuhr",  name:"الظهر",   label:"صلاة الظهر" },
+        { key:"asr",    name:"العصر",   label:"صلاة العصر" },
+        { key:"maghrib",name:"المغرب",  label:"صلاة المغرب" },
+        { key:"isha",   name:"العشاء",  label:"صلاة العشاء" }
+      ];
+      function defaultPrayerTimes(){ return { fajr:"", dhuhr:"", asr:"", maghrib:"", isha:"" }; }
+      function sanitizePrayerTimes(v){
+        var out = defaultPrayerTimes();
+        if(v && typeof v === "object"){
+          PRAYER_DEFS.forEach(function(p){
+            var t = v[p.key];
+            if(typeof t === "string" && /^\d{2}:\d{2}$/.test(t)){
+              var h = +t.slice(0, 2), m = +t.slice(3, 5);
+              if(h < 24 && m < 60) out[p.key] = t;
+            }
+          });
+        }
+        return out;
+      }
+      function prayerKeyForTask(task){
+        if(!task || !task.name) return null;
+        for(var i = 0; i < PRAYER_DEFS.length; i++){
+          if(task.name.indexOf(PRAYER_DEFS[i].name) >= 0) return PRAYER_DEFS[i].key;
+        }
+        return null;
+      }
+      function prayerCutoff(task){
+        var k = prayerKeyForTask(task);
+        if(!k || typeof S === "undefined" || !S || !S.prayerTimes) return "";
+        return S.prayerTimes[k] || "";
+      }
       /* Mom's reward — TIERS (باقات) on a strict ledger (نظام محاسبي
          دقيق, decided 2026-11-24). Mama's points are her LIFETIME
          EARNED total, derived from the girls' event logs — never from
@@ -1578,6 +1677,7 @@
           tasks: DEFAULT_TASKS.map(function(t,i){ return { id:"t"+(i+1), name:t[0], emoji:t[1], stars:t[2], girl:"both" }; }),
           rewards: DEFAULT_REWARDS.map(function(r,i){ return { id:"r"+(i+1), name:r[0], emoji:r[1], price:r[2] }; }),
           deductions: defaultDeductions(),
+          prayerTimes: defaultPrayerTimes(),
           balances: { judy:0, karma:0 },
           days: {},
           coloring: emptyColoring(),
@@ -1648,6 +1748,8 @@
               if(s.deductions.length === OLD_DED_NAMES.length && s.deductions.every(function(d){ return OLD_DED_NAMES.indexOf(d.name) >= 0; })){
                 s.deductions = defaultDeductions();
               }
+              /* migrate older saves: add the early-prayer «بدري لحد» cutoffs */
+              s.prayerTimes = sanitizePrayerTimes(s.prayerTimes);
               /* migrate older saves: add the mom's-reward pools */
               ensureMom(s);
               GIRL_KEYS.forEach(function(g){
@@ -1878,6 +1980,12 @@
             S.balances[girl] -= 1;
             logEvent(key, girl, "uncheck", "رجعت نجمة المفاجأة بتاعة: " + task.name, -1);
           }
+          if(info.earlyStar){
+            /* the early-prayer star leaves with its prayer: unchecking
+               the prayer removes «نجمة بدري» too */
+            S.balances[girl] -= 1;
+            logEvent(key, girl, "early-off", "رجعت نجمة بدري بتاعة: " + task.name, -1);
+          }
           if(day.twin[taskId]){
             delete day.twin[taskId];
             S.balances[girl] -= 1; S.balances[og] -= 1;
@@ -1900,9 +2008,19 @@
         if(Math.random() < 0.2){
           surpriseMsg = SECRET_MESSAGES[Math.floor(Math.random() * SECRET_MESSAGES.length)];
         }
-        r.done[taskId] = { time: nowTime(), surpriseStar: surpriseMsg ? 1 : 0, stars: task.stars };
+        /* Early-prayer star: this task is one of the five prayers and
+           the parents set a «بدري لحد» cutoff for it, and she is
+           checking it BEFORE that cutoff (wall-clock now vs the
+           zero-padded "HH:MM" cutoff — string order is time order). */
+        var earlyCutoff = prayerCutoff(task);
+        var earlyHit = !!(earlyCutoff && nowTime() < earlyCutoff);
+        r.done[taskId] = { time: nowTime(), surpriseStar: surpriseMsg ? 1 : 0, stars: task.stars, earlyStar: earlyHit ? 1 : 0 };
         S.balances[girl] += task.stars;
         logEvent(key, girl, "task", "خلصت: " + task.name, task.stars);
+        if(earlyHit){
+          S.balances[girl] += 1;
+          logEvent(key, girl, "early", "⭐ نجمة بدري — " + task.name, 1);
+        }
         playHappy(false);
         confetti(34);
         flyStar(btnEl, girl);
@@ -1943,7 +2061,11 @@
           showPraise();
           if(surpriseMsg){
             setTimeout(function(){
-              showModal("💌", "مفاجأة!", esc(surpriseMsg) + "<br />وخدتي <b>نجمة زيادة</b>! ⭐", "تمام 🎉");
+              showModal("💌", "مفاجأة!", esc(surpriseMsg) + "<br />وخدتي <b>نجمة زيادة</b>! ⭐" + (earlyHit ? "<br />⭐ وكمان <b>نجمة بدري</b> عشان صلّيتي بدري!" : ""), "تمام 🎉");
+            }, 650);
+          } else if(earlyHit){
+            setTimeout(function(){
+              showModal("⭐", "نجمة بدري!", "برافو يا " + GIRLS[girl].name + "! صلّيتي «" + esc(task.name) + "» بدري — قبل " + fmtTime(earlyCutoff) + " — وخدتي <b>نجمة زيادة</b>! ⭐", "تمام 🎉");
             }, 650);
           }
         }
@@ -2004,10 +2126,19 @@
         if(!mine.length){ list.innerHTML = '<div class="empty-note">لا توجد مهام اليوم — اطلب من ماما أو بابا إضافة مهام من منطقة الأهل 🌸</div>'; return; }
         list.innerHTML = mine.map(function(t){
           var isDone = !!r.done[t.id];
+          /* Early-prayer hint: on a prayer with a «بدري لحد» cutoff,
+             the row tells her the prize is there before the cutoff —
+             and celebrates it once today's early star is hers. */
+          var cut = prayerCutoff(t);
+          var earlyLine = "";
+          if(cut){
+            if(isDone && r.done[t.id].earlyStar) earlyLine = '<div class="tearly got">⭐ خدتي نجمة بدري!</div>';
+            else if(!isDone) earlyLine = '<div class="tearly">⭐ نجمة بدري لو خلّصتي قبل ' + fmtTime(cut) + '</div>';
+          }
           return '<div class="task' + (isDone ? " done" : "") + '">' +
             '<span class="ic">' + t.emoji + '</span>' +
             '<div class="mid"><div class="tname" dir="rtl">' + esc(t.name) + '</div>' +
-            '<div class="tstars">⭐ ' + t.stars + '</div></div>' +
+            '<div class="tstars">⭐ ' + t.stars + '</div>' + earlyLine + '</div>' +
             '<button class="check" type="button" data-task="' + t.id + '" aria-label="' + (isDone ? "إلغاء إتمام " : "إتمام ") + esc(t.name) + '">✓</button>' +
           '</div>';
         }).join("");
@@ -2796,7 +2927,31 @@
         });
         renderDeductions();
         renderMomAdmin();
+        renderPrayerForm();
       }
+
+      /* ================= Parents: early-prayer «بدري لحد» cutoffs =================
+         One time input per prayer in the tasks tab; saving writes the
+         five "HH:MM" strings ("" = no early star for that prayer) into
+         S.prayerTimes, which syncs with the rest of the family state. */
+      function renderPrayerForm(){
+        PRAYER_DEFS.forEach(function(p){
+          var el = $("pt-" + p.key);
+          if(el && document.activeElement !== el) el.value = (S.prayerTimes && S.prayerTimes[p.key]) || "";
+        });
+      }
+      $("prayerForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        var next = defaultPrayerTimes();
+        PRAYER_DEFS.forEach(function(p){
+          var el = $("pt-" + p.key);
+          var v = el ? String(el.value || "").trim() : "";
+          next[p.key] = /^\d{2}:\d{2}$/.test(v) ? v : "";
+        });
+        S.prayerTimes = sanitizePrayerTimes(next);
+        save(); renderAll();
+        toast("اتحفظت أوقات الصلاة بدري ⭐", "اللي تصلي قبل وقتها هتاخد نجمة بدري تلقائيًا");
+      });
 
       /* ================= Parents: mom's reward pools =================
          The editors in this tab are locked behind Baba's own code: the
@@ -3258,7 +3413,7 @@
 
       /* ================= Reports ================= */
       function evIcon(type){
-        return { task:"✅", uncheck:"↩️", surprise:"🎁", twin:"👯", "twin-off":"👯", fullday:"🏅", "fullday-off":"🏅", redeem:"🎁", unlock:"🎨", deduct:"⚠️" }[type] || "•";
+        return { task:"✅", uncheck:"↩️", surprise:"🎁", early:"⭐", "early-off":"⭐", twin:"👯", "twin-off":"👯", fullday:"🏅", "fullday-off":"🏅", redeem:"🎁", unlock:"🎨", deduct:"⚠️" }[type] || "•";
       }
       function renderDayReport(key){
         var box = $("dayReport");
@@ -3380,6 +3535,23 @@
          list stays in the state shape only so synced and backup data
          keeps its shape — it is never read and never charged again. */
       var PALETTE = ["#EF476F","#FF7B54","#FFB800","#FFD93D","#8AC926","#43AA8B","#38BDF8","#4361EE","#9B5DE5","#F15BB5","#B08968","#6B7280","#22223B"];
+      /* The coloured MODEL («الصورة اللي هنعمل زيها»): the same fixed
+         10-colour cycle the Android app uses (ColoringCatalog
+         .MODEL_COLORS), assigned per region by region index — fixed
+         for every drawing, identical on every open. Display only: the
+         fills are computed on the fly in renderEditor and are NEVER
+         written to S.coloring, so they are never saved, never synced
+         and never backed up. */
+      var MODEL_COLORS = ["#EF476F","#FFB800","#8AC926","#38BDF8","#FF7B54","#9B5DE5","#FFD93D","#43AA8B","#F15BB5","#B08968"];
+      function modelWork(pic){
+        var work = {}, seen = {}, re = /data-r="(\d+)"/g, m;
+        while((m = re.exec(pic.svg))){
+          if(seen[m[1]]) continue;
+          seen[m[1]] = true;
+          work[m[1]] = MODEL_COLORS[(+m[1]) % MODEL_COLORS.length];
+        }
+        return work;
+      }
       var DRAWINGS = [
         { id:"butterfly", name:"فراشة", emoji:"🦋", gold:false, svg:
           '<ellipse data-r="0" fill="#fff" cx="58" cy="72" rx="36" ry="27" transform="rotate(-24 58 72)"/>' +
@@ -3851,6 +4023,11 @@
         var pic = picById(edPic); if(!pic) return;
         var work = S.coloring[currentGirl].works[edPic] || {};
         $("edTitle").textContent = "🎨 " + pic.emoji + " " + pic.name + " — " + GIRLS[currentGirl].name;
+        /* The model panel: the same drawing pre-filled with the fixed
+           model colours — big and clear above the colouring stage, for
+           looking only (no paint handlers are attached inside it). */
+        var modelStage = $("edModelStage");
+        if(modelStage) modelStage.innerHTML = picSVG(pic, modelWork(pic));
         $("edStage").innerHTML = picSVG(pic, work);
         $("edStage").querySelectorAll("[data-r]").forEach(function(el){
           el.addEventListener("click", function(){ paintRegion(el); });
@@ -4240,6 +4417,7 @@
       function migrateBackupData(d){
         if(!d.coloring) d.coloring = emptyColoring();
         if(!d.deductions) d.deductions = defaultDeductions();
+        d.prayerTimes = sanitizePrayerTimes(d.prayerTimes);
         if(!d.balances || typeof d.balances !== "object") d.balances = { judy:0, karma:0 };
         ensureMom(d);
         GIRL_KEYS.forEach(function(g){
@@ -4733,7 +4911,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-2", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-3", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
