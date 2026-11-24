@@ -739,6 +739,426 @@
 
       .hidden{ display:none !important; }
     </style>
+    <style>
+      /* ============================================================
+         3D theme layer (visual only — build 2026.11.24-6)
+         Same colours, same order, same sizes, same text: this layer
+         only adds depth — a soft top sheen, a darker bottom edge and
+         layered shadows built from the palette above — and a real
+         button-press feel: on tap the control sinks a couple of px,
+         its edge shadow shrinks, then it springs back. Transforms and
+         shadows never change layout, so nothing moves or resizes.
+         ============================================================ */
+
+      /* ----- Raised surfaces: cards & panels get real depth ----- */
+      .task, .reward, .panel, .note-card, .deduct-row, .deduct-balance,
+      .stat, .guide-card, .mp-prog, .mp-day, .mom-card, .praise,
+      .backup-box, .recovery, .mock{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.85),
+          inset 0 -2px 0 rgba(160,120,40,.07),
+          0 2px 3px rgba(160,120,40,.10),
+          0 10px 22px rgba(160,120,40,.12);
+      }
+      .mom-strip, .now-strip, .mp-head, .mom-msg{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.7),
+          inset 0 -3px 0 rgba(62,47,35,.06),
+          0 3px 5px rgba(160,120,40,.12),
+          0 12px 24px rgba(160,120,40,.16);
+      }
+      .modal, .toast{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.9),
+          0 4px 8px rgba(120,80,20,.18),
+          0 20px 48px rgba(120,80,20,.30);
+      }
+      .pstage{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.9),
+          inset 0 2px 6px rgba(62,47,35,.05),
+          0 3px 6px rgba(160,120,40,.12),
+          0 10px 20px rgba(160,120,40,.10);
+      }
+      .model-panel{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.75),
+          inset 0 -3px 0 rgba(217,119,6,.10),
+          0 3px 6px rgba(160,120,40,.14),
+          0 12px 24px rgba(160,120,40,.16);
+      }
+
+      /* ----- Girl cards: coloured depth that matches each girl ----- */
+      .girl.judy{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.75),
+          inset 0 -3px 0 rgba(214,51,108,.12),
+          0 3px 5px rgba(214,51,108,.14),
+          0 10px 20px rgba(214,51,108,.14);
+      }
+      .girl.karma{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.75),
+          inset 0 -3px 0 rgba(109,40,217,.12),
+          0 3px 5px rgba(109,40,217,.14),
+          0 10px 20px rgba(109,40,217,.14);
+      }
+      .girl.judy.sel{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.8),
+          inset 0 -4px 0 rgba(214,51,108,.16),
+          0 6px 10px rgba(214,51,108,.22),
+          0 16px 32px rgba(214,51,108,.38);
+      }
+      .girl.karma.sel{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.8),
+          inset 0 -4px 0 rgba(109,40,217,.16),
+          0 6px 10px rgba(109,40,217,.22),
+          0 16px 32px rgba(109,40,217,.38);
+      }
+      .girl .sel-badge{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.35),
+          0 2px 0 rgba(62,47,35,.18),
+          0 6px 12px rgba(62,47,35,.25);
+      }
+
+      /* ----- Icons pop off the surface ----- */
+      .task .ic, .reward .ric, .deduct-row .dic, .row-item .e,
+      .girl .gname, .modal .big-emoji{
+        filter:drop-shadow(0 3px 3px rgba(62,47,35,.22));
+      }
+      .girl .balance .st, .fly-star{
+        filter:drop-shadow(0 2px 3px rgba(217,119,6,.45));
+      }
+      #welcomeOverlay .app-icon{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.8),
+          0 4px 8px rgba(120,80,20,.20),
+          0 18px 40px rgba(120,80,20,.30);
+      }
+
+      /* ----- Gold buttons: thick bottom edge + sheen ----- */
+      .btn-gold, .buy, .save-btn, .modal .cta, .tab.on{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.65),
+          inset 0 -2px 0 rgba(62,47,35,.06),
+          0 5px 0 var(--gold-dark),
+          0 9px 16px rgba(160,110,0,.30);
+        transition:transform .09s ease, box-shadow .09s ease, background-color .15s ease, filter .15s ease;
+      }
+      .btn-gold:active, .buy:active, .save-btn:active, .modal .cta:active, .tab.on:active{
+        transform:translateY(4px) scale(.98);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.5),
+          inset 0 2px 5px rgba(62,47,35,.12),
+          0 1px 0 var(--gold-dark),
+          0 3px 7px rgba(160,110,0,.28);
+      }
+      .buy:disabled{
+        background-image:none;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 2px 0 var(--line);
+      }
+      .buy:disabled:active{ transform:none; }
+
+      /* ----- Soft / white buttons: cream bottom edge ----- */
+      .btn-soft, .mini, .change-pin, .tab, .mom-back, #manualUpdateBtn,
+      .emoji-pick button, .day-row{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 60%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.9),
+          0 4px 0 var(--cream-dark),
+          0 8px 14px rgba(160,120,40,.16);
+        transition:transform .09s ease, box-shadow .09s ease, background-color .15s ease;
+      }
+      .btn-soft:active, .mini:active, .change-pin:active, .tab:active,
+      .mom-back:active, #manualUpdateBtn:active,
+      .emoji-pick button:active, .day-row:active{
+        transform:translateY(3px);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.7),
+          inset 0 2px 5px rgba(62,47,35,.08),
+          0 1px 0 var(--cream-dark),
+          0 3px 7px rgba(160,120,40,.16);
+      }
+      .mini.on, .emoji-pick button.on{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.65),
+          0 4px 0 var(--gold-dark),
+          0 8px 14px rgba(160,110,0,.28);
+      }
+      .mini.on:active, .emoji-pick button.on:active{
+        transform:translateY(3px);
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.12),
+          0 1px 0 var(--gold-dark),
+          0 3px 7px rgba(160,110,0,.26);
+      }
+      .mini.del{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.9),
+          0 4px 0 #F3C2C0,
+          0 8px 14px rgba(160,120,40,.14);
+      }
+      .mini.del:active{
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.08),
+          0 1px 0 #F3C2C0,
+          0 3px 7px rgba(160,120,40,.14);
+      }
+      #manualUpdateBtn:disabled{ box-shadow:none; }
+      #manualUpdateBtn:disabled:active{ transform:none; }
+      .guide-nav button:disabled{ box-shadow:none; }
+
+      /* ----- Rose buttons (Mama) ----- */
+      .mom-req-btn{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.32), rgba(255,255,255,0) 55%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.5),
+          0 5px 0 var(--rose-dark),
+          0 9px 16px rgba(214,51,108,.30);
+        transition:transform .09s ease, box-shadow .09s ease, background-color .15s ease;
+      }
+      .mom-req-btn:active{
+        transform:translateY(4px);
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.14),
+          0 1px 0 var(--rose-dark),
+          0 3px 7px rgba(214,51,108,.28);
+      }
+      .mom-page-btn{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0) 60%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.8),
+          0 4px 0 var(--rose),
+          0 8px 14px rgba(214,51,108,.18);
+        transition:transform .09s ease, box-shadow .09s ease, background-color .15s ease, color .15s ease;
+      }
+      .mom-page-btn:active{
+        transform:translateY(3px);
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.14),
+          0 1px 0 var(--rose),
+          0 3px 7px rgba(214,51,108,.20);
+      }
+      .modal .ghost, .danger-btn{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.9),
+          0 4px 0 var(--cream-dark),
+          0 8px 14px rgba(160,120,40,.14);
+        transition:transform .09s ease, box-shadow .09s ease, background-color .15s ease;
+      }
+      .modal .ghost:active, .danger-btn:active{
+        transform:translateY(3px);
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.08),
+          0 1px 0 var(--cream-dark),
+          0 3px 7px rgba(160,120,40,.14);
+      }
+
+      /* ----- Floating install pill ----- */
+      .install-pill{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.65),
+          0 5px 0 var(--gold-dark),
+          0 10px 20px rgba(160,110,0,.35);
+        transition:transform .09s ease, box-shadow .09s ease, background-color .15s ease;
+      }
+      .install-pill:active{
+        transform:translateY(4px);
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.12),
+          0 1px 0 var(--gold-dark),
+          0 4px 9px rgba(160,110,0,.30);
+      }
+
+      /* ----- Deduction apply: outlined red button ----- */
+      .deduct-apply{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.9),
+          0 4px 0 #F3C2C0,
+          0 8px 14px rgba(160,120,40,.14);
+        transition:transform .09s ease, box-shadow .09s ease, background-color .15s ease, color .15s ease;
+      }
+      .deduct-apply:active{
+        transform:translateY(3px) scale(.97);
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.16),
+          0 1px 0 #F3C2C0,
+          0 3px 7px rgba(160,120,40,.14);
+      }
+
+      /* ----- Round check button: a real pushable coin ----- */
+      .check{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.9),
+          inset 0 -3px 0 rgba(160,120,40,.14),
+          0 4px 0 var(--cream-dark),
+          0 8px 14px rgba(160,120,40,.22);
+        transition:transform .09s ease, box-shadow .09s ease, background-color .2s ease, border-color .2s ease, color .2s ease;
+      }
+      .check:active{
+        transform:translateY(3px) scale(.92);
+        box-shadow:
+          inset 0 2px 6px rgba(62,47,35,.14),
+          0 1px 0 var(--cream-dark),
+          0 3px 7px rgba(160,120,40,.20);
+      }
+      .task.done .check{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.32), rgba(255,255,255,0) 55%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.5),
+          inset 0 -3px 0 rgba(62,47,35,.14),
+          0 4px 0 #22724A,
+          0 8px 14px rgba(34,114,74,.30);
+      }
+      .task.done .check:active{
+        box-shadow:
+          inset 0 2px 6px rgba(62,47,35,.20),
+          0 1px 0 #22724A,
+          0 3px 7px rgba(34,114,74,.28);
+      }
+
+      /* ----- Clickable cards press like buttons too ----- */
+      .mom-strip, .pic-card, .daily-card{
+        transition:transform .09s ease, box-shadow .09s ease;
+      }
+      .mom-strip:active{
+        transform:translateY(3px);
+        box-shadow:
+          inset 0 2px 6px rgba(62,47,35,.08),
+          0 2px 4px rgba(160,120,40,.12),
+          0 5px 10px rgba(160,120,40,.14);
+      }
+      .pic-card, .daily-card{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.85),
+          inset 0 -2px 0 rgba(160,120,40,.07),
+          0 3px 5px rgba(160,120,40,.12),
+          0 10px 20px rgba(160,120,40,.13);
+      }
+      .pic-card:active, .daily-card:active{
+        transform:translateY(3px) scale(.98);
+        box-shadow:
+          inset 0 2px 6px rgba(62,47,35,.08),
+          0 2px 4px rgba(160,120,40,.12),
+          0 5px 10px rgba(160,120,40,.13);
+      }
+      .pic-card.gold{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.8),
+          inset 0 -3px 0 rgba(217,119,6,.12),
+          0 3px 5px rgba(160,110,0,.16),
+          0 12px 24px rgba(160,110,0,.18);
+      }
+
+      /* ----- Chips, bars & palette: small depth details ----- */
+      .mom-chip, .mp-task, .mom-strip .ms-chip{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.85),
+          0 2px 0 var(--line),
+          0 4px 8px rgba(160,120,40,.10);
+      }
+      .mom-chip.on{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.7),
+          0 2px 0 var(--gold-dark),
+          0 6px 12px rgba(217,119,6,.25);
+      }
+      .mom-strip .ms-badge{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.7),
+          0 3px 7px rgba(160,110,0,.22);
+      }
+      .girl .bar, .mp-bar{
+        box-shadow:inset 0 2px 4px rgba(62,47,35,.16), inset 0 -1px 0 rgba(255,255,255,.55);
+      }
+      .girl .bar i, .mp-bar i{
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.45), inset 0 -2px 0 rgba(62,47,35,.08);
+      }
+      .swatch{
+        box-shadow:
+          0 0 0 2px var(--line),
+          inset 0 2px 3px rgba(255,255,255,.55),
+          inset 0 -3px 5px rgba(62,47,35,.22),
+          0 4px 7px rgba(62,47,35,.22);
+        transition:transform .09s ease, box-shadow .09s ease;
+      }
+      .swatch:active{ transform:translateY(2px) scale(.93); }
+      .swatch.on{
+        box-shadow:
+          0 0 0 3px var(--ink),
+          inset 0 2px 3px rgba(255,255,255,.55),
+          inset 0 -3px 5px rgba(62,47,35,.22),
+          0 5px 9px rgba(62,47,35,.26);
+      }
+      .ctools .mini.on{
+        background-image:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.65),
+          0 4px 0 var(--gold-dark),
+          0 8px 14px rgba(160,110,0,.28);
+      }
+      .dots i{
+        box-shadow:inset 0 1px 3px rgba(62,47,35,.22);
+      }
+      .dots i.on{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.5),
+          0 2px 5px rgba(160,110,0,.35);
+      }
+      .sync-code-big{
+        box-shadow:
+          inset 0 2px 6px rgba(62,47,35,.07),
+          0 2px 5px rgba(109,40,217,.14);
+      }
+      .mom-coupon{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.7),
+          0 3px 6px rgba(160,110,0,.14),
+          0 10px 20px rgba(160,110,0,.12);
+      }
+
+      /* ----- Inputs sit IN the page (inset depth) ----- */
+      form.f input[type="text"], form.f input[type="number"], form.f input[type="time"],
+      form.f select, input[type="date"], input[type="month"],
+      .modal input.pin, .recovery input[type="text"], .sync-join input,
+      .note-card textarea, .backup-box textarea, .recovery textarea{
+        box-shadow:
+          inset 0 2px 5px rgba(62,47,35,.08),
+          inset 0 -1px 0 rgba(255,255,255,.65),
+          0 1px 0 rgba(255,255,255,.6);
+      }
+
+      /* ----- Desktop hover: a gentle lift where a pointer exists ----- */
+      @media (hover:hover) and (pointer:fine){
+        .btn-gold:hover, .buy:hover:not(:disabled), .save-btn:hover,
+        .btn-soft:hover, .mini:hover, .tab:hover, .install-pill:hover,
+        .mom-req-btn:hover, .mom-page-btn:hover{
+          transform:translateY(-1px);
+          filter:brightness(1.03);
+        }
+        .task:hover, .reward:hover, .pic-card:hover, .daily-card:hover{
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.85),
+            inset 0 -2px 0 rgba(160,120,40,.07),
+            0 3px 5px rgba(160,120,40,.12),
+            0 14px 28px rgba(160,120,40,.17);
+        }
+      }
+      @media (prefers-reduced-motion: reduce){
+        .btn-gold, .btn-soft, .buy, .save-btn, .mini, .tab, .check,
+        .mom-req-btn, .mom-page-btn, .install-pill, .deduct-apply,
+        .mom-strip, .pic-card, .daily-card, .swatch{
+          transition-duration:.001s !important;
+        }
+      }
+    </style>
   </head>
   <body data-girl="karma">
     <div id="updateBanner" dir="rtl" role="button" style="display:none">🔄 في تحديث جديد — اضغط هنا للتحديث</div>
@@ -1298,7 +1718,7 @@
 
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-5";
+      const BUILD_ID = "2026.11.24-6";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -5166,7 +5586,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-5", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-6", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
