@@ -993,6 +993,19 @@
       .mom-surprise{ z-index:64; }
       #momSurpriseBody .mom-msg-text, #momSurpriseBody .mom-coupon-text{ font-size:1.35rem; }
 
+      /* ---------- What's new (once per build) ----------
+         First-open overlay for the current build: sits above the
+         Mama surprise (64) and the confetti (65), below the welcome
+         screen (90) — it is only ever shown after the welcome is
+         dismissed, on the main page. */
+      .whats-new{ z-index:68; }
+      .news-list{ list-style:none; margin:12px 0 2px; padding:0; text-align:start; }
+      .news-list li{
+        font-size:1.08rem; font-weight:700; line-height:1.55; color:var(--ink);
+        padding:8px 2px; border-bottom:1px dashed var(--line);
+      }
+      .news-list li:last-child{ border-bottom:none; }
+
       /* The old full-width update strip is gone: the «update
          available» notice now lives on the floating .update-fab
          button (see its styles near the top of this stylesheet). */
@@ -1994,9 +2007,30 @@
       </div>
     </div>
 
+    <!-- What's new in this build: shown ONCE per build, the first time
+         the app is opened after the update — on the main page only,
+         after the welcome screen is dismissed, on top of any other
+         popup (e.g. Mama's surprise). Shown by checkWhatsNew();
+         dismissing it stores the current BUILD_ID under the local
+         seen-news key so it never shows again for this build. -->
+    <div class="overlay whats-new" id="whatsNew" role="dialog" aria-label="حاجات جديدة">
+      <div class="modal">
+        <h2>🎉 في حاجات جديدة حلوة!</h2>
+        <ul class="news-list">
+          <li>⭐ نجمة الصلاة بدري — صلّي قبل الوقت وخدي نجمة زيادة!</li>
+          <li>🎁 الكنز الكبير — مكافآت جديدة كبيرة تستاهل التجميع</li>
+          <li>🎮 ٤ ألعاب جديدة — صيد النجوم، فرقعة البالونات، الذاكرة، أطعمي الأرنب</li>
+          <li>📩 ماما بقت تطلب كوبوناتها من بابا من صفحتها</li>
+          <li>📝 زر ملاحظة جنب اسم كل بنت</li>
+          <li>🖼️ التلوين بقى فيه صورة ملوّنة جاهزة نعمل زيها</li>
+        </ul>
+        <button class="cta" id="whatsNewClose" type="button">يلا نلعب! 🎉</button>
+      </div>
+    </div>
+
     <script>
       "use strict";
-      const BUILD_ID = "2026.11.24-17";
+      const BUILD_ID = "2026.11.24-18";
       /* ================= Data — fresh start (decided 2026-11-21) =================
          All old progress data is wiped once and the app starts over: the data
          key moves to v2 and the old data + old sync-link keys are removed on
@@ -2868,7 +2902,7 @@
         modalCb = onOk || null;
         $("modalOverlay").classList.add("open");
       }
-      function closeModal(){ $("modalOverlay").classList.remove("open"); modalCb = null; try{ checkMomSurprise(); }catch(e){} }
+      function closeModal(){ $("modalOverlay").classList.remove("open"); modalCb = null; try{ checkMomSurprise(); }catch(e){} try{ checkWhatsNew(); }catch(e){} }
       $("modalOk").addEventListener("click", function(){ var cb = modalCb; closeModal(); if(cb) cb(); });
       $("modalCancel").addEventListener("click", closeModal);
 
@@ -3802,6 +3836,7 @@
         var p = $("momPage"); if(p) p.classList.remove("open");
         document.body.style.overflow = "";
         try{ checkMomSurprise(); }catch(e){}
+        try{ checkWhatsNew(); }catch(e){}
       }
       /* ================= Fixed back-home button =================
          One fixed bottom button for every non-home view (Mama's page,
@@ -3829,6 +3864,7 @@
         if($("parents") && $("parents").classList.contains("open")){
           $("parents").classList.remove("open");
           window.scrollTo({ top:0, behavior:"smooth" });
+          try{ checkWhatsNew(); }catch(e){}
         }
       });
       try{
@@ -3918,7 +3954,48 @@
         renderAll();
       }
 
-      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderVaultRewards(); renderGamesRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); try{ checkMomSurprise(); }catch(e){} }
+      /* ================= What's new (once per build) =================
+         The first time the app is opened after an update, a friendly
+         overlay lists what the new build brought. It is LOCAL to this
+         device: the seen marker lives under its own key, outside the
+         synced state, and holds the BUILD_ID that was dismissed — the
+         overlay shows only while the stored value differs from the
+         current BUILD_ID, and dismissing writes the current one, so
+         each build announces itself exactly once per device. It waits
+         while the welcome screen, the PIN gate, a modal, or any
+         sub-view (Mama's page, the parents area, a game, the colouring
+         editor) is up, and is retried whenever those close — but NOT
+         for Mama's surprise: the news deliberately stacks on top of
+         it (z-index 68 over 64), so the family hears about the update
+         first and her surprise waits right underneath. */
+      var NEWS_SEEN_KEY = "njwm-jwdy-wkrm-seen-news";
+      var whatsNewOpen = false;
+      function newsSeenBuild(){
+        try{ return localStorage.getItem(NEWS_SEEN_KEY); }catch(e){ return null; }
+      }
+      function checkWhatsNew(){
+        if(whatsNewOpen) return;
+        var ov = $("whatsNew"); if(!ov) return;
+        if(newsSeenBuild() === BUILD_ID) return;
+        if($("welcomeOverlay").classList.contains("open")) return;
+        if($("gateOverlay").classList.contains("open")) return;
+        if($("modalOverlay").classList.contains("open")) return;
+        var mp = $("momPage"); if(mp && mp.classList.contains("open")) return;
+        var pr = $("parents"); if(pr && pr.classList.contains("open")) return;
+        var gc = $("gameCenter"); if(gc && !gc.classList.contains("hidden")) return;
+        var ce = $("colorEditor"); if(ce && !ce.classList.contains("hidden")) return;
+        whatsNewOpen = true;
+        ov.classList.add("open");
+      }
+      function closeWhatsNew(){
+        var ov = $("whatsNew"); if(ov) ov.classList.remove("open");
+        whatsNewOpen = false;
+        try{ localStorage.setItem(NEWS_SEEN_KEY, BUILD_ID); }catch(e){}
+        try{ checkMomSurprise(); }catch(e){}
+      }
+      $("whatsNewClose").addEventListener("click", closeWhatsNew);
+
+      function renderAll(){ renderDates(); renderGirls(); renderTasks(); renderRewards(); renderVaultRewards(); renderGamesRewards(); renderMom(); renderPublicDeductions(); renderNote(); renderColoring(); if(parentsUnlocked) renderAdmin(); try{ renderWelcomeSync(); }catch(e){} fitNames(); try{ checkMomSurprise(); }catch(e){} try{ checkWhatsNew(); }catch(e){} }
 
       /* Task and deduction names stay on ONE line: shrink the font just
          enough to fit the row (never below 11px, then the CSS ellipsis
@@ -4254,7 +4331,7 @@
         var v = normDigits($("gateInput").value).replace(/[^0-9]/g, "").slice(0, 3);
         if(v !== $("gateInput").value) $("gateInput").value = v;
       });
-      $("gateCancel").addEventListener("click", function(){ gateOnSuccess = null; $("gateOverlay").classList.remove("open"); try{ checkMomSurprise(); }catch(e){} });
+      $("gateCancel").addEventListener("click", function(){ gateOnSuccess = null; $("gateOverlay").classList.remove("open"); try{ checkMomSurprise(); }catch(e){} try{ checkWhatsNew(); }catch(e){} });
 
       /* ================= Gate recovery: forgot the parents' number =================
          The number itself is never stored or shown — only its SHA-256 hash
@@ -5749,7 +5826,7 @@
       }
       function welcomeNever(){ try{ return localStorage.getItem(WELCOME_KEY) === "never"; }catch(e){ return false; } }
       function setWelcomeNever(){ try{ localStorage.setItem(WELCOME_KEY, "never"); }catch(e){} }
-      function hideWelcome(){ $("welcomeOverlay").classList.remove("open"); refreshInstallBar(); try{ checkMomSurprise(); }catch(e){} }
+      function hideWelcome(){ $("welcomeOverlay").classList.remove("open"); refreshInstallBar(); try{ checkMomSurprise(); }catch(e){} try{ checkWhatsNew(); }catch(e){} }
       window.addEventListener("appinstalled", function(){
         deferredPrompt = null;
         setWelcomeNever(); hideWelcome(); refreshInstallUI();
@@ -6558,7 +6635,7 @@
           fetch("sw.js", { method:"HEAD" }).then(function(r){
             var ct = r.headers.get("content-type") || "";
             if(r.ok && /javascript|ecmascript/.test(ct)){
-              navigator.serviceWorker.register("sw.js?u=2026.11.24-17", { updateViaCache: "none" }).catch(function(){});
+              navigator.serviceWorker.register("sw.js?u=2026.11.24-18", { updateViaCache: "none" }).catch(function(){});
             }
           }).catch(function(){});
         }catch(e){}
